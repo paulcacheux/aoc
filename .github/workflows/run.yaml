@@ -1,11 +1,11 @@
 on:
   push
 
-name: Lint
+name: Run
 
 jobs:
-  check:
-    name: Lint source code
+  run:
+    name: Run aoc days
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
@@ -16,7 +16,6 @@ jobs:
         with:
             toolchain: stable
             override: true
-            components: rustfmt, clippy
 
       - name: Cache rust artifacts
         uses: actions/cache@v2
@@ -29,10 +28,10 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Run cargo fmt
+      - name: Run cargo build
         run: |
-          cargo fmt --all -- --check
+          cargo build --release
 
-      - name: Run clippy
+      - name: Run days
         run: |
-          cargo clippy -- -D warnings
+          ./target/release/aoc2021 --day 1
