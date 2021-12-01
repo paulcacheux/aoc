@@ -1,0 +1,27 @@
+on:
+  push
+
+name: build
+
+jobs:
+  check:
+    name: Lint source code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install stable rust
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+            components: rustfmt, clippy
+
+      - name: Run cargo fmt
+        run: |
+          cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: |
+          cargo clippy -- -D warnings
