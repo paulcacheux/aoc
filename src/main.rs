@@ -1,4 +1,4 @@
-use advent_of_code_traits::{days::Day1, Solution};
+use advent_of_code_traits::{days::Day1, ParseEachInput, Part1, Part2, Solution};
 use clap::Parser;
 
 mod aoc;
@@ -16,9 +16,19 @@ struct Options {
     day: u32,
 }
 
-fn call_solution_for_day(day: u32) -> for<'r> fn(&'r str) {
+fn run<A: Solution<D>, const D: u32>(input: &str) {
+    let part1_parsed_input = <A as ParseEachInput<D, Part1>>::parse_input(input);
+    let part1_output = A::part1(&part1_parsed_input);
+    println!("Day {}, Part 1: {}", D, part1_output);
+
+    let part2_parsed_input = <A as ParseEachInput<D, Part2>>::parse_input(input);
+    let part2_output = A::part2(&part2_parsed_input);
+    println!("Day {}, Part 2: {}", D, part2_output);
+}
+
+fn run_solution_for_day(day: u32, input: &str) {
     match day {
-        1 => <aoc::Aoc2021 as Solution<Day1>>::run,
+        1 => run::<aoc::Aoc2021, Day1>(input),
         _ => unimplemented!("no solution available for that day"),
     }
 }
@@ -33,5 +43,5 @@ fn main() {
     };
     let input = std::fs::read_to_string(input_path).expect("failed to read input");
 
-    call_solution_for_day(opts.day)(&input);
+    run_solution_for_day(opts.day, &input);
 }
