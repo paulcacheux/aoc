@@ -16,14 +16,19 @@ struct Options {
     day: u32,
 }
 
-fn run<A: Solution<D>, const D: u32>(input: &str) {
-    let part1_parsed_input = <A as ParseEachInput<D, Part1>>::parse_input(input);
-    let part1_output = A::part1(&part1_parsed_input);
-    println!("Day {}, Part 1: {}", D, part1_output);
+macro_rules! inner_run {
+    ($P:tt, $F:expr, $input:expr) => {{
+        let parsed_input = <A as ParseEachInput<D, $P>>::parse_input($input);
+        let start = std::time::Instant::now();
+        let output = $F(&parsed_input);
+        let elapsed = start.elapsed();
+        println!("Day {}, Part {}: {}, in {:?}", D, $P, output, elapsed,);
+    }};
+}
 
-    let part2_parsed_input = <A as ParseEachInput<D, Part2>>::parse_input(input);
-    let part2_output = A::part2(&part2_parsed_input);
-    println!("Day {}, Part 2: {}", D, part2_output);
+fn run<A: Solution<D>, const D: u32>(input: &str) {
+    inner_run!(Part1, A::part1, input);
+    inner_run!(Part2, A::part2, input);
 }
 
 fn run_solution_for_day(day: u32, input: &str) {
