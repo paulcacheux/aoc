@@ -38,7 +38,7 @@ impl Solution<Day1> for Aoc2021 {
     fn part2(input: &Vec<u32>) -> usize {
         let sums: Vec<u32> = input
             .windows(3)
-            .map(|w| w.into_iter().copied().reduce(|a, b| a + b).unwrap())
+            .map(|w| w.iter().copied().reduce(|a, b| a + b).unwrap())
             .collect();
         count_increasing_windows(&sums)
     }
