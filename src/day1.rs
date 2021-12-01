@@ -2,6 +2,7 @@ use crate::aoc::Aoc2021;
 use advent_of_code_traits::days::Day1;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use itertools::Itertools;
 
 impl ParseInput<Day1> for Aoc2021 {
     type Parsed = Vec<u32>;
@@ -38,7 +39,7 @@ impl Solution<Day1> for Aoc2021 {
     fn part2(input: &Vec<u32>) -> usize {
         let sums: Vec<u32> = input
             .windows(3)
-            .map(|w| w.iter().copied().reduce(|a, b| a + b).unwrap())
+            .map(|w| w.iter().copied().sum1().unwrap())
             .collect();
         count_increasing_windows(&sums)
     }

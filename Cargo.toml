@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 clap = "3.0.0-beta.5"
 advent_of_code_traits = "0.1.0"
+itertools = "0.10.1"
