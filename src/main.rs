@@ -1,8 +1,9 @@
-use advent_of_code_traits::{days::Day1, ParseEachInput, Part1, Part2, Solution};
+use advent_of_code_traits::{days::*, ParseEachInput, Part1, Part2, Solution};
 use clap::Parser;
 
 mod aoc;
 mod day1;
+mod day2;
 
 /// A subcommand for controlling testing
 #[derive(Parser)]
@@ -34,6 +35,7 @@ fn run<A: Solution<D>, const D: u32>(input: &str) {
 fn run_solution_for_day(day: u32, input: &str) {
     match day {
         1 => run::<aoc::Aoc2021, Day1>(input),
+        2 => run::<aoc::Aoc2021, Day2>(input),
         _ => unimplemented!("no solution available for that day"),
     }
 }
