@@ -15,7 +15,7 @@ impl Bits {
         self.bits[y * self.bits_per_line + x]
     }
 
-    pub fn most_common_at(&self, x: usize, equal: Option<u8>) -> u8 {
+    pub fn most_common_at(&self, x: usize) -> Option<u8> {
         let mut count0 = 0;
         let mut count1 = 0;
 
@@ -33,13 +33,11 @@ impl Bits {
         }
 
         if count1 > count0 {
-            1
+            Some(1)
         } else if count0 > count1 {
-            0
-        } else if let Some(eq) = equal {
-            eq
+            Some(0)
         } else {
-            panic!("equal count and no solution provided")
+            None
         }
     }
 
@@ -109,7 +107,7 @@ impl Solution<Day3> for Aoc2021 {
         let mut epsilon = 0;
 
         for x in 0..input.bits_per_line {
-            let most_common = input.most_common_at(x, None);
+            let most_common = input.most_common_at(x).expect("equal count");
 
             gamma <<= 1;
             epsilon <<= 1;
@@ -124,21 +122,27 @@ impl Solution<Day3> for Aoc2021 {
     }
 
     fn part2(input: &Bits) -> u32 {
-        fn work(mut input: Bits, keep_most_common: bool, equal_solution: u8) -> u32 {
+        fn work(mut input: Bits, keep_most_common: bool, equal_keep: u8) -> u32 {
             for x in 0..input.bits_per_line {
                 if input.count_in_mask() == 1 {
                     break;
                 }
 
-                let most_common = input.most_common_at(x, Some(equal_solution));
+                let most_common = input.most_common_at(x);
 
                 for y in 0..input.line_count {
-                    if keep_most_common {
-                        if input.get_bit(x, y) != most_common {
-                            input.line_mask[y] = false;
+                    if let Some(most_common) = most_common {
+                        if keep_most_common {
+                            if input.get_bit(x, y) != most_common {
+                                input.line_mask[y] = false;
+                            }
+                        } else {
+                            if input.get_bit(x, y) == most_common {
+                                input.line_mask[y] = false;
+                            }
                         }
                     } else {
-                        if input.get_bit(x, y) == most_common {
+                        if input.get_bit(x, y) != equal_keep {
                             input.line_mask[y] = false;
                         }
                     }
@@ -148,7 +152,7 @@ impl Solution<Day3> for Aoc2021 {
         }
 
         let oxygen = work(input.clone(), true, 1);
-        let scrubber = work(input.clone(), false, 1);
+        let scrubber = work(input.clone(), false, 0);
 
         oxygen * scrubber
     }
