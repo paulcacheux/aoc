@@ -1,13 +1,14 @@
+use std::ops::Deref;
+
 use advent_of_code_traits::{days::Day3, ParseInput, Solution};
 
 use crate::aoc::Aoc2021;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Bits {
     pub line_count: usize,
     pub bits_per_line: usize,
     pub bits: Vec<u8>,
-    pub line_mask: Vec<bool>,
 }
 
 impl Bits {
@@ -15,13 +16,15 @@ impl Bits {
         self.bits[y * self.bits_per_line + x]
     }
 
-    pub fn most_common_at(&self, x: usize) -> Option<u8> {
+    pub fn most_common_at(&self, x: usize, mask: Option<&[bool]>) -> Option<u8> {
         let mut count0 = 0;
         let mut count1 = 0;
 
         for y in 0..self.line_count {
-            if !self.line_mask[y] {
-                continue;
+            if let Some(mask) = mask {
+                if !mask[y] {
+                    continue;
+                }
             }
 
             let value = self.get_bit(x, y);
@@ -39,6 +42,33 @@ impl Bits {
         } else {
             None
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct MaskedBits<'b> {
+    pub bits: &'b Bits,
+    pub line_mask: Vec<bool>,
+}
+
+impl<'b> Deref for MaskedBits<'b> {
+    type Target = Bits;
+
+    fn deref(&self) -> &Bits {
+        self.bits
+    }
+}
+
+impl<'b> MaskedBits<'b> {
+    pub fn new(bits: &'b Bits) -> Self {
+        Self {
+            bits,
+            line_mask: vec![true; bits.line_count],
+        }
+    }
+
+    pub fn most_common_at(&self, x: usize) -> Option<u8> {
+        self.bits.most_common_at(x, Some(&self.line_mask))
     }
 
     pub fn count_in_mask(&self) -> usize {
@@ -93,7 +123,6 @@ impl ParseInput<Day3> for Aoc2021 {
             line_count,
             bits_per_line: bits_per_line.unwrap_or_default(),
             bits,
-            line_mask: vec![true; line_count],
         }
     }
 }
@@ -107,7 +136,7 @@ impl Solution<Day3> for Aoc2021 {
         let mut epsilon = 0;
 
         for x in 0..input.bits_per_line {
-            let most_common = input.most_common_at(x).expect("equal count");
+            let most_common = input.most_common_at(x, None).expect("equal count");
 
             gamma <<= 1;
             epsilon <<= 1;
@@ -122,7 +151,9 @@ impl Solution<Day3> for Aoc2021 {
     }
 
     fn part2(input: &Bits) -> u32 {
-        fn work(mut input: Bits, keep_most_common: bool, equal_keep: u8) -> u32 {
+        fn work(input: &Bits, keep_most_common: bool, equal_keep: u8) -> u32 {
+            let mut input = MaskedBits::new(input);
+
             for x in 0..input.bits_per_line {
                 if input.count_in_mask() == 1 {
                     break;
@@ -151,8 +182,8 @@ impl Solution<Day3> for Aoc2021 {
             input.result_masked_value()
         }
 
-        let oxygen = work(input.clone(), true, 1);
-        let scrubber = work(input.clone(), false, 0);
+        let oxygen = work(input, true, 1);
+        let scrubber = work(input, false, 0);
 
         oxygen * scrubber
     }
