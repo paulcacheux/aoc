@@ -4,23 +4,15 @@ use advent_of_code_traits::{days::Day3, ParseInput, Solution};
 
 use crate::aoc::Aoc2021;
 
-#[derive(Debug)]
-pub struct Bits {
-    pub line_count: usize,
-    pub bits_per_line: usize,
-    pub bits: Vec<u8>,
-}
+trait BitSource {
+    fn get_bit(&self, x: usize, y: usize) -> u8;
+    fn line_count(&self) -> usize;
 
-impl Bits {
-    pub fn get_bit(&self, x: usize, y: usize) -> u8 {
-        self.bits[y * self.bits_per_line + x]
-    }
-
-    pub fn most_common_at(&self, x: usize, mask: Option<&[bool]>) -> Option<u8> {
+    fn most_common_at(&self, x: usize, mask: Option<&[bool]>) -> Option<u8> {
         let mut count0 = 0;
         let mut count1 = 0;
 
-        for y in 0..self.line_count {
+        for y in 0..self.line_count() {
             if let Some(mask) = mask {
                 if !mask[y] {
                     continue;
@@ -46,21 +38,74 @@ impl Bits {
 }
 
 #[derive(Debug)]
+pub struct Bits {
+    pub line_count: usize,
+    pub bits_per_line: usize,
+    pub bits: Vec<u8>,
+}
+
+impl Bits {
+    pub fn optimize(self) -> OptimizedBits {
+        let mut bits = Vec::new();
+
+        for x in 0..self.bits_per_line {
+            for y in 0..self.line_count {
+                let bit = self.get_bit(x, y);
+                bits.push(bit);
+            }
+        }
+
+        OptimizedBits {
+            line_count: self.line_count,
+            bits_per_line: self.bits_per_line,
+            bits,
+        }
+    }
+}
+
+impl BitSource for Bits {
+    fn get_bit(&self, x: usize, y: usize) -> u8 {
+        self.bits[y * self.bits_per_line + x]
+    }
+
+    fn line_count(&self) -> usize {
+        self.line_count
+    }
+}
+
+#[derive(Debug)]
+pub struct OptimizedBits {
+    pub line_count: usize,
+    pub bits_per_line: usize,
+    pub bits: Vec<u8>,
+}
+
+impl BitSource for OptimizedBits {
+    fn get_bit(&self, x: usize, y: usize) -> u8 {
+        self.bits[x * self.line_count + y]
+    }
+
+    fn line_count(&self) -> usize {
+        self.line_count
+    }
+}
+
+#[derive(Debug)]
 pub struct MaskedBits<'b> {
-    pub bits: &'b Bits,
+    pub bits: &'b OptimizedBits,
     pub line_mask: Vec<bool>,
 }
 
 impl<'b> Deref for MaskedBits<'b> {
-    type Target = Bits;
+    type Target = OptimizedBits;
 
-    fn deref(&self) -> &Bits {
+    fn deref(&self) -> &OptimizedBits {
         self.bits
     }
 }
 
 impl<'b> MaskedBits<'b> {
-    pub fn new(bits: &'b Bits) -> Self {
+    pub fn new(bits: &'b OptimizedBits) -> Self {
         Self {
             bits,
             line_mask: vec![true; bits.line_count],
@@ -93,7 +138,7 @@ impl<'b> MaskedBits<'b> {
 }
 
 impl ParseInput<Day3> for Aoc2021 {
-    type Parsed = Bits;
+    type Parsed = OptimizedBits;
 
     fn parse_input(input: &str) -> Self::Parsed {
         let mut bits = Vec::new();
@@ -124,6 +169,7 @@ impl ParseInput<Day3> for Aoc2021 {
             bits_per_line: bits_per_line.unwrap_or_default(),
             bits,
         }
+        .optimize()
     }
 }
 
@@ -131,7 +177,7 @@ impl Solution<Day3> for Aoc2021 {
     type Part1Output = u32;
     type Part2Output = u32;
 
-    fn part1(input: &Bits) -> u32 {
+    fn part1(input: &OptimizedBits) -> u32 {
         let mut gamma = 0;
         let mut epsilon = 0;
 
@@ -150,8 +196,8 @@ impl Solution<Day3> for Aoc2021 {
         gamma * epsilon
     }
 
-    fn part2(input: &Bits) -> u32 {
-        fn work(input: &Bits, keep_most_common: bool, equal_keep: u8) -> u32 {
+    fn part2(input: &OptimizedBits) -> u32 {
+        fn work(input: &OptimizedBits, keep_most_common: bool, equal_keep: u8) -> u32 {
             let mut input = MaskedBits::new(input);
 
             for x in 0..input.bits_per_line {
