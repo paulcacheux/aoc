@@ -27,12 +27,10 @@ trait BitSource {
             }
         }
 
-        if count1 > count0 {
-            Some(1)
-        } else if count0 > count1 {
-            Some(0)
-        } else {
-            None
+        match count0.cmp(&count1) {
+            std::cmp::Ordering::Less => Some(1),
+            std::cmp::Ordering::Equal => None,
+            std::cmp::Ordering::Greater => Some(0),
         }
     }
 }
@@ -213,15 +211,11 @@ impl Solution<Day3> for Aoc2021 {
                             if input.get_bit(x, y) != most_common {
                                 input.line_mask[y] = false;
                             }
-                        } else {
-                            if input.get_bit(x, y) == most_common {
-                                input.line_mask[y] = false;
-                            }
-                        }
-                    } else {
-                        if input.get_bit(x, y) != equal_keep {
+                        } else if input.get_bit(x, y) == most_common {
                             input.line_mask[y] = false;
                         }
+                    } else if input.get_bit(x, y) != equal_keep {
+                        input.line_mask[y] = false;
                     }
                 }
             }
