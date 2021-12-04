@@ -35,3 +35,6 @@ jobs:
       - name: Run days
         run: |
           ./target/release/aoc2021 --day 1
+          ./target/release/aoc2021 --day 2
+          ./target/release/aoc2021 --day 3
+          ./target/release/aoc2021 --day 4
