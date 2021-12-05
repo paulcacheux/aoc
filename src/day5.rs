@@ -34,59 +34,45 @@ impl ParseInput<Day5> for Aoc2021 {
     }
 }
 
+fn common(input: &[(Point, Point)], with_diags: bool) -> usize {
+    let mut points: HashMap<Point, usize> = HashMap::new();
+
+    for pair in input {
+        let (Point { x: x1, y: y1 }, Point { x: x2, y: y2 }) = *pair;
+
+        if x1 == x2 {
+            let (y1, y2) = if y1 <= y2 { (y1, y2) } else { (y2, y1) };
+            for y in y1..=y2 {
+                *points.entry(Point { x: x1, y }).or_default() += 1;
+            }
+        } else if y1 == y2 {
+            let (x1, x2) = if x1 <= x2 { (x1, x2) } else { (x2, x1) };
+            for x in x1..=x2 {
+                *points.entry(Point { x, y: y1 }).or_default() += 1;
+            }
+        } else if with_diags {
+            let xvalues = inclusive_range(x1, x2);
+            let yvalues = inclusive_range(y1, y2);
+
+            for (x, y) in xvalues.into_iter().zip(yvalues) {
+                *points.entry(Point { x, y }).or_default() += 1;
+            }
+        }
+    }
+
+    points.values().filter(|&&v| v > 1).count()
+}
+
 impl Solution<Day5> for Aoc2021 {
     type Part1Output = usize;
     type Part2Output = usize;
 
     fn part1(input: &Vec<(Point, Point)>) -> usize {
-        let mut points: HashMap<Point, usize> = HashMap::new();
-
-        for pair in input {
-            let (Point { x: x1, y: y1 }, Point { x: x2, y: y2 }) = *pair;
-            if x1 != x2 && y1 != y2 {
-                continue;
-            }
-
-            let (x1, x2) = if x1 <= x2 { (x1, x2) } else { (x2, x1) };
-            let (y1, y2) = if y1 <= y2 { (y1, y2) } else { (y2, y1) };
-
-            for x in x1..=x2 {
-                for y in y1..=y2 {
-                    *points.entry(Point { x, y }).or_default() += 1;
-                }
-            }
-        }
-
-        points.values().filter(|&&v| v > 1).count()
+        common(input, false)
     }
 
     fn part2(input: &Vec<(Point, Point)>) -> usize {
-        let mut points: HashMap<Point, usize> = HashMap::new();
-
-        for pair in input {
-            let (Point { x: x1, y: y1 }, Point { x: x2, y: y2 }) = *pair;
-
-            if x1 == x2 {
-                let (y1, y2) = if y1 <= y2 { (y1, y2) } else { (y2, y1) };
-                for y in y1..=y2 {
-                    *points.entry(Point { x: x1, y }).or_default() += 1;
-                }
-            } else if y1 == y2 {
-                let (x1, x2) = if x1 <= x2 { (x1, x2) } else { (x2, x1) };
-                for x in x1..=x2 {
-                    *points.entry(Point { x, y: y1 }).or_default() += 1;
-                }
-            } else {
-                let xvalues = inclusive_range(x1, x2);
-                let yvalues = inclusive_range(y1, y2);
-
-                for (x, y) in xvalues.into_iter().zip(yvalues) {
-                    *points.entry(Point { x, y }).or_default() += 1;
-                }
-            }
-        }
-
-        points.values().filter(|&&v| v > 1).count()
+        common(input, true)
     }
 }
 
