@@ -9,6 +9,7 @@ mod day1;
 mod day2;
 mod day3;
 mod day4;
+mod day5;
 
 /// A subcommand for controlling testing
 #[derive(Parser)]
@@ -50,6 +51,7 @@ fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
         2 => run::<aoc::Aoc2021, Day2>(input, r),
         3 => run::<aoc::Aoc2021, Day3>(input, r),
         4 => run::<aoc::Aoc2021, Day4>(input, r),
+        5 => run::<aoc::Aoc2021, Day5>(input, r),
         _ => unimplemented!("no solution available for that day"),
     }
 }
