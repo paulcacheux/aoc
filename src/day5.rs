@@ -41,13 +41,11 @@ fn common(input: &[(Point, Point)], with_diags: bool) -> usize {
         let (Point { x: x1, y: y1 }, Point { x: x2, y: y2 }) = *pair;
 
         if x1 == x2 {
-            let (y1, y2) = if y1 <= y2 { (y1, y2) } else { (y2, y1) };
-            for y in y1..=y2 {
+            for y in InclusiveRangeDir::new(y1, y2) {
                 *points.entry(Point { x: x1, y }).or_default() += 1;
             }
         } else if y1 == y2 {
-            let (x1, x2) = if x1 <= x2 { (x1, x2) } else { (x2, x1) };
-            for x in x1..=x2 {
+            for x in InclusiveRangeDir::new(x1, x2) {
                 *points.entry(Point { x, y: y1 }).or_default() += 1;
             }
         } else if with_diags {
