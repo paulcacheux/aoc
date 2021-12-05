@@ -51,10 +51,10 @@ fn common(input: &[(Point, Point)], with_diags: bool) -> usize {
                 *points.entry(Point { x, y: y1 }).or_default() += 1;
             }
         } else if with_diags {
-            let xvalues = inclusive_range(x1, x2);
-            let yvalues = inclusive_range(y1, y2);
+            let xvalues = InclusiveRangeDir::new(x1, x2);
+            let yvalues = InclusiveRangeDir::new(y1, y2);
 
-            for (x, y) in xvalues.into_iter().zip(yvalues) {
+            for (x, y) in xvalues.zip(yvalues) {
                 *points.entry(Point { x, y }).or_default() += 1;
             }
         }
@@ -76,11 +76,40 @@ impl Solution<Day5> for Aoc2021 {
     }
 }
 
-fn inclusive_range(a: u32, b: u32) -> Vec<u32> {
-    let range = if a <= b { a..=b } else { b..=a };
-    if a <= b {
-        range.into_iter().collect()
-    } else {
-        range.into_iter().rev().collect()
+struct InclusiveRangeDir {
+    start: u32,
+    end: u32,
+    rev: bool,
+    exhausted: bool,
+}
+
+impl InclusiveRangeDir {
+    fn new(start: u32, end: u32) -> Self {
+        InclusiveRangeDir {
+            start,
+            end,
+            rev: start > end,
+            exhausted: false,
+        }
+    }
+}
+
+impl Iterator for InclusiveRangeDir {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.exhausted {
+            return None;
+        }
+
+        let res = Some(self.start);
+        if self.start == self.end {
+            self.exhausted = true;
+        } else if self.rev {
+            self.start -= 1;
+        } else {
+            self.start += 1;
+        }
+        res
     }
 }
