@@ -2,8 +2,8 @@ use crate::aoc::Aoc2021;
 use advent_of_code_traits::days::Day5;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use ahash::AHashMap;
 use regex::Regex;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
@@ -35,7 +35,7 @@ impl ParseInput<Day5> for Aoc2021 {
 }
 
 fn common(input: &[(Point, Point)], with_diags: bool) -> usize {
-    let mut points: HashMap<Point, usize> = HashMap::new();
+    let mut points: AHashMap<Point, usize> = AHashMap::new();
 
     for pair in input {
         let (Point { x: x1, y: y1 }, Point { x: x2, y: y2 }) = *pair;
