@@ -39,3 +39,4 @@ jobs:
           ./target/release/aoc2021 --day 3
           ./target/release/aoc2021 --day 4
           ./target/release/aoc2021 --day 5
+          ./target/release/aoc2021 --day 6
