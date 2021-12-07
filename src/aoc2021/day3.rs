@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use advent_of_code_traits::{days::Day3, ParseInput, Solution};
 
-use crate::aoc::Aoc2021;
+use crate::aoc2021::Aoc2021;
 
 trait BitSource {
     fn get_bit(&self, x: usize, y: usize) -> u8;

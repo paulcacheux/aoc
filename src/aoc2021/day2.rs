@@ -1,6 +1,6 @@
 use advent_of_code_traits::{days::Day2, ParseInput, Solution};
 
-use crate::aoc::Aoc2021;
+use crate::aoc2021::Aoc2021;
 
 #[derive(Debug)]
 pub enum Direction {

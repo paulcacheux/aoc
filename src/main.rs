@@ -4,14 +4,7 @@ use advent_of_code_traits::{days::*, ParseEachInput, Part1, Part2, Solution};
 use clap::Parser;
 use serde::Deserialize;
 
-mod aoc;
-mod day1;
-mod day2;
-mod day3;
-mod day4;
-mod day5;
-mod day6;
-mod day7;
+mod aoc2021;
 
 #[derive(Parser)]
 #[clap(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
@@ -48,13 +41,13 @@ fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
         .and_then(|r| r.results_for_day(day as usize));
 
     match day {
-        1 => run::<aoc::Aoc2021, Day1>(input, r),
-        2 => run::<aoc::Aoc2021, Day2>(input, r),
-        3 => run::<aoc::Aoc2021, Day3>(input, r),
-        4 => run::<aoc::Aoc2021, Day4>(input, r),
-        5 => run::<aoc::Aoc2021, Day5>(input, r),
-        6 => run::<aoc::Aoc2021, Day6>(input, r),
-        7 => run::<aoc::Aoc2021, Day7>(input, r),
+        1 => run::<aoc2021::Aoc2021, Day1>(input, r),
+        2 => run::<aoc2021::Aoc2021, Day2>(input, r),
+        3 => run::<aoc2021::Aoc2021, Day3>(input, r),
+        4 => run::<aoc2021::Aoc2021, Day4>(input, r),
+        5 => run::<aoc2021::Aoc2021, Day5>(input, r),
+        6 => run::<aoc2021::Aoc2021, Day6>(input, r),
+        7 => run::<aoc2021::Aoc2021, Day7>(input, r),
         _ => unimplemented!("no solution available for that day"),
     }
 }
