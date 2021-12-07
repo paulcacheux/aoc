@@ -38,13 +38,13 @@ impl State {
 
     fn next_state(&mut self) {
         let mut new_lives = [0; 9];
-        for i in 0..=8 {
+        for (i, live) in new_lives.iter_mut().enumerate() {
             if i == 6 {
-                new_lives[i] = self.lives[i + 1] + self.lives[0];
+                *live = self.lives[i + 1] + self.lives[0];
             } else if i == 8 {
-                new_lives[i] = self.lives[0];
+                *live = self.lives[0];
             } else {
-                new_lives[i] = self.lives[i + 1];
+                *live = self.lives[i + 1];
             }
         }
         self.lives = new_lives;

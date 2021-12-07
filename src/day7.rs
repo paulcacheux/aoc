@@ -32,7 +32,7 @@ fn count_fuel_part2(input: &[u32], target: u32) -> u32 {
 
 fn common_search(input: &[u32], fuel_counter: fn(&[u32], u32) -> u32) -> u32 {
     let mut input = input.to_owned();
-    input.sort();
+    input.sort_unstable();
 
     let mut value = input[input.len() / 2];
     loop {
@@ -57,10 +57,10 @@ impl Solution<Day7> for Aoc2021 {
     type Part2Output = u32;
 
     fn part1(input: &Vec<u32>) -> u32 {
-        common_search(&input, count_fuel_part1)
+        common_search(input, count_fuel_part1)
     }
 
     fn part2(input: &Vec<u32>) -> u32 {
-        common_search(&input, count_fuel_part2)
+        common_search(input, count_fuel_part2)
     }
 }
