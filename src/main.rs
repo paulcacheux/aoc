@@ -11,6 +11,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 #[derive(Parser)]
 #[clap(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
@@ -53,6 +54,7 @@ fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
         4 => run::<aoc::Aoc2021, Day4>(input, r),
         5 => run::<aoc::Aoc2021, Day5>(input, r),
         6 => run::<aoc::Aoc2021, Day6>(input, r),
+        7 => run::<aoc::Aoc2021, Day7>(input, r),
         _ => unimplemented!("no solution available for that day"),
     }
 }
