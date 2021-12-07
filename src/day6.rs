@@ -17,7 +17,7 @@ impl ParseInput<Day6> for Aoc2021 {
 }
 
 struct State {
-    lives: Vec<(u8, usize)>,
+    lives: [usize; 9],
 }
 
 impl State {
@@ -27,21 +27,27 @@ impl State {
             *counter.entry(*v).or_default() += 1;
         }
 
-        let lives = counter.into_iter().collect();
+        let mut lives = [0; 9];
+        for (key, count) in counter {
+            assert!(key < 9);
+            lives[key as usize] = count;
+        }
+
         Self { lives }
     }
 
     fn next_state(&mut self) {
-        let mut new_count: usize = 0;
-        for (v, count) in self.lives.iter_mut() {
-            if *v == 0 {
-                *v = 6;
-                new_count += *count;
+        let mut new_lives = [0; 9];
+        for i in 0..=8 {
+            if i == 6 {
+                new_lives[i] = self.lives[i + 1] + self.lives[0];
+            } else if i == 8 {
+                new_lives[i] = self.lives[0];
             } else {
-                *v -= 1;
+                new_lives[i] = self.lives[i + 1];
             }
         }
-        self.lives.push((8, new_count));
+        self.lives = new_lives;
     }
 
     fn next_n_state(&mut self, n: usize) {
@@ -51,7 +57,7 @@ impl State {
     }
 
     fn count(&self) -> usize {
-        self.lives.iter().map(|(_, count)| *count).sum()
+        self.lives.iter().sum()
     }
 }
 
