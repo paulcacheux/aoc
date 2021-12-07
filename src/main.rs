@@ -92,10 +92,10 @@ fn main() {
     let opts = Options::parse();
 
     let (input_path, results) = if opts.test {
-        (format!("./inputs/day{}_test.txt", opts.day), None)
+        (format!("./inputs/2021/day{}_test.txt", opts.day), None)
     } else {
         (
-            format!("./inputs/day{}.txt", opts.day),
+            format!("./inputs/2021/day{}.txt", opts.day),
             Some(Results::parse().expect("Failed to parse results")),
         )
     };
