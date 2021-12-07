@@ -65,7 +65,7 @@ struct Results {
 
 impl Results {
     fn parse() -> Result<Self, Box<dyn std::error::Error>> {
-        let f = File::open("./results.json")?;
+        let f = File::open("./results/2021.json")?;
         let days: Vec<DayResult> = serde_json::from_reader(f)?;
 
         Ok(Self { days })
