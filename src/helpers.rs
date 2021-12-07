@@ -8,8 +8,8 @@ pub struct Results {
 }
 
 impl Results {
-    pub fn parse() -> Result<Self, Box<dyn std::error::Error>> {
-        let f = File::open("./results/2021.json")?;
+    pub fn parse(year: u32) -> Result<Self, Box<dyn std::error::Error>> {
+        let f = File::open(format!("./results/{}.json", year))?;
         let days: Vec<DayResult> = serde_json::from_reader(f)?;
 
         Ok(Self { days })
