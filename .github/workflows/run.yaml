@@ -32,7 +32,7 @@ jobs:
         run: |
           cargo build --release
 
-      - name: Run days
+      - name: Run 2021 days
         run: |
           ./target/release/aoc2021 --day 1
           ./target/release/aoc2021 --day 2
@@ -41,3 +41,7 @@ jobs:
           ./target/release/aoc2021 --day 5
           ./target/release/aoc2021 --day 6
           ./target/release/aoc2021 --day 7
+
+      - name: Run 2019 days
+        run: |
+          ./target/release/aoc2021 --year 2019 --day 1
