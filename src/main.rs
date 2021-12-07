@@ -1,5 +1,6 @@
 use clap::Parser;
 
+mod aoc2019;
 mod aoc2021;
 mod helpers;
 
@@ -35,5 +36,9 @@ fn main() {
     };
     let input = std::fs::read_to_string(input_path).expect("failed to read input");
 
-    aoc2021::run_solution_for_day(opts.day, &input, results);
+    match opts.year {
+        2019 => aoc2019::run_solution_for_day(opts.day, &input, results),
+        2021 => aoc2021::run_solution_for_day(opts.day, &input, results),
+        _ => panic!("undefined year {}", opts.year),
+    }
 }
