@@ -65,27 +65,53 @@ g => 0 | 0 | 0 | 3     | 3     | 1
 
 */
 
-fn compute_true_signatures() -> HashMap<u8, Vec<u8>> {
-    let mut res = HashMap::new();
-    res.insert(b'a', vec![0, 1, 0, 3, 3]);
-    res.insert(b'b', vec![0, 0, 1, 1, 3]);
-    res.insert(b'c', vec![1, 1, 1, 2, 2]);
-    res.insert(b'd', vec![0, 0, 1, 3, 2]);
-    res.insert(b'e', vec![0, 0, 0, 1, 2]);
-    res.insert(b'f', vec![1, 1, 1, 2, 3]);
-    res.insert(b'g', vec![0, 0, 0, 3, 3]);
+#[derive(Debug, PartialEq, Eq, Default)]
+struct Signature {
+    inner: u64,
+}
 
-    for v in res.values_mut() {
-        let mut new_v = vec![0, 0];
-        new_v.extend(v.iter());
-        new_v.push(1);
-        *v = new_v;
+impl Signature {
+    fn from_vec(values: Vec<u8>) -> Self {
+        assert_eq!(values.len(), 8);
+        let mut inner = 0;
+
+        for (i, val) in values.into_iter().enumerate() {
+            let mask = (val as u64) << ((7 - i) * 8);
+            inner |= mask;
+        }
+
+        Self { inner }
     }
 
+    fn inc(&mut self, index: usize) {
+        let current = self.inner >> ((7 - index) * 8);
+        let current = (current & 0xFF) as u8;
+        let new = (current + 1) as u64;
+
+        let mask = 0xFF << ((7 - index) * 8);
+        self.inner = (self.inner & !mask) | (new << ((7 - index) * 8));
+    }
+}
+
+macro_rules! sig {
+    ($($x:expr),+ $(,)?) => {
+        Signature::from_vec(vec![0, 0, $($x),+, 1])
+    };
+}
+
+fn compute_true_signatures() -> HashMap<u8, Signature> {
+    let mut res = HashMap::new();
+    res.insert(b'a', sig![0, 1, 0, 3, 3]);
+    res.insert(b'b', sig![0, 0, 1, 1, 3]);
+    res.insert(b'c', sig![1, 1, 1, 2, 2]);
+    res.insert(b'd', sig![0, 0, 1, 3, 2]);
+    res.insert(b'e', sig![0, 0, 0, 1, 2]);
+    res.insert(b'f', sig![1, 1, 1, 2, 3]);
+    res.insert(b'g', sig![0, 0, 0, 3, 3]);
     res
 }
 
-fn get_mapped(signature: &[u8], true_sigs: &HashMap<u8, Vec<u8>>) -> Option<u8> {
+fn get_mapped(signature: &Signature, true_sigs: &HashMap<u8, Signature>) -> Option<u8> {
     for (target, sig) in true_sigs {
         if signature == sig {
             return Some(*target);
@@ -132,14 +158,14 @@ impl Solution<Day8> for Aoc2021 {
 
         let mut sum = 0;
         for entry in input {
-            let mut signatures: HashMap<u8, Vec<u8>> = HashMap::new();
+            let mut signatures: HashMap<u8, Signature> = HashMap::new();
             for c in "abcdefg".bytes() {
-                signatures.insert(c, vec![0; 8]);
+                signatures.insert(c, Signature::default());
             }
 
             for pattern in &entry.patterns {
                 for c in pattern.bytes() {
-                    signatures.get_mut(&c).unwrap()[pattern.len()] += 1;
+                    signatures.get_mut(&c).unwrap().inc(pattern.len());
                 }
             }
 
