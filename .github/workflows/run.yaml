@@ -47,3 +47,4 @@ jobs:
         run: |
           ./target/release/aoc2021 --year 2019 --day 1
           ./target/release/aoc2021 --year 2019 --day 2
+          ./target/release/aoc2021 --year 2019 --day 3
