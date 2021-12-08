@@ -4,6 +4,7 @@ use advent_of_code_traits::days::*;
 pub struct Aoc2019;
 
 pub mod day1;
+pub mod day2;
 
 pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
     let r = results
@@ -12,6 +13,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
 
     match day {
         1 => run::<Aoc2019, Day1>(input, r),
+        2 => run::<Aoc2019, Day2>(input, r),
         _ => unimplemented!("no solution available for that day"),
     }
 }
