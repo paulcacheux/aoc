@@ -67,33 +67,23 @@ g => 0 | 0 | 0 | 3     | 3     | 1
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 struct Signature {
-    inner: u64,
+    inner: [u8; 8],
 }
 
 impl Signature {
-    fn shift_for_index(index: usize) -> usize {
-        (7 - index) * 8
-    }
-
     fn from_vec(values: Vec<u8>) -> Self {
         assert_eq!(values.len(), 8);
-        let mut inner = 0;
 
+        let mut inner = [0; 8];
         for (i, val) in values.into_iter().enumerate() {
-            let mask = (val as u64) << Self::shift_for_index(i);
-            inner |= mask;
+            inner[i] = val;
         }
 
         Self { inner }
     }
 
     fn inc(&mut self, index: usize) {
-        let current = self.inner >> Self::shift_for_index(index);
-        let current = (current & 0xFF) as u8;
-        let new = (current + 1) as u64;
-
-        let mask = 0xFF << Self::shift_for_index(index);
-        self.inner = (self.inner & !mask) | new << Self::shift_for_index(index);
+        self.inner[index] += 1;
     }
 }
 
