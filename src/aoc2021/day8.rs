@@ -175,7 +175,7 @@ impl Solution<Day8> for Aoc2021 {
                     .map(|c| mapping.get(&c).unwrap())
                     .copied()
                     .collect();
-                mapped.sort();
+                mapped.sort_unstable();
                 let digit = digit_from_str(&mapped);
                 final_output = final_output * 10 + digit as u32;
             }
