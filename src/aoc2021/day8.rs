@@ -65,18 +65,22 @@ g => 0 | 0 | 0 | 3     | 3     | 1
 
 */
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 struct Signature {
     inner: u64,
 }
 
 impl Signature {
+    fn shift_for_index(index: usize) -> usize {
+        (7 - index) * 8
+    }
+
     fn from_vec(values: Vec<u8>) -> Self {
         assert_eq!(values.len(), 8);
         let mut inner = 0;
 
         for (i, val) in values.into_iter().enumerate() {
-            let mask = (val as u64) << ((7 - i) * 8);
+            let mask = (val as u64) << Self::shift_for_index(i);
             inner |= mask;
         }
 
@@ -84,12 +88,12 @@ impl Signature {
     }
 
     fn inc(&mut self, index: usize) {
-        let current = self.inner >> ((7 - index) * 8);
+        let current = self.inner >> Self::shift_for_index(index);
         let current = (current & 0xFF) as u8;
         let new = (current + 1) as u64;
 
-        let mask = 0xFF << ((7 - index) * 8);
-        self.inner = (self.inner & !mask) | (new << ((7 - index) * 8));
+        let mask = 0xFF << Self::shift_for_index(index);
+        self.inner = (self.inner & !mask) | new << Self::shift_for_index(index);
     }
 }
 
@@ -158,20 +162,18 @@ impl Solution<Day8> for Aoc2021 {
 
         let mut sum = 0;
         for entry in input {
-            let mut signatures: HashMap<u8, Signature> = HashMap::new();
-            for c in "abcdefg".bytes() {
-                signatures.insert(c, Signature::default());
-            }
+            let mut signatures = vec![Signature::default(); 7];
 
             for pattern in &entry.patterns {
                 for c in pattern.bytes() {
-                    signatures.get_mut(&c).unwrap().inc(pattern.len());
+                    signatures[(c - b'a') as usize].inc(pattern.len());
                 }
             }
 
             let mut mapping = HashMap::new();
 
-            for (source, sig) in &signatures {
+            for (source, sig) in signatures.iter().enumerate() {
+                let source = source as u8 + b'a';
                 let target = get_mapped(sig, &true_signatures);
                 mapping.insert(source, target.unwrap());
             }
