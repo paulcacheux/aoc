@@ -1,3 +1,4 @@
+use crate::aoc2019::intcode::IntCodeVM;
 use crate::aoc2019::Aoc2019;
 use advent_of_code_traits::days::Day2;
 use advent_of_code_traits::ParseInput;
@@ -12,52 +13,6 @@ impl ParseInput<Day2> for Aoc2019 {
             .split(',')
             .map(|s| s.trim().parse().unwrap())
             .collect()
-    }
-}
-
-#[derive(Debug)]
-struct IntCodeVM {
-    memory: Vec<u32>,
-    pc: usize,
-    running: bool,
-}
-
-impl IntCodeVM {
-    fn new(memory: Vec<u32>) -> Self {
-        Self {
-            memory,
-            pc: 0,
-            running: true,
-        }
-    }
-
-    fn step(&mut self) {
-        let opcode = self.memory[self.pc];
-        match opcode {
-            1 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let dest = self.memory[self.pc + 3];
-
-                let lhs = self.memory[lhs as usize];
-                let rhs = self.memory[rhs as usize];
-                self.memory[dest as usize] = lhs + rhs;
-            }
-            2 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let dest = self.memory[self.pc + 3];
-
-                let lhs = self.memory[lhs as usize];
-                let rhs = self.memory[rhs as usize];
-                self.memory[dest as usize] = lhs * rhs;
-            }
-            99 => {
-                self.running = false;
-            }
-            _ => panic!("Unknown opcode: {}", opcode),
-        }
-        self.pc += 4;
     }
 }
 
