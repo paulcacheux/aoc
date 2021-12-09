@@ -24,12 +24,22 @@ impl IntCodeVM {
         }
     }
 
+    pub fn read_addr(&self, addr: usize, mode: u32) -> i32 {
+        let arg = self.memory[addr];
+        self.read(arg, mode)
+    }
+
     pub fn read(&self, arg: i32, mode: u32) -> i32 {
         match mode {
             0 => self.memory[arg as usize],
             1 => arg,
             _ => panic!("unknown mode"),
         }
+    }
+
+    pub fn write_addr(&mut self, addr: usize, mode: u32, value: i32) {
+        let arg = self.memory[addr];
+        self.write(arg, mode, value)
     }
 
     pub fn write(&mut self, arg: i32, mode: u32, value: i32) {
@@ -49,43 +59,30 @@ impl IntCodeVM {
 
         let pc_offset = match opcode {
             1 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let dest = self.memory[self.pc + 3];
-
-                let lhs = self.read(lhs, opcode_mode1);
-                let rhs = self.read(rhs, opcode_mode2);
-                self.write(dest, opcode_mode3, lhs + rhs);
+                let lhs = self.read_addr(self.pc + 1, opcode_mode1);
+                let rhs = self.read_addr(self.pc + 2, opcode_mode2);
+                self.write_addr(self.pc + 3, opcode_mode3, lhs + rhs);
                 PCOp::Offset(4)
             }
             2 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let dest = self.memory[self.pc + 3];
-
-                let lhs = self.read(lhs, opcode_mode1);
-                let rhs = self.read(rhs, opcode_mode2);
-                self.write(dest, opcode_mode3, lhs * rhs);
+                let lhs = self.read_addr(self.pc + 1, opcode_mode1);
+                let rhs = self.read_addr(self.pc + 2, opcode_mode2);
+                self.write_addr(self.pc + 3, opcode_mode3, lhs * rhs);
                 PCOp::Offset(4)
             }
             3 => {
                 let input_value = self.input.pop_front().unwrap();
-                let dest = self.memory[self.pc + 1];
-                self.write(dest, opcode_mode1, input_value);
+                self.write_addr(self.pc + 1, opcode_mode1, input_value);
                 PCOp::Offset(2)
             }
             4 => {
-                let arg = self.memory[self.pc + 1];
-                let output_value = self.read(arg, opcode_mode1);
+                let output_value = self.read_addr(self.pc + 1, opcode_mode1);
                 self.output.push(output_value);
                 PCOp::Offset(2)
             }
             5 => {
-                let cond = self.memory[self.pc + 1];
-                let target = self.memory[self.pc + 2];
-
-                let cond = self.read(cond, opcode_mode1);
-                let target = self.read(target, opcode_mode2);
+                let cond = self.read_addr(self.pc + 1, opcode_mode1);
+                let target = self.read_addr(self.pc + 2, opcode_mode2);
                 if cond != 0 {
                     PCOp::Direct(target as usize)
                 } else {
@@ -93,11 +90,8 @@ impl IntCodeVM {
                 }
             }
             6 => {
-                let cond = self.memory[self.pc + 1];
-                let target = self.memory[self.pc + 2];
-
-                let cond = self.read(cond, opcode_mode1);
-                let target = self.read(target, opcode_mode2);
+                let cond = self.read_addr(self.pc + 1, opcode_mode1);
+                let target = self.read_addr(self.pc + 2, opcode_mode2);
                 if cond == 0 {
                     PCOp::Direct(target as usize)
                 } else {
@@ -105,25 +99,17 @@ impl IntCodeVM {
                 }
             }
             7 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let target = self.memory[self.pc + 3];
-
-                let lhs = self.read(lhs, opcode_mode1);
-                let rhs = self.read(rhs, opcode_mode2);
+                let lhs = self.read_addr(self.pc + 1, opcode_mode1);
+                let rhs = self.read_addr(self.pc + 2, opcode_mode2);
                 let res = if lhs < rhs { 1 } else { 0 };
-                self.write(target, opcode_mode3, res);
+                self.write_addr(self.pc + 3, opcode_mode3, res);
                 PCOp::Offset(4)
             }
             8 => {
-                let lhs = self.memory[self.pc + 1];
-                let rhs = self.memory[self.pc + 2];
-                let target = self.memory[self.pc + 3];
-
-                let lhs = self.read(lhs, opcode_mode1);
-                let rhs = self.read(rhs, opcode_mode2);
+                let lhs = self.read_addr(self.pc + 1, opcode_mode1);
+                let rhs = self.read_addr(self.pc + 2, opcode_mode2);
                 let res = if lhs == rhs { 1 } else { 0 };
-                self.write(target, opcode_mode3, res);
+                self.write_addr(self.pc + 3, opcode_mode3, res);
                 PCOp::Offset(4)
             }
             99 => {
