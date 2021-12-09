@@ -2,6 +2,7 @@ use crate::aoc2019::Aoc2019;
 use advent_of_code_traits::days::Day4;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use itertools::Itertools;
 
 impl ParseInput<Day4> for Aoc2019 {
     type Parsed = (u32, u32);
@@ -15,13 +16,14 @@ impl ParseInput<Day4> for Aoc2019 {
 }
 
 fn is_valid_part1(n: &u32) -> bool {
-    let digits: Vec<_> = n.to_string().bytes().map(|b| b - b'0').collect();
+    let nstr = n.to_string();
+    let digits = nstr.bytes().map(|b| b - b'0');
     let mut pair = false;
-    for w in digits.windows(2) {
-        if w[0] > w[1] {
+    for (a, b) in digits.tuple_windows() {
+        if a > b {
             return false;
         }
-        if w[0] == w[1] {
+        if a == b {
             pair = true
         }
     }
@@ -35,14 +37,14 @@ fn is_valid_part2(n: &u32) -> bool {
 
     let mut pair = false;
 
-    for w in special_digits.windows(2) {
-        if w[0] > w[1] {
+    for (a, b) in special_digits.iter().copied().tuple_windows() {
+        if a > b {
             return false;
         }
     }
 
-    for w in special_digits.windows(4) {
-        if w[1] == w[2] && w[0] != w[1] && w[2] != w[3] {
+    for (a, b, c, d) in special_digits.iter().copied().tuple_windows() {
+        if b == c && a != b && c != d {
             pair = true
         }
     }
