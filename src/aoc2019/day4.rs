@@ -51,15 +51,19 @@ fn is_valid_part2(n: &u32) -> bool {
     pair
 }
 
+fn common_count(start: u32, end: u32, filter: fn(&u32) -> bool) -> usize {
+    (start..=end).filter(filter).count()
+}
+
 impl Solution<Day4> for Aoc2019 {
     type Part1Output = usize;
     type Part2Output = usize;
 
     fn part1(input: &(u32, u32)) -> usize {
-        (input.0..=input.1).filter(is_valid_part1).count()
+        common_count(input.0, input.1, is_valid_part1)
     }
 
     fn part2(input: &(u32, u32)) -> usize {
-        (input.0..=input.1).filter(is_valid_part2).count()
+        common_count(input.0, input.1, is_valid_part2)
     }
 }
