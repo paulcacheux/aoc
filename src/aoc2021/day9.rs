@@ -64,7 +64,6 @@ impl ParseInput<Day9> for Aoc2021 {
 #[derive(Debug)]
 struct ColoredMap {
     width: usize,
-    height: usize,
     colors: Vec<u32>,
     color_counter: u32,
 }
@@ -115,7 +114,6 @@ impl Solution<Day9> for Aoc2021 {
     fn part2(input: &PuzzleInput) -> usize {
         let mut colored_map = ColoredMap {
             width: input.width,
-            height: input.height,
             colors: vec![0; input.values.len()],
             color_counter: 0,
         };
@@ -145,7 +143,7 @@ impl Solution<Day9> for Aoc2021 {
             }
         }
 
-        color_count.sort();
+        color_count.sort_unstable();
         color_count.into_iter().rev().take(3).product()
     }
 }
