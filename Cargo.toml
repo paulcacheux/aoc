@@ -3,7 +3,8 @@ name = "aoc2021"
 version = "0.1.0"
 edition = "2021"
 
-[profile.release]
+[profile.release-lto]
+inherits = "release"
 lto = "thin"
 
 [dependencies]

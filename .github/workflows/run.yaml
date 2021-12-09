@@ -26,26 +26,26 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-v2
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-v3
 
       - name: Run cargo build
         run: |
-          cargo build --release
+          cargo build --profile release-lto
 
       - name: Run 2021 days
         run: |
-          ./target/release/aoc2021 --day 1
-          ./target/release/aoc2021 --day 2
-          ./target/release/aoc2021 --day 3
-          ./target/release/aoc2021 --day 4
-          ./target/release/aoc2021 --day 5
-          ./target/release/aoc2021 --day 6
-          ./target/release/aoc2021 --day 7
-          ./target/release/aoc2021 --day 8
-          ./target/release/aoc2021 --day 9
+          ./target/release-lto/aoc2021 --day 1
+          ./target/release-lto/aoc2021 --day 2
+          ./target/release-lto/aoc2021 --day 3
+          ./target/release-lto/aoc2021 --day 4
+          ./target/release-lto/aoc2021 --day 5
+          ./target/release-lto/aoc2021 --day 6
+          ./target/release-lto/aoc2021 --day 7
+          ./target/release-lto/aoc2021 --day 8
+          ./target/release-lto/aoc2021 --day 9
 
       - name: Run 2019 days
         run: |
-          ./target/release/aoc2021 --year 2019 --day 1
-          ./target/release/aoc2021 --year 2019 --day 2
-          ./target/release/aoc2021 --year 2019 --day 3
+          ./target/release-lto/aoc2021 --year 2019 --day 1
+          ./target/release-lto/aoc2021 --year 2019 --day 2
+          ./target/release-lto/aoc2021 --year 2019 --day 3
