@@ -50,3 +50,4 @@ jobs:
           ./target/release-lto/aoc2021 --year 2019 --day 2
           ./target/release-lto/aoc2021 --year 2019 --day 3
           ./target/release-lto/aoc2021 --year 2019 --day 4
+          ./target/release-lto/aoc2021 --year 2019 --day 5
