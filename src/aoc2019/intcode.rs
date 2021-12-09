@@ -1,12 +1,12 @@
 #[derive(Debug)]
 pub struct IntCodeVM {
-    pub memory: Vec<u32>,
+    pub memory: Vec<i32>,
     pub pc: usize,
     pub running: bool,
 }
 
 impl IntCodeVM {
-    pub fn new(memory: Vec<u32>) -> Self {
+    pub fn new(memory: Vec<i32>) -> Self {
         Self {
             memory,
             pc: 0,
