@@ -14,7 +14,7 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
-pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
+pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> bool {
     let r = results
         .as_ref()
         .and_then(|r| r.results_for_day(day as usize));
@@ -30,6 +30,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) {
         8 => run::<Aoc2021, Day8>(input, r),
         9 => run::<Aoc2021, Day9>(input, r),
         10 => run::<Aoc2021, Day10>(input, r),
-        _ => unimplemented!("no solution available for that day"),
+        _ => return false,
     }
+    true
 }

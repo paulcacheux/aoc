@@ -36,9 +36,13 @@ fn main() {
     };
     let input = std::fs::read_to_string(input_path).expect("failed to read input");
 
-    match opts.year {
-        2019 => aoc2019::run_solution_for_day(opts.day, &input, results),
-        2021 => aoc2021::run_solution_for_day(opts.day, &input, results),
+    let year_runner = match opts.year {
+        2019 => aoc2019::run_solution_for_day,
+        2021 => aoc2021::run_solution_for_day,
         _ => panic!("undefined year {}", opts.year),
+    };
+
+    if !year_runner(opts.day, &input, results) {
+        panic!("no solution available for that day ({})", opts.day)
     }
 }
