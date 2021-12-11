@@ -2,6 +2,7 @@ use crate::aoc2021::Aoc2021;
 use advent_of_code_traits::days::Day11;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use itertools::iproduct;
 use std::fmt;
 
 const WIDTH: usize = 10;
@@ -51,26 +52,21 @@ impl ParseInput<Day11> for Aoc2021 {
     }
 }
 
-fn get_neighbors(x: usize, y: usize) -> Vec<(usize, usize)> {
+fn get_neighbors(x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
     let x = x as i32;
     let y = y as i32;
-
-    let mut res = Vec::new();
-    for dx in [-1, 0, 1] {
-        for dy in [-1, 0, 1] {
-            if dx == 0 && dy == 0 {
-                continue;
-            }
-
+    iproduct!([-1i32, 0, 1], [-1i32, 0, 1])
+        .filter(|&(dx, dy)| dx != 0 || dy != 0)
+        .filter_map(move |(dx, dy)| {
             let rx = x + dx;
             let ry = y + dy;
 
             if 0 <= rx && rx < WIDTH as _ && 0 <= ry && ry < HEIGHT as _ {
-                res.push((rx as usize, ry as usize));
+                Some((rx as usize, ry as usize))
+            } else {
+                None
             }
-        }
-    }
-    res
+        })
 }
 
 fn next_step(state: &mut PuzzleInput) -> usize {
