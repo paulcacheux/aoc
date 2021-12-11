@@ -15,19 +15,23 @@ impl PuzzleInput {
         self.values[y * self.width + x]
     }
 
-    fn get_neighbors(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
+    fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+        let x = x as i32;
+        let y = y as i32;
+        let width = self.width;
+        let height = self.height;
+
         let deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-        let mut res = Vec::with_capacity(deltas.len());
+        deltas.into_iter().flat_map(move |(dx, dy)| {
+            let rx = x + dx;
+            let ry = y + dy;
 
-        for (dx, dy) in &deltas {
-            let rx = x as i64 + dx;
-            let ry = y as i64 + dy;
-
-            if 0 <= rx && rx < self.width as i64 && 0 <= ry && ry < self.height as i64 {
-                res.push((rx as usize, ry as usize))
+            if 0 <= rx && rx < width as _ && 0 <= ry && ry < height as _ {
+                Some((rx as usize, ry as usize))
+            } else {
+                None
             }
-        }
-        res
+        })
     }
 }
 
