@@ -43,7 +43,7 @@ pub struct Bits {
 }
 
 impl Bits {
-    pub fn optimize(self) -> OptimizedBits {
+    pub fn optimized(&self) -> OptimizedBits {
         let mut bits = Vec::new();
 
         for x in 0..self.bits_per_line {
@@ -136,7 +136,7 @@ impl<'b> MaskedBits<'b> {
 }
 
 impl ParseInput<Day3> for Aoc2021 {
-    type Parsed = OptimizedBits;
+    type Parsed = Bits;
 
     fn parse_input(input: &str) -> Self::Parsed {
         let mut bits = Vec::new();
@@ -167,7 +167,6 @@ impl ParseInput<Day3> for Aoc2021 {
             bits_per_line: bits_per_line.unwrap_or_default(),
             bits,
         }
-        .optimize()
     }
 }
 
@@ -175,7 +174,8 @@ impl Solution<Day3> for Aoc2021 {
     type Part1Output = u32;
     type Part2Output = u32;
 
-    fn part1(input: &OptimizedBits) -> u32 {
+    fn part1(input: &Bits) -> u32 {
+        let input = input.optimized();
         let mut gamma = 0;
         let mut epsilon = 0;
 
@@ -194,7 +194,8 @@ impl Solution<Day3> for Aoc2021 {
         gamma * epsilon
     }
 
-    fn part2(input: &OptimizedBits) -> u32 {
+    fn part2(input: &Bits) -> u32 {
+        let input = input.optimized();
         fn work(input: &OptimizedBits, keep_most_common: bool, equal_keep: u8) -> u32 {
             let mut input = MaskedBits::new(input);
 
@@ -222,8 +223,8 @@ impl Solution<Day3> for Aoc2021 {
             input.result_masked_value()
         }
 
-        let oxygen = work(input, true, 1);
-        let scrubber = work(input, false, 0);
+        let oxygen = work(&input, true, 1);
+        let scrubber = work(&input, false, 0);
 
         oxygen * scrubber
     }
