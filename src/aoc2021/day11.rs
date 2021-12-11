@@ -73,10 +73,10 @@ fn get_neighbors(x: usize, y: usize) -> Vec<(usize, usize)> {
     res
 }
 
-fn next_step(state: &PuzzleInput) -> (PuzzleInput, usize) {
-    let mut next_state = PuzzleInput {
-        values: state.values.iter().map(|x| x + 1).collect(),
-    };
+fn next_step(state: &mut PuzzleInput) -> usize {
+    for v in &mut state.values {
+        *v += 1;
+    }
 
     let mut flash_counter = 0;
     let mut should_continue = true;
@@ -84,20 +84,20 @@ fn next_step(state: &PuzzleInput) -> (PuzzleInput, usize) {
         should_continue = false;
         for y in 0..HEIGHT {
             for x in 0..WIDTH {
-                if next_state.get(x, y) > 9 {
+                if state.get(x, y) > 9 {
                     flash_counter += 1;
                     for (nx, ny) in get_neighbors(x, y) {
-                        if next_state.get(nx, ny) != 0 {
-                            next_state.inc(nx, ny);
+                        if state.get(nx, ny) != 0 {
+                            state.inc(nx, ny);
                         }
                     }
-                    next_state.set(x, y, 0);
+                    state.set(x, y, 0);
                     should_continue = true;
                 }
             }
         }
     }
-    (next_state, flash_counter)
+    flash_counter
 }
 
 impl Solution<Day11> for Aoc2021 {
@@ -108,9 +108,7 @@ impl Solution<Day11> for Aoc2021 {
         let mut state = input.clone();
         let mut flash_counter = 0;
         for _ in 0..100 {
-            let (next_state, flashes) = next_step(&state);
-            state = next_state;
-            flash_counter += flashes;
+            flash_counter += next_step(&mut state);
         }
         flash_counter
     }
@@ -120,8 +118,7 @@ impl Solution<Day11> for Aoc2021 {
         let mut step = 0;
         loop {
             step += 1;
-            let (next_state, flashes) = next_step(&state);
-            state = next_state;
+            let flashes = next_step(&mut state);
             if flashes == WIDTH * HEIGHT {
                 return step;
             }
