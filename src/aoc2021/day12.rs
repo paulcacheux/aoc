@@ -59,7 +59,7 @@ impl ParseInput<Day12> for Aoc2021 {
     }
 }
 
-fn build_links(input: &Vec<(Node, Node)>) -> HashMap<Node, HashSet<Node>> {
+fn build_links(input: &[(Node, Node)]) -> HashMap<Node, HashSet<Node>> {
     let mut links: HashMap<Node, HashSet<Node>> = HashMap::new();
     for (a, b) in input {
         links.entry(a.clone()).or_default().insert(b.clone());
@@ -99,10 +99,7 @@ fn count_paths(
 fn part1_visited_builder(current: &[Node]) -> HashSet<Node> {
     current
         .iter()
-        .filter(|n| match n {
-            Node::Big(_) => false,
-            _ => true,
-        })
+        .filter(|n| !matches!(n, Node::Big(_)))
         .cloned()
         .collect()
 }
@@ -135,7 +132,7 @@ impl Solution<Day12> for Aoc2021 {
             }
 
             if !counter.values().any(|&c| c >= 2) {
-                set.retain(|n| if let Node::Small(_) = n { false } else { true })
+                set.retain(|n| !matches!(n, Node::Small(_)))
             }
             set
         })
