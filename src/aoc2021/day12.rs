@@ -105,21 +105,25 @@ impl Solution<Day12> for Aoc2021 {
     fn part2(input: &Vec<(Node, Node)>) -> usize {
         let links = build_links(input);
         count_paths(&links, |current| {
-            let set = part1_visited_builder(current);
+            let mut set = HashSet::new();
             let mut counter: HashMap<&str, usize> = HashMap::new();
             for node in current {
-                if let Node::Small(name) = node {
-                    *counter.entry(name).or_default() += 1;
+                match node {
+                    Node::Start | Node::End => {
+                        set.insert(node.clone());
+                    }
+                    Node::Big(_) => {}
+                    Node::Small(name) => {
+                        set.insert(node.clone());
+                        *counter.entry(name).or_default() += 1;
+                    }
                 }
             }
 
-            if counter.values().any(|&c| c >= 2) {
-                set
-            } else {
-                set.into_iter()
-                    .filter(|n| if let Node::Small(_) = n { false } else { true })
-                    .collect()
+            if !counter.values().any(|&c| c >= 2) {
+                set.retain(|n| if let Node::Small(_) = n { false } else { true })
             }
+            set
         })
     }
 }
