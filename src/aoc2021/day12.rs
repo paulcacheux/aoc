@@ -14,7 +14,7 @@ pub struct PuzzleInput {
     pairs: Vec<(Node, Node)>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Node {
     Start,
     End,
@@ -61,9 +61,9 @@ impl ParseInput<Day12> for Aoc2021 {
 
 fn build_links(input: &[(Node, Node)]) -> HashMap<Node, HashSet<Node>> {
     let mut links: HashMap<Node, HashSet<Node>> = HashMap::new();
-    for (a, b) in input {
-        links.entry(a.clone()).or_default().insert(b.clone());
-        links.entry(b.clone()).or_default().insert(a.clone());
+    for &(a, b) in input {
+        links.entry(a).or_default().insert(b);
+        links.entry(b).or_default().insert(a);
     }
     links
 }
@@ -87,7 +87,7 @@ fn count_paths(
             for next in linked {
                 if !visited_set.contains(next) {
                     let mut list = current.clone();
-                    list.push(next.clone());
+                    list.push(*next);
                     working_set.push(list);
                 }
             }
@@ -121,11 +121,11 @@ impl Solution<Day12> for Aoc2021 {
             for node in current {
                 match node {
                     Node::Start | Node::End => {
-                        set.insert(node.clone());
+                        set.insert(*node);
                     }
                     Node::Big(_) => {}
                     Node::Small(name) => {
-                        set.insert(node.clone());
+                        set.insert(*node);
                         *counter.entry(*name).or_default() += 1;
                     }
                 }
