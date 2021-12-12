@@ -6,8 +6,11 @@ use advent_of_code_traits::days::Day12;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
 
-use string_interner::DefaultSymbol;
+use string_interner::DefaultBackend;
 use string_interner::StringInterner;
+
+type StringSymbol = string_interner::symbol::SymbolU16;
+type StrInterner = StringInterner<DefaultBackend<StringSymbol>>;
 
 #[derive(Debug)]
 pub struct PuzzleInput {
@@ -18,16 +21,16 @@ pub struct PuzzleInput {
 pub enum Node {
     Start,
     End,
-    Big(DefaultSymbol),
-    Small(DefaultSymbol),
+    Big(StringSymbol),
+    Small(StringSymbol),
 }
 
 impl ParseInput<Day12> for Aoc2021 {
     type Parsed = PuzzleInput;
 
     fn parse_input(input: &str) -> PuzzleInput {
-        let mut interner = StringInterner::new();
-        fn part_parse(interner: &mut StringInterner, part: &str) -> Node {
+        let mut interner = StrInterner::new();
+        fn part_parse(interner: &mut StrInterner, part: &str) -> Node {
             match part {
                 "start" => Node::Start,
                 "end" => Node::End,
@@ -129,7 +132,7 @@ impl VisitedState for Part1State {
 #[derive(Debug, Clone)]
 struct Part2State {
     visited_set: HashSet<Node>,
-    smalls_visited: HashSet<DefaultSymbol>,
+    smalls_visited: HashSet<StringSymbol>,
     double_checked: bool,
 }
 
@@ -196,6 +199,7 @@ impl Solution<Day12> for Aoc2021 {
     type Part2Output = usize;
 
     fn part1(input: &PuzzleInput) -> usize {
+        dbg!(std::mem::size_of::<Node>());
         let links = build_links(&input.pairs);
         count_paths::<Part1State>(&links)
     }
