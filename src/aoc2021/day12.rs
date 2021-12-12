@@ -6,42 +6,56 @@ use advent_of_code_traits::days::Day12;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
 
+use string_interner::DefaultSymbol;
+use string_interner::StringInterner;
+
+#[derive(Debug)]
+pub struct PuzzleInput {
+    pairs: Vec<(Node, Node)>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Node {
     Start,
     End,
-    Big(String),
-    Small(String),
+    Big(DefaultSymbol),
+    Small(DefaultSymbol),
 }
 
 impl ParseInput<Day12> for Aoc2021 {
-    type Parsed = Vec<(Node, Node)>;
+    type Parsed = PuzzleInput;
 
-    fn parse_input(input: &str) -> Vec<(Node, Node)> {
-        fn part_parse(part: &str) -> Node {
+    fn parse_input(input: &str) -> PuzzleInput {
+        let mut interner = StringInterner::new();
+        fn part_parse(interner: &mut StringInterner, part: &str) -> Node {
             match part {
                 "start" => Node::Start,
                 "end" => Node::End,
                 _ => {
                     let first = part.chars().next().unwrap();
                     if first.is_ascii_lowercase() {
-                        Node::Small(part.to_owned())
+                        Node::Small(interner.get_or_intern(part))
                     } else {
-                        Node::Big(part.to_owned())
+                        Node::Big(interner.get_or_intern(part))
                     }
                 }
             }
         }
 
-        input
+        let pairs = input
             .lines()
             .map(|line| {
                 let mut parts = line.trim().split('-');
                 let left = parts.next().unwrap();
                 let right = parts.next().unwrap();
-                (part_parse(left), part_parse(right))
+                (
+                    part_parse(&mut interner, left),
+                    part_parse(&mut interner, right),
+                )
             })
-            .collect()
+            .collect();
+
+        PuzzleInput { pairs }
     }
 }
 
@@ -97,16 +111,16 @@ impl Solution<Day12> for Aoc2021 {
     type Part1Output = usize;
     type Part2Output = usize;
 
-    fn part1(input: &Vec<(Node, Node)>) -> usize {
-        let links = build_links(input);
+    fn part1(input: &PuzzleInput) -> usize {
+        let links = build_links(&input.pairs);
         count_paths(&links, part1_visited_builder)
     }
 
-    fn part2(input: &Vec<(Node, Node)>) -> usize {
-        let links = build_links(input);
+    fn part2(input: &PuzzleInput) -> usize {
+        let links = build_links(&input.pairs);
         count_paths(&links, |current| {
             let mut set = HashSet::new();
-            let mut counter: HashMap<&str, usize> = HashMap::new();
+            let mut counter: HashMap<DefaultSymbol, usize> = HashMap::new();
             for node in current {
                 match node {
                     Node::Start | Node::End => {
@@ -115,7 +129,7 @@ impl Solution<Day12> for Aoc2021 {
                     Node::Big(_) => {}
                     Node::Small(name) => {
                         set.insert(node.clone());
-                        *counter.entry(name).or_default() += 1;
+                        *counter.entry(*name).or_default() += 1;
                     }
                 }
             }
