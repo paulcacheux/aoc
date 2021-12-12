@@ -169,7 +169,7 @@ impl VisitedState for Part2State {
     }
 }
 
-fn count_paths_v2<VS: VisitedState>(links: &HashMap<Node, HashSet<Node>>) -> usize {
+fn count_paths<VS: VisitedState>(links: &HashMap<Node, HashSet<Node>>) -> usize {
     let mut working_set = vec![PathState::<VS>::new()];
     let mut counter = 0;
     while let Some(current) = working_set.pop() {
@@ -197,11 +197,11 @@ impl Solution<Day12> for Aoc2021 {
 
     fn part1(input: &PuzzleInput) -> usize {
         let links = build_links(&input.pairs);
-        count_paths_v2::<Part1State>(&links)
+        count_paths::<Part1State>(&links)
     }
 
     fn part2(input: &PuzzleInput) -> usize {
         let links = build_links(&input.pairs);
-        count_paths_v2::<Part2State>(&links)
+        count_paths::<Part2State>(&links)
     }
 }
