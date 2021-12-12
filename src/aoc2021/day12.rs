@@ -167,10 +167,8 @@ impl VisitedState for Part2State {
                     self.visited_set
                         .extend(self.smalls_visited.drain(..).map(Node::Small));
                     self.double_checked = true;
-                } else {
-                    if !self.smalls_visited.contains(&name) {
-                        self.smalls_visited.push(name);
-                    }
+                } else if !self.smalls_visited.contains(&name) {
+                    self.smalls_visited.push(name);
                 }
             }
             Node::Big(_) => {}
