@@ -105,14 +105,14 @@ trait VisitedState: Clone {
 
 #[derive(Debug, Clone)]
 struct Part1State {
-    visited_set: HashSet<Node>,
+    visited_set: Vec<Node>,
 }
 
 impl VisitedState for Part1State {
     fn new() -> Self {
-        let mut visited_set = HashSet::new();
-        visited_set.insert(Node::Start);
-        Part1State { visited_set }
+        Part1State {
+            visited_set: vec![Node::Start],
+        }
     }
 
     fn can_go_to(&self, target: &Node) -> bool {
@@ -122,7 +122,9 @@ impl VisitedState for Part1State {
     fn append(&mut self, node: Node) {
         match node {
             Node::Start | Node::End | Node::Small(_) => {
-                self.visited_set.insert(node);
+                if !self.visited_set.contains(&node) {
+                    self.visited_set.push(node);
+                }
             }
             Node::Big(_) => {}
         }
@@ -131,18 +133,16 @@ impl VisitedState for Part1State {
 
 #[derive(Debug, Clone)]
 struct Part2State {
-    visited_set: HashSet<Node>,
-    smalls_visited: HashSet<StringSymbol>,
+    visited_set: Vec<Node>,
+    smalls_visited: Vec<StringSymbol>,
     double_checked: bool,
 }
 
 impl VisitedState for Part2State {
     fn new() -> Self {
-        let mut visited_set = HashSet::new();
-        visited_set.insert(Node::Start);
         Part2State {
-            visited_set,
-            smalls_visited: HashSet::default(),
+            visited_set: vec![Node::Start],
+            smalls_visited: Vec::new(),
             double_checked: false,
         }
     }
@@ -154,17 +154,23 @@ impl VisitedState for Part2State {
     fn append(&mut self, node: Node) {
         match node {
             Node::Start | Node::End => {
-                self.visited_set.insert(node);
+                if !self.visited_set.contains(&node) {
+                    self.visited_set.push(node);
+                }
             }
             Node::Small(name) => {
                 if self.double_checked {
-                    self.visited_set.insert(node);
+                    if !self.visited_set.contains(&node) {
+                        self.visited_set.push(node);
+                    }
                 } else if self.smalls_visited.contains(&name) {
                     self.visited_set
-                        .extend(self.smalls_visited.drain().map(Node::Small));
+                        .extend(self.smalls_visited.drain(..).map(Node::Small));
                     self.double_checked = true;
                 } else {
-                    self.smalls_visited.insert(name);
+                    if !self.smalls_visited.contains(&name) {
+                        self.smalls_visited.push(name);
+                    }
                 }
             }
             Node::Big(_) => {}
@@ -199,7 +205,6 @@ impl Solution<Day12> for Aoc2021 {
     type Part2Output = usize;
 
     fn part1(input: &PuzzleInput) -> usize {
-        dbg!(std::mem::size_of::<Node>());
         let links = build_links(&input.pairs);
         count_paths::<Part1State>(&links)
     }
