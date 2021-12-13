@@ -58,8 +58,8 @@ impl fmt::Display for DayResult {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         write!(
             f,
-            "Day {}, Part {}: {}, in {:?}",
-            self.day, self.part, self.output, self.elapsed,
+            "Day {}, Part {}, in {:?}\n{}",
+            self.day, self.part, self.elapsed, self.output,
         )
     }
 }
