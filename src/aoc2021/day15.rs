@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::fmt;
@@ -46,25 +46,10 @@ impl ParseInput<Day15> for Aoc2021 {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord)]
 struct State {
     cost: usize,
     position: (usize, usize),
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other
-            .cost
-            .cmp(&self.cost)
-            .then_with(|| self.position.cmp(&other.position))
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
 }
 
 struct Grid {
@@ -74,15 +59,8 @@ struct Grid {
     multiplier: usize,
 }
 
-fn hack_add(base: u8, added: usize) -> u8 {
-    let mut current = base;
-    for _ in 0..added {
-        current += 1;
-        if current > 9 {
-            current = 1;
-        }
-    }
-    current
+fn add_strange_mod(base: u8, added: usize) -> u8 {
+    (base + added as u8 - 1) % 9 + 1
 }
 
 impl Grid {
@@ -113,7 +91,7 @@ impl Grid {
         let x = x % self.local_width;
         let y = y % self.local_height;
 
-        hack_add(self.values[y * self.local_width + x], offx + offy)
+        add_strange_mod(self.values[y * self.local_width + x], offx + offy)
     }
 
     fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
@@ -163,14 +141,14 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
     let mut heap = BinaryHeap::new();
 
     dist.insert(start, 0);
-    heap.push(State {
+    heap.push(Reverse(State {
         cost: 0,
         position: start,
-    });
+    }));
 
     let mut predecessors = HashMap::new();
 
-    while let Some(State { cost, position }) = heap.pop() {
+    while let Some(Reverse(State { cost, position })) = heap.pop() {
         if position == goal {
             return Some(cost);
         }
@@ -187,7 +165,7 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
             };
 
             if next.cost < dist[&next.position] {
-                heap.push(next);
+                heap.push(Reverse(next));
                 dist.insert(next.position, next.cost);
                 predecessors.insert(next.position, position);
             }
@@ -202,7 +180,6 @@ impl Solution<Day15> for Aoc2021 {
 
     fn part1(input: &PuzzleInput) -> usize {
         let grid = Grid::new(input, 1);
-        // println!("{}", grid);
         shortest_path(&grid).unwrap()
     }
 
