@@ -128,19 +128,38 @@ impl fmt::Display for Grid {
     }
 }
 
+struct DistanceMap {
+    inner: HashMap<(usize, usize), usize>,
+}
+
+impl DistanceMap {
+    fn new(grid: &Grid) -> Self {
+        let mut dist = HashMap::new();
+        for y in 0..grid.height() {
+            for x in 0..grid.width() {
+                dist.insert((x, y), usize::MAX);
+            }
+        }
+        Self { inner: dist }
+    }
+
+    fn get(&self, pos: (usize, usize)) -> usize {
+        self.inner[&pos]
+    }
+
+    fn set(&mut self, pos: (usize, usize), value: usize) {
+        self.inner.insert(pos, value);
+    }
+}
+
 fn shortest_path(grid: &Grid) -> Option<usize> {
     let start = (0, 0);
     let goal = (grid.width() - 1, grid.height() - 1);
 
-    let mut dist = HashMap::new();
-    for y in 0..grid.height() {
-        for x in 0..grid.width() {
-            dist.insert((x, y), usize::MAX);
-        }
-    }
+    let mut dist = DistanceMap::new(grid);
     let mut heap = BinaryHeap::new();
 
-    dist.insert(start, 0);
+    dist.set(start, 0);
     heap.push(Reverse(State {
         cost: 0,
         position: start,
@@ -153,7 +172,7 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
             return Some(cost);
         }
 
-        if cost > dist[&position] {
+        if cost > dist.get(position) {
             continue;
         }
 
@@ -164,9 +183,9 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
                 position: neighbor,
             };
 
-            if next.cost < dist[&next.position] {
+            if next.cost < dist.get(next.position) {
                 heap.push(Reverse(next));
-                dist.insert(next.position, next.cost);
+                dist.set(next.position, next.cost);
                 predecessors.insert(next.position, position);
             }
         }
