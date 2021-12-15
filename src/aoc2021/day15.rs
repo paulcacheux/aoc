@@ -1,6 +1,5 @@
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::collections::HashMap;
 use std::fmt;
 
 use crate::aoc2021::Aoc2021;
@@ -129,26 +128,25 @@ impl fmt::Display for Grid {
 }
 
 struct DistanceMap {
-    inner: HashMap<(usize, usize), usize>,
+    inner: Vec<usize>,
+    width: usize,
 }
 
 impl DistanceMap {
     fn new(grid: &Grid) -> Self {
-        let mut dist = HashMap::new();
-        for y in 0..grid.height() {
-            for x in 0..grid.width() {
-                dist.insert((x, y), usize::MAX);
-            }
+        let inner = vec![usize::MAX; grid.width() * grid.height()];
+        Self {
+            inner,
+            width: grid.width(),
         }
-        Self { inner: dist }
     }
 
-    fn get(&self, pos: (usize, usize)) -> usize {
-        self.inner[&pos]
+    fn get(&self, (x, y): (usize, usize)) -> usize {
+        self.inner[y * self.width + x]
     }
 
-    fn set(&mut self, pos: (usize, usize), value: usize) {
-        self.inner.insert(pos, value);
+    fn set(&mut self, (x, y): (usize, usize), value: usize) {
+        self.inner[y * self.width + x] = value;
     }
 }
 
@@ -164,8 +162,6 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
         cost: 0,
         position: start,
     }));
-
-    let mut predecessors = HashMap::new();
 
     while let Some(Reverse(State { cost, position })) = heap.pop() {
         if position == goal {
@@ -186,7 +182,6 @@ fn shortest_path(grid: &Grid) -> Option<usize> {
             if next.cost < dist.get(next.position) {
                 heap.push(Reverse(next));
                 dist.set(next.position, next.cost);
-                predecessors.insert(next.position, position);
             }
         }
     }
