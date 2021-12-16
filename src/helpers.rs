@@ -1,5 +1,6 @@
 use std::fmt;
-use std::{fs::File, time::Duration};
+use std::fs::File;
+use std::time::Duration;
 
 use advent_of_code_traits::{ParseEachInput, Part1, Part2, Solution};
 use serde::Deserialize;
@@ -80,7 +81,10 @@ macro_rules! inner_run {
     }};
 }
 
-pub fn run<A: Solution<D>, const D: u32>(input: &str, expected: Option<&DayExpectedResult>) {
+pub fn run<A: Solution<D>, const D: u32>(
+    input: &str,
+    expected: Option<&DayExpectedResult>,
+) -> Duration {
     let part1 = inner_run!(Part1, A::part1, input, result.map(|r| r.part1.as_str()));
     println!("{}", part1);
     part1.check_expected(expected);
@@ -88,4 +92,6 @@ pub fn run<A: Solution<D>, const D: u32>(input: &str, expected: Option<&DayExpec
     let part2 = inner_run!(Part2, A::part2, input, result.map(|r| r.part2.as_str()));
     println!("{}", part2);
     part2.check_expected(expected);
+
+    part1.elapsed + part2.elapsed
 }

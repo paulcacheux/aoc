@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::helpers::{run, Results};
 use advent_of_code_traits::days::*;
 
@@ -20,12 +22,12 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
-pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> bool {
+pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<Duration> {
     let r = results
         .as_ref()
         .and_then(|r| r.results_for_day(day as usize));
 
-    match day {
+    let elapsed = match day {
         1 => run::<Aoc2021, Day1>(input, r),
         2 => run::<Aoc2021, Day2>(input, r),
         3 => run::<Aoc2021, Day3>(input, r),
@@ -42,7 +44,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> 
         14 => run::<Aoc2021, Day14>(input, r),
         15 => run::<Aoc2021, Day15>(input, r),
         16 => run::<Aoc2021, Day16>(input, r),
-        _ => return false,
-    }
-    true
+        _ => return None,
+    };
+    Some(elapsed)
 }
