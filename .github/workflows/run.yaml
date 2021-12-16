@@ -49,6 +49,7 @@ jobs:
           ./target/release-lto/aoc2021 --day 13
           ./target/release-lto/aoc2021 --day 14
           ./target/release-lto/aoc2021 --day 15
+          ./target/release-lto/aoc2021 --day 16
 
       - name: Run 2019 days
         run: |
