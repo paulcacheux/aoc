@@ -20,29 +20,38 @@ struct Options {
     day: u32,
 }
 
+fn run_day(year: u32, day: u32, test: bool) -> Result<Option<()>, Box<dyn std::error::Error>> {
+    let (input_path, results) = if test {
+        (format!("./inputs/{}/day{}_test.txt", year, day), None)
+    } else {
+        (
+            format!("./inputs/{}/day{}.txt", year, day),
+            Some(Results::parse(year)?),
+        )
+    };
+    let input = std::fs::read_to_string(input_path)?;
+
+    let year_runner = match year {
+        2019 => aoc2019::run_solution_for_day,
+        2021 => aoc2021::run_solution_for_day,
+        _ => panic!("undefined year {}", year),
+    };
+
+    if year_runner(day, &input, results) {
+        Ok(Some(()))
+    } else {
+        Ok(None)
+    }
+}
+
 fn main() {
     let opts = Options::parse();
 
-    let (input_path, results) = if opts.test {
-        (
-            format!("./inputs/{}/day{}_test.txt", opts.year, opts.day),
-            None,
-        )
-    } else {
-        (
-            format!("./inputs/{}/day{}.txt", opts.year, opts.day),
-            Some(Results::parse(opts.year).expect("Failed to parse results")),
-        )
-    };
-    let input = std::fs::read_to_string(input_path).expect("failed to read input");
-
-    let year_runner = match opts.year {
-        2019 => aoc2019::run_solution_for_day,
-        2021 => aoc2021::run_solution_for_day,
-        _ => panic!("undefined year {}", opts.year),
-    };
-
-    if !year_runner(opts.day, &input, results) {
-        panic!("no solution available for that day ({})", opts.day)
+    match run_day(opts.year, opts.day, opts.test) {
+        Ok(None) => {
+            panic!("no solution available for that day ({})", opts.day)
+        }
+        Ok(Some(())) => {}
+        Err(err) => panic!("Error loading day: {}", err),
     }
 }
