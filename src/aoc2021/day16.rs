@@ -19,6 +19,7 @@ impl ParseInput<Day16> for Aoc2021 {
 struct State {
     bits: Vec<u8>,
     cursor: usize,
+    packets: Vec<Packet>,
 }
 
 fn bits_to_u32(bits: &[u8]) -> u32 {
@@ -27,6 +28,11 @@ fn bits_to_u32(bits: &[u8]) -> u32 {
         res = (res << 1) + c as u32;
     }
     res
+}
+
+struct ReadResult {
+    size: usize,
+    index: usize,
 }
 
 impl State {
@@ -40,10 +46,14 @@ impl State {
                 _ => unreachable!(),
             })
             .collect();
-        State { bits, cursor: 0 }
+        State {
+            bits,
+            cursor: 0,
+            packets: Vec::new(),
+        }
     }
 
-    fn read_packet(&mut self) -> (usize, Packet) {
+    fn read_packet(&mut self) -> ReadResult {
         let start_cursor = self.cursor;
 
         let version = self.read(3);
@@ -72,15 +82,15 @@ impl State {
                 0 => {
                     let mut bits = 0;
                     while bits < length {
-                        let (size, p) = self.read_packet();
-                        bits += size as u32;
-                        subs.push(p);
+                        let read_res = self.read_packet();
+                        bits += read_res.size as u32;
+                        subs.push(read_res.index);
                     }
                 }
                 1 => {
                     for _ in 0..length {
-                        let (_, p) = self.read_packet();
-                        subs.push(p);
+                        let read_res = self.read_packet();
+                        subs.push(read_res.index);
                     }
                 }
                 _ => unreachable!(),
@@ -88,7 +98,12 @@ impl State {
             PacketBody::Operator(type_id, subs)
         };
 
-        (self.cursor - start_cursor, Packet { version, body })
+        let index = self.packets.len();
+        self.packets.push(Packet { version, body });
+        ReadResult {
+            size: self.cursor - start_cursor,
+            index,
+        }
     }
 
     fn read(&mut self, bits: usize) -> u32 {
@@ -96,34 +111,22 @@ impl State {
         self.cursor += bits;
         res
     }
-}
 
-#[derive(Debug)]
-struct Packet {
-    version: u32,
-    body: PacketBody,
-}
-
-impl Packet {
     fn sum_versions(&self) -> u32 {
-        match &self.body {
-            PacketBody::Literal(_) => self.version,
-            PacketBody::Operator(_, subs) => {
-                self.version + subs.iter().map(Packet::sum_versions).sum::<u32>()
-            }
-        }
+        self.packets.iter().map(|p| p.version).sum()
     }
 
-    fn eval(&self) -> u64 {
-        match &self.body {
+    fn eval(&self, packet_index: usize) -> u64 {
+        let packet = &self.packets[packet_index];
+        match &packet.body {
             PacketBody::Literal(lit) => *lit,
-            PacketBody::Operator(0, subs) => subs.iter().map(Packet::eval).sum(),
-            PacketBody::Operator(1, subs) => subs.iter().map(Packet::eval).product(),
-            PacketBody::Operator(2, subs) => subs.iter().map(Packet::eval).min().unwrap(),
-            PacketBody::Operator(3, subs) => subs.iter().map(Packet::eval).max().unwrap(),
+            PacketBody::Operator(0, subs) => subs.iter().map(|p| self.eval(*p)).sum(),
+            PacketBody::Operator(1, subs) => subs.iter().map(|p| self.eval(*p)).product(),
+            PacketBody::Operator(2, subs) => subs.iter().map(|p| self.eval(*p)).min().unwrap(),
+            PacketBody::Operator(3, subs) => subs.iter().map(|p| self.eval(*p)).max().unwrap(),
             PacketBody::Operator(5, subs) => {
                 assert_eq!(subs.len(), 2);
-                if subs[0].eval() > subs[1].eval() {
+                if self.eval(subs[0]) > self.eval(subs[1]) {
                     1
                 } else {
                     0
@@ -131,7 +134,7 @@ impl Packet {
             }
             PacketBody::Operator(6, subs) => {
                 assert_eq!(subs.len(), 2);
-                if subs[0].eval() < subs[1].eval() {
+                if self.eval(subs[0]) < self.eval(subs[1]) {
                     1
                 } else {
                     0
@@ -139,7 +142,7 @@ impl Packet {
             }
             PacketBody::Operator(7, subs) => {
                 assert_eq!(subs.len(), 2);
-                if subs[0].eval() == subs[1].eval() {
+                if self.eval(subs[0]) == self.eval(subs[1]) {
                     1
                 } else {
                     0
@@ -151,9 +154,15 @@ impl Packet {
 }
 
 #[derive(Debug)]
+struct Packet {
+    version: u32,
+    body: PacketBody,
+}
+
+#[derive(Debug)]
 enum PacketBody {
     Literal(u64),
-    Operator(u32, Vec<Packet>),
+    Operator(u32, Vec<usize>),
 }
 
 impl Solution<Day16> for Aoc2021 {
@@ -162,13 +171,13 @@ impl Solution<Day16> for Aoc2021 {
 
     fn part1(input: &Vec<u8>) -> u32 {
         let mut bits = State::new(input);
-        let (_, p) = bits.read_packet();
-        p.sum_versions()
+        let _ = bits.read_packet();
+        bits.sum_versions()
     }
 
     fn part2(input: &Vec<u8>) -> u64 {
         let mut bits = State::new(input);
-        let (_, p) = bits.read_packet();
-        p.eval()
+        let read_res = bits.read_packet();
+        bits.eval(read_res.index)
     }
 }
