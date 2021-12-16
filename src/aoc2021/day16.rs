@@ -39,13 +39,9 @@ impl State {
     fn new(input: &[u8]) -> Self {
         let bits = input
             .iter()
-            .flat_map(|c| format!("{:04b}", c).bytes().collect::<Vec<_>>())
-            .map(|b| match b {
-                b'0' => 0,
-                b'1' => 1,
-                _ => unreachable!(),
-            })
+            .flat_map(|&c| [(c >> 3) & 1, (c >> 2) & 1, (c >> 1) & 1, c & 1])
             .collect();
+
         State {
             bits,
             cursor: 0,
