@@ -76,6 +76,11 @@ impl State {
         if self.x > *target.x.end() {
             return false;
         }
+
+        if self.vx == 0 && !target.x.contains(&self.x) {
+            return false;
+        }
+
         true
     }
 }
