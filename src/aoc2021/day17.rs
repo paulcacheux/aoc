@@ -147,7 +147,7 @@ impl Solution<Day17> for Aoc2021 {
         let mut velocities = 0;
 
         for vx in compute_vx_range(input) {
-            for vy in -500..500 {
+            for vy in *input.y.start()..500 {
                 if compute_local_max(input, vx, vy).is_some() {
                     velocities += 1;
                 }
