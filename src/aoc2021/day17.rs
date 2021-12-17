@@ -67,15 +67,16 @@ impl State {
     }
 
     fn can_go_to(&self, target: &TargetArea) -> bool {
-        if 0 <= self.x && self.x <= *target.x.start() && self.vx > 0 {
-            true
-        } else if self.x <= 0 && self.x >= *target.x.end() && self.vx < 0 {
-            true
-        } else if self.vx == 0 && self.vy < 0 {
-            target.x.contains(&self.x) && self.y > *target.y.start()
-        } else {
-            true
+        // if we go down, and we are already under the target, it's over
+        if self.vy < 0 && self.y < *target.y.start() {
+            return false;
         }
+
+        // if we overshoot the target, it's over
+        if self.x > *target.x.end() {
+            return false;
+        }
+        true
     }
 }
 
