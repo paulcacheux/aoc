@@ -1,12 +1,10 @@
 use std::cmp::Ordering;
-use std::ops::Range;
 use std::ops::RangeInclusive;
 
 use crate::aoc2021::Aoc2021;
 use advent_of_code_traits::days::Day17;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
-use itertools::Itertools;
 use regex::Regex;
 
 #[derive(Debug)]
@@ -122,7 +120,7 @@ fn is_valid_vx(vx: i32, target: &RangeInclusive<i32>) -> bool {
     false
 }
 
-fn compute_vx_range<'t>(target: &'t TargetArea) -> impl Iterator<Item = i32> + 't {
+fn compute_vx_range(target: &'_ TargetArea) -> impl Iterator<Item = i32> + '_ {
     let vx_start = (*target.x.start() as f32).sqrt() as i32 - 1;
     let vx_end = *target.x.end() + 1;
     (vx_start..vx_end)
