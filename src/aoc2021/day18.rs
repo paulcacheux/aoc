@@ -29,7 +29,10 @@ impl NodeList {
         index
     }
 
-    fn depth_first_visit<F: FnMut(&VisitItem) -> bool>(&self, mut visitor: F) {
+    fn depth_first_visit<F: FnMut(&VisitItem) -> bool, const MID: bool, const POST: bool>(
+        &self,
+        mut visitor: F,
+    ) {
         let mut open_list = vec![VisitItem {
             depth: 0,
             index: self.main_index,
@@ -45,21 +48,25 @@ impl NodeList {
                 Node::Lit(_) => {}
                 Node::Pair(lhs, rhs) => {
                     if item.pair_state == PairVisitState::Begin {
-                        open_list.push(VisitItem {
-                            depth: item.depth,
-                            index: item.index,
-                            pair_state: PairVisitState::End,
-                        });
+                        if POST {
+                            open_list.push(VisitItem {
+                                depth: item.depth,
+                                index: item.index,
+                                pair_state: PairVisitState::End,
+                            });
+                        }
                         open_list.push(VisitItem {
                             depth: item.depth + 1,
                             index: rhs,
                             pair_state: PairVisitState::Begin,
                         });
-                        open_list.push(VisitItem {
-                            depth: item.depth,
-                            index: item.index,
-                            pair_state: PairVisitState::Middle,
-                        });
+                        if MID {
+                            open_list.push(VisitItem {
+                                depth: item.depth,
+                                index: item.index,
+                                pair_state: PairVisitState::Middle,
+                            });
+                        }
                         open_list.push(VisitItem {
                             depth: item.depth + 1,
                             index: lhs,
@@ -73,7 +80,7 @@ impl NodeList {
 
     #[allow(dead_code)]
     fn print(&self) {
-        self.depth_first_visit(|item| {
+        self.depth_first_visit::<_, true, false>(|item| {
             match (&self.nodes[item.index], item.pair_state) {
                 (Node::Lit(lit), _) => {
                     print!("{}", lit);
@@ -99,7 +106,7 @@ impl NodeList {
         let mut right_lit = None;
         let mut skip_right = Vec::new();
 
-        self.depth_first_visit(|item| match self.nodes[item.index] {
+        self.depth_first_visit::<_, false, false>(|item| match self.nodes[item.index] {
             Node::Lit(_) => {
                 if exploding_pair.is_some() {
                     if !skip_right.contains(&item.index) {
@@ -145,7 +152,7 @@ impl NodeList {
 
     fn split(&mut self) -> bool {
         let mut split_index = None;
-        self.depth_first_visit(|item| match self.nodes[item.index] {
+        self.depth_first_visit::<_, false, false>(|item| match self.nodes[item.index] {
             Node::Lit(value) if value >= 10 => {
                 split_index = Some((item.index, value));
                 false
@@ -199,7 +206,7 @@ impl NodeList {
 
     fn magnitude(&self) -> u32 {
         let mut stack = Vec::new();
-        self.depth_first_visit(|item| {
+        self.depth_first_visit::<_, false, true>(|item| {
             match self.nodes[item.index] {
                 Node::Lit(value) => {
                     stack.push(value);
