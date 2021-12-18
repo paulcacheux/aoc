@@ -176,9 +176,7 @@ impl NodeList {
 
     fn reduce(&mut self) {
         loop {
-            if self.explode() {
-                continue;
-            }
+            while self.explode() {}
 
             if self.split() {
                 continue;
