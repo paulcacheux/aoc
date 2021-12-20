@@ -103,7 +103,7 @@ struct ScannerSuiteEntry {
     points: Vec<Vec3>,
 }
 
-fn evaluate_similarity(base: &AHashSet<Vec3>, entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
+fn evaluate_similarity(base: &[Vec3], entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
     let mut counter = AHashMap::new();
     for a in base {
         for b in &entry.points {
@@ -144,8 +144,11 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
     suites
 }
 
-fn decode_scanners(input: &PuzzleInput) -> (AHashSet<Vec3>, Vec<ScannerSuite>) {
-    let mut current_base: AHashSet<Vec3> = input.scanners[0].points.iter().copied().collect();
+fn decode_scanners(input: &PuzzleInput) -> (Vec<Vec3>, Vec<ScannerSuite>) {
+    let mut current_base: Vec<Vec3> = input.scanners[0].points.iter().copied().collect();
+    // at first we try by just comparing the recently added points
+    // if we don't find any match we check with the whole array
+    let mut base_start = 0;
 
     let mut suites = build_scanner_suites(&input.scanners[1..]);
     let mut working = true;
@@ -159,13 +162,12 @@ fn decode_scanners(input: &PuzzleInput) -> (AHashSet<Vec3>, Vec<ScannerSuite>) {
             }
 
             for (pi, entry) in other.entries.iter().enumerate() {
-                if let Some((dir, similarity)) = evaluate_similarity(&current_base, entry) {
+                if let Some((dir, similarity)) =
+                    evaluate_similarity(&current_base[base_start..], entry)
+                {
                     if let Some((_, m, _, _)) = max {
                         if m <= similarity {
                             max = Some((dir, similarity, si, pi));
-                        }
-                        if similarity >= 5 {
-                            break;
                         }
                     } else {
                         max = Some((dir, similarity, si, pi));
@@ -175,9 +177,19 @@ fn decode_scanners(input: &PuzzleInput) -> (AHashSet<Vec3>, Vec<ScannerSuite>) {
         }
 
         if let Some((dir, _, si, pi)) = max {
+            base_start = current_base.len();
             current_base.extend(suites[si].entries[pi].points.iter().map(|p| p - dir));
             suites[si].set_position(dir);
             working = true;
+        } else {
+            // if needed restart with the whole array
+            for s in &suites {
+                if s.position.is_none() {
+                    base_start = 0;
+                    working = true;
+                    break;
+                }
+            }
         }
     }
 
@@ -190,6 +202,7 @@ impl Solution<Day19> for Aoc2021 {
 
     fn part1(input: &PuzzleInput) -> usize {
         let (beacons, _) = decode_scanners(input);
+        let beacons: AHashSet<_> = beacons.into_iter().collect();
         beacons.len()
     }
 
@@ -205,9 +218,11 @@ impl Solution<Day19> for Aoc2021 {
         let mut max = 0;
         for a in &scanners {
             for b in &scanners {
+                let abs = (a - b).abs();
+
                 let mut distance = 0;
                 for i in 0..3 {
-                    distance += (a[i] - b[i]).abs() as u32;
+                    distance += abs[i] as u32;
                 }
 
                 if distance > max {
