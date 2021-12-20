@@ -26,11 +26,13 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-v3
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-v4
 
       - name: Run cargo build
         run: |
           cargo build --profile release-lto
+        env:
+          RUSTFLAGS: '-C target-cpu=native'
 
       - name: Run 2021 days
         run: |
