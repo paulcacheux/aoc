@@ -9,8 +9,8 @@ use nalgebra::matrix;
 use nalgebra::vector;
 use regex::Regex;
 
-type Vec3 = nalgebra::Vector3<i32>;
-type Mat3 = nalgebra::Matrix3<i32>;
+type Vec3 = nalgebra::Vector3<i16>;
+type Mat3 = nalgebra::Matrix3<i16>;
 
 #[derive(Debug, Default)]
 pub struct ScannerInput {
@@ -132,7 +132,7 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
         let entries = matrices
             .iter()
             .map(|matrix| {
-                let points = scanner.points.iter().map(|p| matrix * p).collect();
+                let points: Vec<_> = scanner.points.iter().map(|p| matrix * p).collect();
                 ScannerSuiteEntry { points }
             })
             .collect();
