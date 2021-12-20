@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
+use ahash::AHashMap;
+use ahash::AHashSet;
 
 use crate::aoc2021::Aoc2021;
 use advent_of_code_traits::days::Day19;
@@ -107,8 +107,8 @@ struct ScannerSuiteEntry {
     points: Vec<Vec3>,
 }
 
-fn evaluate_similarity(base: &HashSet<Vec3>, entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
-    let mut counter = HashMap::new();
+fn evaluate_similarity(base: &AHashSet<Vec3>, entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
+    let mut counter = AHashMap::new();
     for a in base {
         for b in &entry.points {
             let diff = *b - a;
@@ -146,8 +146,8 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
     suites
 }
 
-fn decode_scanners(input: &PuzzleInput) -> (HashSet<Vec3>, Vec<ScannerSuite>) {
-    let mut current_base: HashSet<Vec3> = input.scanners[0].points.iter().copied().collect();
+fn decode_scanners(input: &PuzzleInput) -> (AHashSet<Vec3>, Vec<ScannerSuite>) {
+    let mut current_base: AHashSet<Vec3> = input.scanners[0].points.iter().copied().collect();
 
     let mut suites = build_scanner_suites(&input.scanners[1..]);
     let mut working = true;
