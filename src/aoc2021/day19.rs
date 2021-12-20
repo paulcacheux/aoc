@@ -5,73 +5,17 @@ use crate::aoc2021::Aoc2021;
 use advent_of_code_traits::days::Day19;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use nalgebra::matrix;
+use nalgebra::vector;
 use regex::Regex;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Point {
-    values: [i32; 3],
-}
-
-impl Point {
-    fn offset(self, offset: [i32; 3]) -> Point {
-        let mut p = Point { values: [0; 3] };
-        for i in 0..3 {
-            p.values[i] = self.values[i] - offset[i];
-        }
-        p
-    }
-
-    fn diff(self, other: Point) -> [i32; 3] {
-        let mut res = [0; 3];
-        for i in 0..3 {
-            res[i] = other.values[i] - self.values[i];
-        }
-        res
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Rotation {
-    values: [[i32; 3]; 3],
-}
-
-impl Rotation {
-    fn product_rot(&self, other: &Rotation) -> Rotation {
-        let mut res = Rotation {
-            values: [[0; 3]; 3],
-        };
-
-        for p in 0..3 {
-            let point = Point {
-                values: [other.values[0][p], other.values[1][p], other.values[2][p]],
-            };
-
-            let respoint = self.product(point);
-            for i in 0..3 {
-                res.values[i][p] = respoint.values[i];
-            }
-        }
-
-        res
-    }
-
-    fn product(&self, point: Point) -> Point {
-        let mut values = [0; 3];
-        for i in 0..3 {
-            values[i] = self.values[i]
-                .iter()
-                .zip(point.values.iter())
-                .map(|(r, p)| r * p)
-                .sum();
-        }
-        Point { values }
-    }
-}
+type Vec3 = nalgebra::Vector3<i32>;
+type Mat3 = nalgebra::Matrix3<i32>;
 
 #[derive(Debug, Default)]
 pub struct ScannerInput {
     id: usize,
-    points: Vec<Point>,
+    points: Vec<Vec3>,
 }
 
 #[derive(Debug)]
@@ -99,9 +43,8 @@ impl ParseInput<Day19> for Aoc2021 {
             } else {
                 let values: Vec<_> = line.split(',').map(|n| n.parse().unwrap()).collect();
                 assert_eq!(values.len(), 3);
-                current.points.push(Point {
-                    values: values.try_into().unwrap(),
-                })
+                let point = vector![values[0], values[1], values[2]];
+                current.points.push(point);
             }
         }
 
@@ -113,49 +56,30 @@ impl ParseInput<Day19> for Aoc2021 {
     }
 }
 
-fn generate_rotation_matrices() -> Vec<Rotation> {
+fn generate_rotation_matrices() -> Vec<Mat3> {
     let rotation_a = vec![
-        Rotation {
-            values: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-        },
-        Rotation {
-            values: [[0, 1, 0], [0, 0, 1], [1, 0, 0]],
-        },
-        Rotation {
-            values: [[0, 0, 1], [1, 0, 0], [0, 1, 0]],
-        },
+        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
+        matrix![0, 1, 0; 0, 0, 1; 1, 0, 0],
+        matrix![0, 0, 1; 1, 0, 0; 0, 1, 0],
     ];
 
     let rotation_b = vec![
-        Rotation {
-            values: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-        },
-        Rotation {
-            values: [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-        },
-        Rotation {
-            values: [[-1, 0, 0], [0, 1, 0], [0, 0, -1]],
-        },
-        Rotation {
-            values: [[1, 0, 0], [0, -1, 0], [0, 0, -1]],
-        },
+        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
+        matrix![-1, 0, 0; 0, -1, 0; 0, 0, 1],
+        matrix![-1, 0, 0; 0, 1, 0; 0, 0, -1],
+        matrix![1, 0, 0; 0, -1, 0; 0, 0, -1],
     ];
 
     let rotation_c = vec![
-        Rotation {
-            values: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-        },
-        Rotation {
-            values: [[0, 0, -1], [0, -1, 0], [-1, 0, 0]],
-        },
+        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
+        matrix![0, 0, -1; 0, -1, 0; -1, 0, 0],
     ];
 
     let mut res = Vec::with_capacity(24);
     for a in &rotation_a {
         for b in &rotation_b {
             for c in &rotation_c {
-                let rot = a.product_rot(b).product_rot(c);
-                res.push(rot);
+                res.push(a * b * c);
             }
         }
     }
@@ -164,12 +88,12 @@ fn generate_rotation_matrices() -> Vec<Rotation> {
 
 #[derive(Debug)]
 struct ScannerSuite {
-    position: Option<[i32; 3]>,
+    position: Option<Vec3>,
     entries: Vec<ScannerSuiteEntry>,
 }
 
 impl ScannerSuite {
-    fn set_position(&mut self, mut dir: [i32; 3]) {
+    fn set_position(&mut self, mut dir: Vec3) {
         for i in dir.iter_mut() {
             *i = -*i;
         }
@@ -180,17 +104,14 @@ impl ScannerSuite {
 
 #[derive(Debug)]
 struct ScannerSuiteEntry {
-    points: Vec<Point>,
+    points: Vec<Vec3>,
 }
 
-fn evaluate_similarity(
-    base: &HashSet<Point>,
-    entry: &ScannerSuiteEntry,
-) -> Option<([i32; 3], usize)> {
+fn evaluate_similarity(base: &HashSet<Vec3>, entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
     let mut counter = HashMap::new();
     for a in base {
         for b in &entry.points {
-            let diff = a.diff(*b);
+            let diff = *b - a;
             *counter.entry(diff).or_default() += 1;
         }
     }
@@ -213,7 +134,7 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
         let entries = matrices
             .iter()
             .map(|matrix| {
-                let points = scanner.points.iter().map(|p| matrix.product(*p)).collect();
+                let points = scanner.points.iter().map(|p| matrix * p).collect();
                 ScannerSuiteEntry { points }
             })
             .collect();
@@ -225,8 +146,8 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
     suites
 }
 
-fn decode_scanners(input: &PuzzleInput) -> (HashSet<Point>, Vec<ScannerSuite>) {
-    let mut current_base: HashSet<Point> = input.scanners[0].points.iter().copied().collect();
+fn decode_scanners(input: &PuzzleInput) -> (HashSet<Vec3>, Vec<ScannerSuite>) {
+    let mut current_base: HashSet<Vec3> = input.scanners[0].points.iter().copied().collect();
 
     let mut suites = build_scanner_suites(&input.scanners[1..]);
     let mut working = true;
@@ -253,7 +174,7 @@ fn decode_scanners(input: &PuzzleInput) -> (HashSet<Point>, Vec<ScannerSuite>) {
         }
 
         if let Some((dir, _, si, pi)) = max {
-            current_base.extend(suites[si].entries[pi].points.iter().map(|p| p.offset(dir)));
+            current_base.extend(suites[si].entries[pi].points.iter().map(|p| p - dir));
             suites[si].set_position(dir);
             working = true;
         }
@@ -273,7 +194,7 @@ impl Solution<Day19> for Aoc2021 {
 
     fn part2(input: &PuzzleInput) -> u32 {
         let (_, suites) = decode_scanners(input);
-        let mut scanners = vec![[0; 3]];
+        let mut scanners = vec![Vec3::zeros()];
         for s in suites {
             if let Some(pos) = s.position {
                 scanners.push(pos);
