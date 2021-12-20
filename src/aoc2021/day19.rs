@@ -93,12 +93,8 @@ struct ScannerSuite {
 }
 
 impl ScannerSuite {
-    fn set_position(&mut self, mut dir: Vec3) {
-        for i in dir.iter_mut() {
-            *i = -*i;
-        }
-
-        self.position = Some(dir);
+    fn set_position(&mut self, dir: Vec3) {
+        self.position = Some(-dir);
     }
 }
 
@@ -115,10 +111,12 @@ fn evaluate_similarity(base: &AHashSet<Vec3>, entry: &ScannerSuiteEntry) -> Opti
             *counter.entry(diff).or_default() += 1;
         }
     }
+
     let res = counter
         .iter()
         .max_by_key(|(_, c)| *c)
         .map(|(k, c)| (*k, *c));
+
     if let Some((_, 1)) = res {
         None
     } else {
@@ -129,7 +127,7 @@ fn evaluate_similarity(base: &AHashSet<Vec3>, entry: &ScannerSuiteEntry) -> Opti
 fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
     let matrices = generate_rotation_matrices();
 
-    let mut suites = Vec::new();
+    let mut suites = Vec::with_capacity(scanners.len());
     for scanner in scanners {
         let entries = matrices
             .iter()
