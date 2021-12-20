@@ -164,6 +164,9 @@ fn decode_scanners(input: &PuzzleInput) -> (AHashSet<Vec3>, Vec<ScannerSuite>) {
                         if m <= similarity {
                             max = Some((dir, similarity, si, pi));
                         }
+                        if similarity >= 5 {
+                            break;
+                        }
                     } else {
                         max = Some((dir, similarity, si, pi));
                     }
