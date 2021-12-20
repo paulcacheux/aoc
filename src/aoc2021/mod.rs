@@ -26,6 +26,8 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
+pub mod day19_rotations;
+
 pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<Duration> {
     let r = results
         .as_ref()

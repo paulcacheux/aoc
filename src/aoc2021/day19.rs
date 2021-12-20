@@ -1,6 +1,7 @@
 use ahash::AHashMap;
 use ahash::AHashSet;
 
+use crate::aoc2021::day19_rotations;
 use crate::aoc2021::Aoc2021;
 use advent_of_code_traits::days::Day19;
 use advent_of_code_traits::ParseInput;
@@ -9,8 +10,7 @@ use nalgebra::matrix;
 use nalgebra::vector;
 use regex::Regex;
 
-type Vec3 = nalgebra::Vector3<i16>;
-type Mat3 = nalgebra::Matrix3<i16>;
+pub type Vec3 = nalgebra::Vector3<i16>;
 
 #[derive(Debug, Default)]
 pub struct ScannerInput {
@@ -56,36 +56,6 @@ impl ParseInput<Day19> for Aoc2021 {
     }
 }
 
-fn generate_rotation_matrices() -> Vec<Mat3> {
-    let rotation_a = vec![
-        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
-        matrix![0, 1, 0; 0, 0, 1; 1, 0, 0],
-        matrix![0, 0, 1; 1, 0, 0; 0, 1, 0],
-    ];
-
-    let rotation_b = vec![
-        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
-        matrix![-1, 0, 0; 0, -1, 0; 0, 0, 1],
-        matrix![-1, 0, 0; 0, 1, 0; 0, 0, -1],
-        matrix![1, 0, 0; 0, -1, 0; 0, 0, -1],
-    ];
-
-    let rotation_c = vec![
-        matrix![1, 0, 0; 0, 1, 0; 0, 0, 1],
-        matrix![0, 0, -1; 0, -1, 0; -1, 0, 0],
-    ];
-
-    let mut res = Vec::with_capacity(24);
-    for a in &rotation_a {
-        for b in &rotation_b {
-            for c in &rotation_c {
-                res.push(a * b * c);
-            }
-        }
-    }
-    res
-}
-
 #[derive(Debug)]
 struct ScannerSuite {
     position: Option<Vec3>,
@@ -125,14 +95,15 @@ fn evaluate_similarity(base: &[Vec3], entry: &ScannerSuiteEntry) -> Option<(Vec3
 }
 
 fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
-    let matrices = generate_rotation_matrices();
+    // let matrices = generate_rotation_matrices();
+    // dbg!(&matrices);
 
     let mut suites = Vec::with_capacity(scanners.len());
     for scanner in scanners {
-        let entries = matrices
+        let entries = day19_rotations::ROTATIONS
             .iter()
-            .map(|matrix| {
-                let points: Vec<_> = scanner.points.iter().map(|p| matrix * p).collect();
+            .map(|rot| {
+                let points: Vec<_> = scanner.points.iter().map(|p| rot(*p)).collect();
                 ScannerSuiteEntry { points }
             })
             .collect();
