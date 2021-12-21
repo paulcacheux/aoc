@@ -99,12 +99,30 @@ impl Part1State {
     }
 }
 
-#[derive(Default)]
 struct Part2StateCache {
+    counts: Vec<u64>,
     cache: AHashMap<Part2State, (u64, u64)>,
 }
 
 impl Part2StateCache {
+    fn new() -> Self {
+        let mut counts = vec![0; 10 - 3];
+        for a in 1..=3 {
+            for b in 1..=3 {
+                for c in 1..=3 {
+                    let value = a + b + c;
+                    let index = value - 3;
+                    counts[index] += 1;
+                }
+            }
+        }
+
+        Part2StateCache {
+            counts,
+            cache: AHashMap::default(),
+        }
+    }
+
     fn get_count(&mut self, state: &Part2State) -> (u64, u64) {
         if let Some(count) = self.cache.get(state) {
             return *count;
@@ -116,15 +134,12 @@ impl Part2StateCache {
             (0, 1)
         } else {
             let mut sum = (0, 0);
-            for a in 1..=3 {
-                for b in 1..=3 {
-                    for c in 1..=3 {
-                        let value = a + b + c;
-                        let (p1, p2) = self.get_count(&state.next_state(value));
-                        sum = (sum.0 + p1, sum.1 + p2);
-                    }
-                }
+            for value in 3..=9 {
+                let count = self.counts[value as usize - 3];
+                let (p1, p2) = self.get_count(&state.next_state(value));
+                sum = (sum.0 + p1 * count, sum.1 + p2 * count);
             }
+
             sum
         };
 
@@ -165,7 +180,7 @@ impl Solution<Day21> for Aoc2021 {
     }
 
     fn part2(input: &PuzzleInput) -> u64 {
-        let mut state_cache = Part2StateCache::default();
+        let mut state_cache = Part2StateCache::new();
         let start_state = Part2State {
             positions: [input.player1, input.player2],
             scores: [0, 0],
