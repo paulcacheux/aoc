@@ -42,7 +42,7 @@ impl ParseInput<Day21> for Aoc2021 {
 #[derive(Debug)]
 struct Part1State {
     players_position: Vec<u8>,
-    players_scores: Vec<u32>,
+    players_scores: Vec<u16>,
     turn: usize,
 
     dice_state: u32,
@@ -79,7 +79,7 @@ impl Part1State {
         let value = a + b + c;
 
         let new_position = add_strange_mod10(self.players_position[self.turn], value);
-        self.players_scores[self.turn] += new_position as u32;
+        self.players_scores[self.turn] += new_position as u16;
         self.players_position[self.turn] = new_position;
         self.turn = (self.turn + 1) % 2;
     }
@@ -136,7 +136,7 @@ impl Part2StateCache {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Part2State {
     positions: [u8; 2],
-    scores: [u32; 2],
+    scores: [u8; 2],
     turn: u8,
 }
 
@@ -145,7 +145,7 @@ impl Part2State {
         let turn = self.turn as usize;
         let mut new_state = *self;
         let new_position = add_strange_mod10(self.positions[turn], dice_sum);
-        new_state.scores[turn] += new_position as u32;
+        new_state.scores[turn] += new_position;
         new_state.positions[turn] = new_position;
         new_state.turn = (self.turn + 1) % 2;
         new_state
