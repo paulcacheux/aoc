@@ -112,7 +112,7 @@ fn build_scanner_suites(scanners: &[ScannerInput]) -> Vec<ScannerSuite> {
 }
 
 fn decode_scanners(input: &PuzzleInput) -> (Vec<Vec3>, Vec<ScannerSuite>) {
-    let mut current_base: Vec<Vec3> = input.scanners[0].points.iter().copied().collect();
+    let mut current_base: Vec<Vec3> = input.scanners[0].points.to_vec();
     // at first we try by just comparing the recently added points
     // if we don't find any match we check with the whole array
     let mut base_start = 0;

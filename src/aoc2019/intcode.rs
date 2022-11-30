@@ -101,14 +101,14 @@ impl IntCodeVM {
             7 => {
                 let lhs = self.read_addr(self.pc + 1, opcode_mode1);
                 let rhs = self.read_addr(self.pc + 2, opcode_mode2);
-                let res = if lhs < rhs { 1 } else { 0 };
+                let res = i32::from(lhs < rhs);
                 self.write_addr(self.pc + 3, opcode_mode3, res);
                 PCOp::Offset(4)
             }
             8 => {
                 let lhs = self.read_addr(self.pc + 1, opcode_mode1);
                 let rhs = self.read_addr(self.pc + 2, opcode_mode2);
-                let res = if lhs == rhs { 1 } else { 0 };
+                let res = i32::from(lhs == rhs);
                 self.write_addr(self.pc + 3, opcode_mode3, res);
                 PCOp::Offset(4)
             }

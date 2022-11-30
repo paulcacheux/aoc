@@ -122,27 +122,15 @@ impl State {
             PacketBody::Operator(3, subs) => subs.iter().map(|p| self.eval(*p)).max().unwrap(),
             PacketBody::Operator(5, subs) => {
                 assert_eq!(subs.len(), 2);
-                if self.eval(subs[0]) > self.eval(subs[1]) {
-                    1
-                } else {
-                    0
-                }
+                u64::from(self.eval(subs[0]) > self.eval(subs[1]))
             }
             PacketBody::Operator(6, subs) => {
                 assert_eq!(subs.len(), 2);
-                if self.eval(subs[0]) < self.eval(subs[1]) {
-                    1
-                } else {
-                    0
-                }
+                u64::from(self.eval(subs[0]) < self.eval(subs[1]))
             }
             PacketBody::Operator(7, subs) => {
                 assert_eq!(subs.len(), 2);
-                if self.eval(subs[0]) == self.eval(subs[1]) {
-                    1
-                } else {
-                    0
-                }
+                u64::from(self.eval(subs[0]) == self.eval(subs[1]))
             }
             _ => unreachable!(),
         }
