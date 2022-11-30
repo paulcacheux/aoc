@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "advent_of_code_traits"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a27830d17740ef5b56a63d5a537719e39cf8fea98b2eacd1046a12c652a26a9f"
+checksum = "fe36d4ed92c508917976c6fd99d04f03ea85ae8fddc90c2e862e9d4c6ef41fd3"
 
 [[package]]
 name = "ahash"
