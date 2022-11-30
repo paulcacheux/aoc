@@ -19,7 +19,7 @@ jobs:
             components: rustfmt, clippy
 
       - name: Cache rust artifacts
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/bin/
