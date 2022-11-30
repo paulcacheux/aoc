@@ -18,12 +18,7 @@ impl Results {
     }
 
     pub fn results_for_day(&self, day: usize) -> Option<&DayExpectedResult> {
-        for r in &self.days {
-            if r.day == day {
-                return Some(r);
-            }
-        }
-        None
+        self.days.iter().find(|&r| r.day == day)
     }
 }
 
