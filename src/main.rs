@@ -9,16 +9,16 @@ mod helpers;
 use helpers::Results;
 
 #[derive(Parser)]
-#[clap(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
+#[command(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
 struct Options {
     /// Use test input
-    #[clap(long)]
+    #[arg(long)]
     test: bool,
     /// Advent year
-    #[clap(long, default_value = "2021")]
+    #[arg(long, default_value = "2021")]
     year: u32,
     /// Advent day
-    #[clap(long)]
+    #[arg(long)]
     day: Option<u32>,
 }
 
