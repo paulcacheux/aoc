@@ -4,6 +4,7 @@ use clap::Parser;
 
 mod aoc2019;
 mod aoc2021;
+mod aoc2022;
 mod helpers;
 
 use helpers::Results;
@@ -15,7 +16,7 @@ struct Options {
     #[arg(long)]
     test: bool,
     /// Advent year
-    #[arg(long, default_value = "2021")]
+    #[arg(long, default_value = "2022")]
     year: u32,
     /// Advent day
     #[arg(long)]
@@ -40,6 +41,7 @@ fn run_day(
     let year_runner = match year {
         2019 => aoc2019::run_solution_for_day,
         2021 => aoc2021::run_solution_for_day,
+        2022 => aoc2022::run_solution_for_day,
         _ => panic!("undefined year {}", year),
     };
 
