@@ -34,6 +34,13 @@ impl Solution<Day1> for Aoc2022 {
     }
 
     fn part2(input: &Vec<Vec<u32>>) -> u32 {
-        todo!()
+        let mut sums: Vec<u32> = input.into_iter().map(|elf| {
+            elf.iter().sum()
+        }).collect();
+
+        sums.sort();
+        sums.reverse();
+
+        sums.into_iter().take(3).sum()
     }
 }
