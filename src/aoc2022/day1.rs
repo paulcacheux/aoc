@@ -15,7 +15,7 @@ impl ParseInput<Day1> for Aoc2022 {
             if let Ok(value) = line.parse() {
                 res.last_mut().unwrap().push(value);
             } else {
-                res.push(Vec::new())
+                res.push(Vec::new());
             }
         }
 
@@ -33,10 +33,8 @@ impl Solution<Day1> for Aoc2022 {
 
     fn part2(input: &Vec<Vec<u32>>) -> u32 {
         let mut sums: Vec<u32> = input.iter().map(|elf| elf.iter().sum()).collect();
-
         sums.sort();
-        sums.reverse();
 
-        sums.into_iter().take(3).sum()
+        sums.into_iter().rev().take(3).sum()
     }
 }
