@@ -11,12 +11,6 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
 
-      - name: Install stable rust
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
-
       - name: Cache rust artifacts
         uses: actions/cache@v3
         with:
