@@ -43,6 +43,35 @@ impl Hand {
             (Hand::Scissors, Hand::Scissors) => Ordering::Equal,
         }
     }
+
+    fn part2_target_hand(left: Hand, right: Hand) -> Hand {
+        let target_ordering = match right {
+            Hand::Rock => Ordering::Greater,
+            Hand::Paper => Ordering::Equal,
+            Hand::Scissors => Ordering::Less,
+        };
+
+        match (left, target_ordering) {
+            (Hand::Rock, Ordering::Less) => Hand::Paper,
+            (Hand::Rock, Ordering::Equal) => Hand::Rock,
+            (Hand::Rock, Ordering::Greater) => Hand::Scissors,
+            (Hand::Paper, Ordering::Less) => Hand::Scissors,
+            (Hand::Paper, Ordering::Equal) => Hand::Paper,
+            (Hand::Paper, Ordering::Greater) => Hand::Rock,
+            (Hand::Scissors, Ordering::Less) => Hand::Rock,
+            (Hand::Scissors, Ordering::Equal) => Hand::Scissors,
+            (Hand::Scissors, Ordering::Greater) => Hand::Paper,
+        }
+    }
+
+    fn score(left: Self, right: Self) -> u32 {
+        let score = match Hand::compare(left, right) {
+            Ordering::Less => 6,
+            Ordering::Equal => 3,
+            Ordering::Greater => 0,
+        };
+        score + right.shape_score()
+    }
 }
 
 impl ParseInput<Day2> for Aoc2022 {
@@ -64,18 +93,18 @@ impl Solution<Day2> for Aoc2022 {
 
     fn part1(input: &Vec<(Hand, Hand)>) -> u32 {
         let mut total_score = 0;
-        for (left, right) in input {
-            let score = match Hand::compare(*left, *right) {
-                Ordering::Less => 6,
-                Ordering::Equal => 3,
-                Ordering::Greater => 0,
-            } + right.shape_score();
-            total_score += score;
+        for &(left, right) in input {
+            total_score += Hand::score(left, right);
         }
         total_score
     }
 
     fn part2(input: &Vec<(Hand, Hand)>) -> u32 {
-        todo!()
+        let mut total_score = 0;
+        for &(left, right) in input {
+            let actual_right = Hand::part2_target_hand(left, right);
+            total_score += Hand::score(left, actual_right);
+        }
+        total_score
     }
 }
