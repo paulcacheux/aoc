@@ -2,8 +2,8 @@ use crate::aoc2022::Aoc2022;
 use advent_of_code_traits::days::Day2;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
-use std::cmp::Ordering;
 use itertools::Itertools;
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Hand {
@@ -18,7 +18,7 @@ impl Hand {
             "A" | "X" => Hand::Rock,
             "B" | "Y" => Hand::Paper,
             "C" | "Z" => Hand::Scissors,
-            _ => unreachable!("Wrong input")
+            _ => unreachable!("Wrong input"),
         }
     }
 
@@ -80,7 +80,12 @@ impl ParseInput<Day2> for Aoc2022 {
     fn parse_input(input: &str) -> Self::Parsed {
         let mut res = Vec::new();
         for line in input.lines() {
-            let pair = line.split_whitespace().take(2).map(Hand::from_str).collect_tuple().unwrap();
+            let pair = line
+                .split_whitespace()
+                .take(2)
+                .map(Hand::from_str)
+                .collect_tuple()
+                .unwrap();
             res.push(pair);
         }
         res
