@@ -6,7 +6,7 @@ use advent_of_code_traits::Solution;
 impl ParseInput<Day1> for Aoc2019 {
     type Parsed = _;
 
-    fn parse_input(input: &str) -> _ {
+    fn parse_input(input: &str) -> Self::Parsed {
         todo!()
     }
 }
