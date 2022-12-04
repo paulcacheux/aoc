@@ -15,8 +15,6 @@ impl ParseInput<Day3> for Aoc2022 {
     }
 }
 
-const RUCKSACK_WIDTH: usize = 26 * 2;
-
 #[derive(Clone, Debug, Copy)]
 struct Rucksack {
     priorities: u64,
@@ -28,20 +26,10 @@ impl Rucksack {
 
         for &c in s {
             let p = priority(c);
-            r.set(p as usize - 1)
+            r.priorities |= 0b1 << (p - 1);
         }
 
         r
-    }
-
-    #[inline]
-    fn set(&mut self, index: usize) {
-        self.priorities |= 0b1 << index;
-    }
-
-    #[inline]
-    fn get(&self, index: usize) -> bool {
-        self.priorities & (0b1 << index) != 0
     }
 
     fn intersect(left: Self, right: Self) -> Self {
@@ -51,12 +39,7 @@ impl Rucksack {
     }
 
     fn first_priority(&self) -> u8 {
-        for i in 0..RUCKSACK_WIDTH {
-            if self.get(i) {
-                return i as u8 + 1;
-            }
-        }
-        unreachable!("at least one priority")
+        (self.priorities.trailing_zeros() + 1) as u8
     }
 }
 
