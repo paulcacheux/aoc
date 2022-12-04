@@ -15,14 +15,16 @@ impl ParseInput<Day3> for Aoc2022 {
     }
 }
 
+const RUCKSACK_WIDTH: usize = 26 * 2;
+
 struct Rucksack {
-    priorities: [bool; 26 * 2],
+    priorities: [bool; RUCKSACK_WIDTH],
 }
 
 impl Rucksack {
     fn new(s: &[u8]) -> Self {
         let mut r = Rucksack {
-            priorities: [false; 26 * 2],
+            priorities: [false; RUCKSACK_WIDTH],
         };
 
         for &c in s {
