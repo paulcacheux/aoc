@@ -17,6 +17,7 @@ impl ParseInput<Day3> for Aoc2022 {
 
 const RUCKSACK_WIDTH: usize = 26 * 2;
 
+#[derive(Clone, Debug, Copy)]
 struct Rucksack {
     priorities: u64,
 }
@@ -27,19 +28,15 @@ impl Rucksack {
 
         for &c in s {
             let p = priority(c);
-            r.set(p as usize - 1, true)
+            r.set(p as usize - 1)
         }
 
         r
     }
 
     #[inline]
-    fn set(&mut self, index: usize, value: bool) {
-        if value {
-            self.priorities |= 0b1 << index;
-        } else {
-            self.priorities &= !(0b1 << index);
-        }
+    fn set(&mut self, index: usize) {
+        self.priorities |= 0b1 << index;
     }
 
     #[inline]
@@ -47,9 +44,9 @@ impl Rucksack {
         self.priorities & (0b1 << index) != 0
     }
 
-    fn intersect(&mut self, other: &Self) {
-        for i in 0..RUCKSACK_WIDTH {
-            self.set(i, self.get(i) && other.get(i));
+    fn intersect(left: Self, right: Self) -> Self {
+        Rucksack {
+            priorities: left.priorities & right.priorities,
         }
     }
 
@@ -80,10 +77,9 @@ impl Solution<Day3> for Aoc2022 {
             .iter()
             .map(|line| {
                 let (left, right) = line.split_at(line.len() / 2);
-                let mut left = Rucksack::new(left);
+                let left = Rucksack::new(left);
                 let right = Rucksack::new(right);
-                left.intersect(&right);
-                left.first_priority() as u32
+                Rucksack::intersect(left, right).first_priority() as u32
             })
             .sum()
     }
@@ -96,10 +92,7 @@ impl Solution<Day3> for Aoc2022 {
             .map(|chunks| {
                 let common = chunks
                     .map(|chunk| Rucksack::new(chunk))
-                    .reduce(|mut accum, item| {
-                        accum.intersect(&item);
-                        accum
-                    })
+                    .reduce(Rucksack::intersect)
                     .unwrap();
                 common.first_priority() as u32
             })
