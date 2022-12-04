@@ -15,34 +15,31 @@ impl ParseInput<Day3> for Aoc2022 {
     }
 }
 
-const RUCKSACK_WIDTH: usize = 26 * 2;
-
+#[derive(Clone, Debug, Copy)]
 struct Rucksack {
-    priorities: [bool; RUCKSACK_WIDTH],
+    priorities: u64,
 }
 
 impl Rucksack {
     fn new(s: &[u8]) -> Self {
-        let mut r = Rucksack {
-            priorities: [false; RUCKSACK_WIDTH],
-        };
+        let mut r = Rucksack { priorities: 0 };
 
         for &c in s {
             let p = priority(c);
-            r.priorities[p as usize - 1] = true;
+            r.priorities |= 0b1 << (p - 1);
         }
 
         r
     }
 
-    fn intersect(&mut self, other: &Self) {
-        for (p, o) in self.priorities.iter_mut().zip(other.priorities) {
-            *p = *p && o;
+    fn intersect(left: Self, right: Self) -> Self {
+        Rucksack {
+            priorities: left.priorities & right.priorities,
         }
     }
 
     fn first_priority(&self) -> u8 {
-        self.priorities.iter().find_position(|&&b| b).unwrap().0 as u8 + 1
+        (self.priorities.trailing_zeros() + 1) as u8
     }
 }
 
@@ -63,10 +60,9 @@ impl Solution<Day3> for Aoc2022 {
             .iter()
             .map(|line| {
                 let (left, right) = line.split_at(line.len() / 2);
-                let mut left = Rucksack::new(left);
+                let left = Rucksack::new(left);
                 let right = Rucksack::new(right);
-                left.intersect(&right);
-                left.first_priority() as u32
+                Rucksack::intersect(left, right).first_priority() as u32
             })
             .sum()
     }
@@ -79,10 +75,7 @@ impl Solution<Day3> for Aoc2022 {
             .map(|chunks| {
                 let common = chunks
                     .map(|chunk| Rucksack::new(chunk))
-                    .reduce(|mut accum, item| {
-                        accum.intersect(&item);
-                        accum
-                    })
+                    .reduce(Rucksack::intersect)
                     .unwrap();
                 common.first_priority() as u32
             })
