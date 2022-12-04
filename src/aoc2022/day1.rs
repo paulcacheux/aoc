@@ -32,9 +32,22 @@ impl Solution<Day1> for Aoc2022 {
     }
 
     fn part2(input: &Vec<Vec<u32>>) -> u32 {
-        let mut sums: Vec<u32> = input.iter().map(|elf| elf.iter().sum()).collect();
-        sums.sort();
+        let sums = input.iter().map(|elf| elf.iter().sum());
+        let (mut max1, mut max2, mut max3) = (0, 0, 0);
 
-        sums.into_iter().rev().take(3).sum()
+        for s in sums {
+            if s >= max1 {
+                max3 = max2;
+                max2 = max1;
+                max1 = s;
+            } else if s >= max2 {
+                max3 = max2;
+                max2 = s;
+            } else if s >= max3 {
+                max3 = s;
+            }
+        }
+
+        max1 + max2 + max3
     }
 }
