@@ -43,14 +43,12 @@ impl ParseInput<Day5> for Aoc2022 {
                         res.stacks[stack_index].push(c);
                     }
                 }
-            } else {
-                if let Some(groups) = move_re.captures(line) {
-                    res.moves.push(Move {
-                        n: groups.get(1).unwrap().as_str().parse().unwrap(),
-                        from: groups.get(2).unwrap().as_str().parse().unwrap(),
-                        to: groups.get(3).unwrap().as_str().parse().unwrap(),
-                    })
-                }
+            } else if let Some(groups) = move_re.captures(line) {
+                res.moves.push(Move {
+                    n: groups.get(1).unwrap().as_str().parse().unwrap(),
+                    from: groups.get(2).unwrap().as_str().parse().unwrap(),
+                    to: groups.get(3).unwrap().as_str().parse().unwrap(),
+                })
             }
         }
 
