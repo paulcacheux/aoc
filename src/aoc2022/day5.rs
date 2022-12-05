@@ -76,10 +76,9 @@ impl Solution<Day5> for Aoc2022 {
         let mut stacks = input.stacks.clone();
 
         for m in &input.moves {
-            for _ in 0..m.n {
-                let top = stacks[m.from as usize - 1].pop().unwrap();
-                stacks[m.to as usize - 1].push(top);
-            }
+            let current = &mut stacks[m.from as usize - 1];
+            let top = current.split_off(current.len() - m.n as usize);
+            stacks[m.to as usize - 1].extend(top.into_iter().rev());
         }
         compute_output(stacks)
     }
