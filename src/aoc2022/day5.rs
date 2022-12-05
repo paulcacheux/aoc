@@ -59,6 +59,15 @@ impl ParseInput<Day5> for Aoc2022 {
     }
 }
 
+fn compute_output(stacks: Vec<Vec<char>>) -> String {
+    let mut output = String::with_capacity(stacks.len());
+    for mut stack in stacks {
+        let top = stack.pop().unwrap();
+        output.push(top);
+    }
+    output
+}
+
 impl Solution<Day5> for Aoc2022 {
     type Part1Output = String;
     type Part2Output = String;
@@ -67,39 +76,21 @@ impl Solution<Day5> for Aoc2022 {
         let mut stacks = input.stacks.clone();
 
         for m in &input.moves {
-            for _ in 0..m.n {
-                let top = stacks[m.from as usize - 1].pop().unwrap();
-                stacks[m.to as usize - 1].push(top);
-            }
+            let current = &mut stacks[m.from as usize - 1];
+            let top = current.split_off(current.len() - m.n as usize);
+            stacks[m.to as usize - 1].extend(top.into_iter().rev());
         }
-
-        let mut output = String::new();
-
-        for mut stack in stacks {
-            let top = stack.pop().unwrap();
-            output.push(top);
-        }
-        output
+        compute_output(stacks)
     }
 
     fn part2(input: &Input) -> String {
         let mut stacks = input.stacks.clone();
 
         for m in &input.moves {
-            let mut temp = Vec::with_capacity(m.n as usize);
-            for _ in 0..m.n {
-                let top = stacks[m.from as usize - 1].pop().unwrap();
-                temp.push(top);
-            }
-            stacks[m.to as usize - 1].extend(temp.into_iter().rev());
+            let current = &mut stacks[m.from as usize - 1];
+            let top = current.split_off(current.len() - m.n as usize);
+            stacks[m.to as usize - 1].extend(top);
         }
-
-        let mut output = String::new();
-
-        for mut stack in stacks {
-            let top = stack.pop().unwrap();
-            output.push(top);
-        }
-        output
+        compute_output(stacks)
     }
 }
