@@ -1,7 +1,7 @@
 use crate::aoc2022::Aoc2022;
-use advent_of_code_traits::days::Day1;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day1;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 
 impl ParseInput<Day1> for Aoc2022 {
     type Parsed = Vec<Vec<u32>>;

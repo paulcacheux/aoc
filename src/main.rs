@@ -6,6 +6,7 @@ mod aoc2019;
 mod aoc2021;
 mod aoc2022;
 mod helpers;
+mod traits;
 
 use helpers::Results;
 

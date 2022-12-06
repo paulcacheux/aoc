@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::helpers::{run, Results};
-use advent_of_code_traits::days::*;
+use crate::traits::days::*;
 
 pub struct Aoc2021;
 

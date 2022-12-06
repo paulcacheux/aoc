@@ -1,7 +1,7 @@
 use crate::aoc2019::Aoc2019;
-use advent_of_code_traits::days::Day4;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day4;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use itertools::Itertools;
 
 impl ParseInput<Day4> for Aoc2019 {

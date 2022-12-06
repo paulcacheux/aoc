@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day12;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day12;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 
 use string_interner::DefaultBackend;
 use string_interner::StringInterner;

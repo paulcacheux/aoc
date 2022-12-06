@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::aoc2019::Aoc2019;
-use advent_of_code_traits::days::Day3;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day3;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {

@@ -3,12 +3,6 @@
 version = 3
 
 [[package]]
-name = "advent_of_code_traits"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9973ad653a207ad56248b8acf5fafffa4e0024d0988b198b6935e59fcda8e279"
-
-[[package]]
 name = "ahash"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -44,7 +38,6 @@ dependencies = [
 name = "aoc"
 version = "0.1.0"
 dependencies = [
- "advent_of_code_traits",
  "ahash 0.8.2",
  "clap",
  "itertools",

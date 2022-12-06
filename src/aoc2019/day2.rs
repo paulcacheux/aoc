@@ -1,8 +1,8 @@
 use crate::aoc2019::intcode::IntCodeVM;
 use crate::aoc2019::Aoc2019;
-use advent_of_code_traits::days::Day2;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day2;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 
 impl ParseInput<Day2> for Aoc2019 {
     type Parsed = Vec<i32>;
