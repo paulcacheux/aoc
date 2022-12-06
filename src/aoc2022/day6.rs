@@ -21,8 +21,8 @@ fn compute_first_index<const SIZE: usize>(input: &[u8]) -> usize {
     let mut start = 0;
     'main: while start < (input.len() - SIZE) {
         let mut stats = [0usize; INDEX_SPACE_SIZE]; // 0 is sentinel for not found
-        for i in start..(start + SIZE) {
-            let ci = cindex(input[i]);
+        for (i, &c) in input.iter().enumerate().skip(start).take(SIZE) {
+            let ci = cindex(c);
             let pos = stats[ci];
             if pos != 0 {
                 start = pos; // skip all the repetitive checks
