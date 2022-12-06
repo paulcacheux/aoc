@@ -61,10 +61,9 @@ impl fmt::Display for DayResult {
 }
 
 macro_rules! inner_run {
-    ($P:tt, $F:expr, $input:expr, $expected:expr) => {{
-        let parsed_input = <A as ParseInput<D>>::parse_input($input);
+    ($P:tt, $F:expr, $input:expr) => {{
         let start = std::time::Instant::now();
-        let output = $F(&parsed_input);
+        let output = $F(&$input);
         let elapsed = start.elapsed();
 
         DayResult {
@@ -80,11 +79,13 @@ pub fn run<A: Solution<D>, const D: u32>(
     input: &str,
     expected: Option<&DayExpectedResult>,
 ) -> Duration {
-    let part1 = inner_run!(Part1, A::part1, input, result.map(|r| r.part1.as_str()));
+    let input = <A as ParseInput<D>>::parse_input(&input);
+
+    let part1 = inner_run!(Part1, A::part1, input);
     println!("{}", part1);
     part1.check_expected(expected);
 
-    let part2 = inner_run!(Part2, A::part2, input, result.map(|r| r.part2.as_str()));
+    let part2 = inner_run!(Part2, A::part2, input);
     println!("{}", part2);
     part2.check_expected(expected);
 
