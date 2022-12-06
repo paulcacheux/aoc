@@ -12,16 +12,21 @@ impl ParseInput<Day6> for Aoc2022 {
 }
 
 fn compute_first_index(input: &[u8], size: usize) -> usize {
-    'main: for (i, win) in input.windows(size).enumerate() {
+    let mut start = 0;
+    'main: while start < (input.len() - size) {
+        let win = &input[start..(start + size)];
         for i in 0..size {
             for j in (i + 1)..size {
                 if win[i] == win[j] {
+                    start += i + 1; // skip all the repetitive checks
                     continue 'main;
                 }
             }
         }
-        return i + size;
+
+        return start + size;
     }
+
     unreachable!()
 }
 
