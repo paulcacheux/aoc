@@ -11,20 +11,19 @@ impl ParseInput<Day6> for Aoc2022 {
     }
 }
 
-fn compute_first_index(input: &[u8], size: usize) -> usize {
+fn compute_first_index<const SIZE: usize>(input: &[u8]) -> usize {
     let mut start = 0;
-    'main: while start < (input.len() - size) {
-        let win = &input[start..(start + size)];
-        for i in 0..size {
-            for j in (i + 1)..size {
-                if win[i] == win[j] {
+    'main: while start < (input.len() - SIZE) {
+        for i in 0..SIZE {
+            for j in (i + 1)..SIZE {
+                if input[start + i] == input[start + j] {
                     start += i + 1; // skip all the repetitive checks
                     continue 'main;
                 }
             }
         }
 
-        return start + size;
+        return start + SIZE;
     }
 
     unreachable!()
@@ -35,10 +34,10 @@ impl Solution<Day6> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<u8>) -> usize {
-        compute_first_index(input, 4)
+        compute_first_index::<4>(input)
     }
 
     fn part2(input: &Vec<u8>) -> usize {
-        compute_first_index(input, 14)
+        compute_first_index::<14>(input)
     }
 }
