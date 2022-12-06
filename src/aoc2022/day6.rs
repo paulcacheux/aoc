@@ -2,6 +2,7 @@ use crate::aoc2022::Aoc2022;
 use advent_of_code_traits::days::Day6;
 use advent_of_code_traits::ParseInput;
 use advent_of_code_traits::Solution;
+use std::num::NonZeroUsize;
 
 impl ParseInput<Day6> for Aoc2022 {
     type Parsed = Vec<u8>;
@@ -20,15 +21,14 @@ const INDEX_SPACE_SIZE: usize = 26;
 fn compute_first_index<const SIZE: usize>(input: &[u8]) -> usize {
     let mut start = 0;
     'main: while start < (input.len() - SIZE) {
-        let mut stats = [0usize; INDEX_SPACE_SIZE]; // 0 is sentinel for not found
+        let mut stats = [None::<NonZeroUsize>; INDEX_SPACE_SIZE];
         for (i, &c) in input.iter().enumerate().skip(start).take(SIZE) {
             let ci = cindex(c);
-            let pos = stats[ci];
-            if pos != 0 {
-                start = pos; // skip all the repetitive checks
+            if let Some(pos) = stats[ci] {
+                start = pos.get(); // skip all the repetitive checks
                 continue 'main;
             }
-            stats[ci] = i + 1;
+            stats[ci] = NonZeroUsize::new(i + 1);
         }
         return start + SIZE;
     }
