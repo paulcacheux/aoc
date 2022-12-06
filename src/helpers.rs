@@ -79,7 +79,7 @@ pub fn run<A: Solution<D>, const D: u32>(
     input: &str,
     expected: Option<&DayExpectedResult>,
 ) -> Duration {
-    let input = <A as ParseInput<D>>::parse_input(&input);
+    let input = <A as ParseInput<D>>::parse_input(input);
 
     let part1 = inner_run!(Part1, A::part1, input);
     println!("{}", part1);
