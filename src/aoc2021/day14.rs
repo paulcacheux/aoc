@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day14;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day14;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use itertools::Itertools;
 
 #[derive(Debug)]

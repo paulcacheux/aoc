@@ -1,7 +1,7 @@
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day11;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day11;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use itertools::iproduct;
 use std::fmt;
 

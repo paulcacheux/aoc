@@ -3,9 +3,9 @@ use ahash::AHashSet;
 
 use crate::aoc2021::day19_rotations;
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day19;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day19;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use nalgebra::vector;
 use regex::Regex;
 

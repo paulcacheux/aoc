@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use advent_of_code_traits::{days::Day3, ParseInput, Solution};
+use crate::traits::{days::Day3, ParseInput, Solution};
 
 use crate::aoc2021::Aoc2021;
 

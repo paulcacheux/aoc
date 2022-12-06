@@ -1,4 +1,4 @@
-use advent_of_code_traits::{days::Day2, ParseInput, Solution};
+use crate::traits::{days::Day2, ParseInput, Solution};
 
 use crate::aoc2021::Aoc2021;
 

@@ -2,9 +2,9 @@ use std::cmp::Ordering;
 use std::ops::RangeInclusive;
 
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day17;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day17;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use regex::Regex;
 
 #[derive(Debug)]

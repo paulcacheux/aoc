@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day13;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day13;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 use std::fmt;
 
 #[derive(Debug)]

@@ -1,7 +1,7 @@
 use crate::aoc2021::Aoc2021;
-use advent_of_code_traits::days::Day16;
-use advent_of_code_traits::ParseInput;
-use advent_of_code_traits::Solution;
+use crate::traits::days::Day16;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
 
 impl ParseInput<Day16> for Aoc2021 {
     type Parsed = Vec<u8>;

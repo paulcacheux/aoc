@@ -2,7 +2,7 @@ use std::fmt;
 use std::fs::File;
 use std::time::Duration;
 
-use advent_of_code_traits::{ParseEachInput, Part1, Part2, Solution};
+use crate::traits::{ParseInput, Part1, Part2, Solution};
 use serde::Deserialize;
 
 pub struct Results {
@@ -62,7 +62,7 @@ impl fmt::Display for DayResult {
 
 macro_rules! inner_run {
     ($P:tt, $F:expr, $input:expr, $expected:expr) => {{
-        let parsed_input = <A as ParseEachInput<D, $P>>::parse_input($input);
+        let parsed_input = <A as ParseInput<D>>::parse_input($input);
         let start = std::time::Instant::now();
         let output = $F(&parsed_input);
         let elapsed = start.elapsed();
