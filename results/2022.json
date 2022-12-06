@@ -23,5 +23,10 @@
         "day": 5,
         "part1": "QPJPLMNNR",
         "part2": "BQDNWJPVJ"
+    },
+    {
+        "day": 6,
+        "part1": "1109",
+        "part2": "3965"
     }
 ]
