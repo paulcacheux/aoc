@@ -11,18 +11,25 @@ impl ParseInput<Day6> for Aoc2022 {
     }
 }
 
+fn cindex(c: u8) -> usize {
+    (c - b'a') as usize
+}
+
+const INDEX_SPACE_SIZE: usize = 26;
+
 fn compute_first_index<const SIZE: usize>(input: &[u8]) -> usize {
     let mut start = 0;
     'main: while start < (input.len() - SIZE) {
-        for i in 0..SIZE {
-            for j in (i + 1)..SIZE {
-                if input[start + i] == input[start + j] {
-                    start += i + 1; // skip all the repetitive checks
-                    continue 'main;
-                }
+        let mut stats = [0usize; INDEX_SPACE_SIZE]; // 0 is sentinel for not found
+        for i in start..(start + SIZE) {
+            let ci = cindex(input[i]);
+            let pos = stats[ci];
+            if pos != 0 {
+                start = pos; // skip all the repetitive checks
+                continue 'main;
             }
+            stats[ci] = i + 1;
         }
-
         return start + SIZE;
     }
 
