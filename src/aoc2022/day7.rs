@@ -18,31 +18,33 @@ const DIR_PREFIX: &str = "dir ";
 
 fn compute_dir_sizes(lines: &[String]) -> HashMap<PathBuf, u64> {
     let mut directory_size: HashMap<PathBuf, u64> = HashMap::default();
-    let mut current_stack = vec!["/"];
+
+    let mut current = PathBuf::from("/");
+    let mut current_stack = vec![current.clone()];
 
     for line in lines {
         match line.trim() {
             "$ cd /" => {
                 current_stack.clear();
-                current_stack.push("/")
+                current_stack.push(PathBuf::from("/"));
             }
             "$ cd .." => {
                 current_stack.pop();
+                current.pop();
             }
             "$ ls" => {}
             cd if line.starts_with(CD_PREFIX) => {
                 let part = cd[CD_PREFIX.len()..].trim();
-                current_stack.push(part);
+                current.push(part);
+                current_stack.push(current.clone());
             }
             _ if line.starts_with(DIR_PREFIX) => {}
             other => {
                 let mut parts = other.split_ascii_whitespace();
                 let size: u64 = parts.next().unwrap().parse().unwrap();
 
-                let mut current = PathBuf::new();
-                for &part in &current_stack {
-                    current.push(part);
-                    *directory_size.entry(current.clone()).or_default() += size;
+                for path in &current_stack {
+                    *directory_size.entry(path.clone()).or_default() += size;
                 }
             }
         }
