@@ -2,7 +2,7 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day7;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-use std::collections::HashMap;
+use ahash::HashMap;
 use std::path::PathBuf;
 
 impl ParseInput<Day7> for Aoc2022 {
@@ -17,7 +17,7 @@ const CD_PREFIX: &str = "$ cd ";
 const DIR_PREFIX: &str = "dir ";
 
 fn compute_dir_sizes(lines: &[String]) -> HashMap<PathBuf, u64> {
-    let mut directory_size: HashMap<PathBuf, u64> = HashMap::new();
+    let mut directory_size: HashMap<PathBuf, u64> = HashMap::default();
     let mut current_stack = vec!["/"];
 
     for line in lines {
