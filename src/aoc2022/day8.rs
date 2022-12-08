@@ -14,6 +14,13 @@ impl Grid {
     fn get(&self, x: usize, y: usize) -> u8 {
         self.heights[self.width * y + x]
     }
+
+    fn iter(&self) -> impl Iterator<Item = (usize, usize, u8)> + '_ {
+        self.heights
+            .iter()
+            .enumerate()
+            .map(|(i, &val)| (i % self.width, i / self.width, val))
+    }
 }
 
 impl ParseInput<Day8> for Aoc2022 {
@@ -44,49 +51,28 @@ impl ParseInput<Day8> for Aoc2022 {
 }
 
 impl Solution<Day8> for Aoc2022 {
-    type Part1Output = u32;
+    type Part1Output = usize;
     type Part2Output = usize;
 
-    fn part1(input: &Grid) -> u32 {
-        let mut counter = 0;
-        for y in 0..input.height {
-            for x in 0..input.width {
-                let current_tree = input.get(x, y);
-
-                // left
-                if (0..x).all(|dx| input.get(dx, y) < current_tree) {
-                    counter += 1;
-                    continue;
-                }
-                // right
-                if ((x + 1)..input.width).all(|dx| input.get(dx, y) < current_tree) {
-                    counter += 1;
-                    continue;
-                }
-                // up
-                if (0..y).all(|dy| input.get(x, dy) < current_tree) {
-                    counter += 1;
-                    continue;
-                }
-                // down
-                if ((y + 1)..input.height).all(|dy| input.get(x, dy) < current_tree) {
-                    counter += 1;
-                    continue;
-                }
-            }
-        }
-        counter
+    fn part1(input: &Grid) -> usize {
+        input
+            .iter()
+            .filter(|&(x, y, val)| {
+                (0..x).all(|dx| input.get(dx, y) < val) // left
+                    || ((x + 1)..input.width).all(|dx| input.get(dx, y) < val) // right
+                    || (0..y).all(|dy| input.get(x, dy) < val) // up
+                    || ((y + 1)..input.height).all(|dy| input.get(x, dy) < val) // down
+            })
+            .count()
     }
 
     fn part2(input: &Grid) -> usize {
-        let mut best_score = 0;
-        for y in 0..input.height {
-            for x in 0..input.width {
+        input
+            .iter()
+            .filter_map(|(x, y, current_tree)| {
                 if x == 0 || y == 0 || x == input.width - 1 || y == input.height - 1 {
-                    continue;
+                    return None;
                 }
-
-                let current_tree = input.get(x, y);
 
                 let mut score = 1;
                 // left
@@ -103,12 +89,10 @@ impl Solution<Day8> for Aoc2022 {
                     input.get(x, dy) < current_tree
                 });
 
-                if score > best_score {
-                    best_score = score;
-                }
-            }
-        }
-        best_score
+                Some(score)
+            })
+            .max()
+            .unwrap()
     }
 }
 
