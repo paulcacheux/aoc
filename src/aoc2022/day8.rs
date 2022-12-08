@@ -48,14 +48,13 @@ impl Solution<Day8> for Aoc2022 {
     type Part2Output = u32;
 
     fn part1(input: &Grid) -> u32 {
-        let mut side = 0;
         let mut counter = 0;
         for y in 0..input.height {
             for x in 0..input.width {
                 let current_tree = input.get(x, y);
 
                 if x == 0 || y == 0 || x == input.width - 1 || y == input.height - 1 {
-                    side += 1;
+                    counter += 1;
                     continue;
                 }
 
@@ -81,7 +80,7 @@ impl Solution<Day8> for Aoc2022 {
                 }
             }
         }
-        side + counter
+        counter
     }
 
     fn part2(input: &Grid) -> u32 {
