@@ -45,18 +45,13 @@ impl ParseInput<Day8> for Aoc2022 {
 
 impl Solution<Day8> for Aoc2022 {
     type Part1Output = u32;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Grid) -> u32 {
         let mut counter = 0;
         for y in 0..input.height {
             for x in 0..input.width {
                 let current_tree = input.get(x, y);
-
-                if x == 0 || y == 0 || x == input.width - 1 || y == input.height - 1 {
-                    counter += 1;
-                    continue;
-                }
 
                 // left
                 if (0..x).all(|dx| input.get(dx, y) < current_tree) {
@@ -83,7 +78,54 @@ impl Solution<Day8> for Aoc2022 {
         counter
     }
 
-    fn part2(input: &Grid) -> u32 {
-        todo!()
+    fn part2(input: &Grid) -> usize {
+        let mut best_score = 0;
+        for y in 0..input.height {
+            for x in 0..input.width {
+                if x == 0 || y == 0 || x == input.width - 1 || y == input.height - 1 {
+                    continue;
+                }
+
+                let current_tree = input.get(x, y);
+
+                let mut score = 1;
+                // left
+                score *= part2_search(0..x, true, |dx| input.get(dx, y) < current_tree);
+                // right
+                score *= part2_search((x + 1)..input.width, false, |dx| {
+                    input.get(dx, y) < current_tree
+                });
+
+                // up
+                score *= part2_search(0..y, true, |dy| input.get(x, dy) < current_tree);
+                // down
+                score *= part2_search((y + 1)..input.height, false, |dy| {
+                    input.get(x, dy) < current_tree
+                });
+
+                if score > best_score {
+                    best_score = score;
+                }
+            }
+        }
+        best_score
+    }
+}
+
+fn part2_search<F>(range: std::ops::Range<usize>, rev: bool, check: F) -> usize
+where
+    F: Fn(usize) -> bool,
+{
+    let range_len = range.len();
+    let count = if rev {
+        range.rev().take_while(|&dx| check(dx)).count()
+    } else {
+        range.take_while(|&dx| check(dx)).count()
+    };
+
+    if count != range_len {
+        count + 1
+    } else {
+        count
     }
 }
