@@ -15,7 +15,7 @@ impl Grid {
         self.heights[self.width * y + x]
     }
 
-    fn iter<'a>(&'a self) -> impl Iterator<Item = (usize, usize, u8)> + 'a {
+    fn iter(&self) -> impl Iterator<Item = (usize, usize, u8)> + '_ {
         self.heights
             .iter()
             .enumerate()
