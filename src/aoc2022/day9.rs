@@ -85,43 +85,33 @@ impl<const S: usize> State<S> {
     }
 }
 
+fn solve<const S: usize>(input: &[Order]) -> usize {
+    let mut state = State::<S>::new();
+    let mut visited = HashSet::default();
+    visited.insert((0, 0));
+
+    for order in input {
+        let (dx, dy) = order.dir.offset();
+        for _ in 0..order.count {
+            state.knots[0].0 += dx;
+            state.knots[0].1 += dy;
+
+            state.sync_tail();
+            visited.insert(state.knots.last().copied().unwrap());
+        }
+    }
+    visited.len()
+}
+
 impl Solution<Day9> for Aoc2022 {
     type Part1Output = usize;
     type Part2Output = usize;
 
     fn part1(input: &Vec<Order>) -> usize {
-        let mut state = State::<2>::new();
-        let mut visited = HashSet::default();
-        visited.insert((0, 0));
-
-        for order in input {
-            let (dx, dy) = order.dir.offset();
-            for _ in 0..order.count {
-                state.knots[0].0 += dx;
-                state.knots[0].1 += dy;
-
-                state.sync_tail();
-                visited.insert(state.knots.last().copied().unwrap());
-            }
-        }
-        visited.len()
+        solve::<2>(input)
     }
 
     fn part2(input: &Vec<Order>) -> usize {
-        let mut state = State::<10>::new();
-        let mut visited = HashSet::default();
-        visited.insert((0, 0));
-
-        for order in input {
-            let (dx, dy) = order.dir.offset();
-            for _ in 0..order.count {
-                state.knots[0].0 += dx;
-                state.knots[0].1 += dy;
-
-                state.sync_tail();
-                visited.insert(state.knots.last().copied().unwrap());
-            }
-        }
-        visited.len()
+        solve::<10>(input)
     }
 }
