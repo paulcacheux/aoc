@@ -69,13 +69,9 @@ impl<const S: usize> State<S> {
             let dx = head.0 - tail.0;
             let dy = head.1 - tail.1;
 
-            let (tx, ty) = if dx.abs() == 2 && dy == 0 {
+            let (tx, ty) = if dx.abs() == 2 && dy.abs() <= 1 {
                 (dx / 2, dy)
-            } else if dx == 0 && dy.abs() == 2 {
-                (dx, dy / 2)
-            } else if dx.abs() == 2 && dy.abs() == 1 {
-                (dx / 2, dy)
-            } else if dx.abs() == 1 && dy.abs() == 2 {
+            } else if dx.abs() <= 1 && dy.abs() == 2 {
                 (dx, dy / 2)
             } else if dx.abs() == 2 && dy.abs() == 2 {
                 (dx / 2, dy / 2)
