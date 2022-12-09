@@ -70,12 +70,12 @@ impl<const S: usize> State<S> {
             let dy = head.1 - tail.1;
 
             let (tx, ty) = if dx.abs() == 2 && dy == 0 {
-                (dx / 2, 0)
-            } else if dy.abs() == 2 && dx == 0 {
-                (0, dy / 2)
+                (dx / 2, dy)
+            } else if dx == 0 && dy.abs() == 2 {
+                (dx, dy / 2)
             } else if dx.abs() == 2 && dy.abs() == 1 {
                 (dx / 2, dy)
-            } else if dy.abs() == 2 && dx.abs() == 1 {
+            } else if dx.abs() == 1 && dy.abs() == 2 {
                 (dx, dy / 2)
             } else if dx.abs() == 2 && dy.abs() == 2 {
                 (dx / 2, dy / 2)
