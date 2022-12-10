@@ -1,5 +1,3 @@
-use ahash::HashSet;
-
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day8;
 use crate::traits::ParseInput;
@@ -57,7 +55,7 @@ impl Solution<Day8> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Grid) -> usize {
-        let mut visible_trees = HashSet::default();
+        let mut visible_trees = vec![false; input.width * input.height];
 
         // rows
         for y in 0..input.height {
@@ -85,7 +83,7 @@ impl Solution<Day8> for Aoc2022 {
             }
         }
 
-        visible_trees.len()
+        visible_trees.iter().filter(|&&v| v).count()
     }
 
     fn part2(input: &Grid) -> usize {
@@ -141,11 +139,11 @@ fn part1_check(
     x: usize,
     y: usize,
     current_max: &mut Option<u8>,
-    visible_trees: &mut HashSet<(usize, usize)>,
+    visible_trees: &mut [bool],
 ) {
     let current = input.get(x, y);
     if current_max.map(|cm| current > cm).unwrap_or(true) {
         *current_max = Some(current);
-        visible_trees.insert((x, y));
+        visible_trees[y * input.width + x] = true;
     }
 }
