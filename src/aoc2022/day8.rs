@@ -1,3 +1,5 @@
+use ahash::HashSet;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day8;
 use crate::traits::ParseInput;
@@ -55,15 +57,35 @@ impl Solution<Day8> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Grid) -> usize {
-        input
-            .iter()
-            .filter(|&(x, y, val)| {
-                (0..x).all(|dx| input.get(dx, y) < val) // left
-                    || ((x + 1)..input.width).all(|dx| input.get(dx, y) < val) // right
-                    || (0..y).all(|dy| input.get(x, dy) < val) // up
-                    || ((y + 1)..input.height).all(|dy| input.get(x, dy) < val) // down
-            })
-            .count()
+        let mut visible_trees = HashSet::default();
+
+        // rows
+        for y in 0..input.height {
+            let mut current_max = None;
+            for x in 0..input.width {
+                part1_check(input, x, y, &mut current_max, &mut visible_trees);
+            }
+
+            let mut current_max = None;
+            for x in (0..input.width).rev() {
+                part1_check(input, x, y, &mut current_max, &mut visible_trees);
+            }
+        }
+
+        // columns
+        for x in 0..input.width {
+            let mut current_max = None;
+            for y in 0..input.height {
+                part1_check(input, x, y, &mut current_max, &mut visible_trees);
+            }
+
+            let mut current_max = None;
+            for y in (0..input.height).rev() {
+                part1_check(input, x, y, &mut current_max, &mut visible_trees);
+            }
+        }
+
+        visible_trees.len()
     }
 
     fn part2(input: &Grid) -> usize {
@@ -111,5 +133,19 @@ where
         count + 1
     } else {
         count
+    }
+}
+
+fn part1_check(
+    input: &Grid,
+    x: usize,
+    y: usize,
+    current_max: &mut Option<u8>,
+    visible_trees: &mut HashSet<(usize, usize)>,
+) {
+    let current = input.get(x, y);
+    if current_max.map(|cm| current > cm).unwrap_or(true) {
+        *current_max = Some(current);
+        visible_trees.insert((x, y));
     }
 }
