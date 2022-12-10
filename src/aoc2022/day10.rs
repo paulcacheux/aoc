@@ -58,13 +58,13 @@ where
 const PART1_POINTS: [usize; 6] = [20, 60, 100, 140, 180, 220];
 
 #[derive(Debug)]
-pub struct CRT {
+pub struct Crt {
     pixels: [bool; 40 * 6],
 }
 
-impl CRT {
+impl Crt {
     fn new() -> Self {
-        CRT {
+        Crt {
             pixels: [false; 40 * 6],
         }
     }
@@ -74,7 +74,7 @@ impl CRT {
     }
 }
 
-impl std::fmt::Display for CRT {
+impl std::fmt::Display for Crt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for y in 0..6 {
             for x in 0..40 {
@@ -88,7 +88,7 @@ impl std::fmt::Display for CRT {
 
 impl Solution<Day10> for Aoc2022 {
     type Part1Output = i32;
-    type Part2Output = CRT;
+    type Part2Output = Crt;
 
     fn part1(input: &Vec<Instruction>) -> i32 {
         let mut res = 0;
@@ -100,8 +100,8 @@ impl Solution<Day10> for Aoc2022 {
         res
     }
 
-    fn part2(input: &Vec<Instruction>) -> CRT {
-        let mut crt = CRT::new();
+    fn part2(input: &Vec<Instruction>) -> Crt {
+        let mut crt = Crt::new();
         eval(input, |cycle, x| {
             let cycle0 = cycle - 1;
             let cx = (cycle0 % 40) as i32;
