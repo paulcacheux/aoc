@@ -124,6 +124,7 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
                 next_ops.push((next_index, item));
             }
 
+            // simd prep, should allow the previous loop to be vectorized
             for (next_index, item) in next_ops {
                 monkeys[next_index].items.push(item);
             }
