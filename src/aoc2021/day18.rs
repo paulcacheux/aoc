@@ -83,7 +83,7 @@ impl NodeList {
         self.depth_first_visit::<_, true, false>(|item| {
             match (&self.nodes[item.index], item.pair_state) {
                 (Node::Lit(lit), _) => {
-                    print!("{}", lit);
+                    print!("{lit}");
                 }
                 (Node::Pair(_, _), PairVisitState::Begin) => {
                     print!("[");

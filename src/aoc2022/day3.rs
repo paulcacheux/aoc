@@ -2,7 +2,6 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day3;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-use itertools::Itertools;
 
 impl ParseInput<Day3> for Aoc2022 {
     type Parsed = Vec<Vec<u8>>;
@@ -70,10 +69,11 @@ impl Solution<Day3> for Aoc2022 {
     fn part2(input: &Vec<Vec<u8>>) -> u32 {
         input
             .iter()
-            .chunks(3)
+            .array_chunks::<3>()
             .into_iter()
             .map(|chunks| {
                 let common = chunks
+                    .into_iter()
                     .map(|chunk| Rucksack::new(chunk))
                     .reduce(Rucksack::intersect)
                     .unwrap();
