@@ -113,8 +113,9 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
 
                 if div_by_3 {
                     item /= 3;
+                } else {
+                    item %= modulo;
                 }
-                item %= modulo;
 
                 let next_index = if item % current_monkey.test_div_by == 0 {
                     current_monkey.if_true
