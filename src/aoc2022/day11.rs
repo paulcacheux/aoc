@@ -96,13 +96,15 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut counter = vec![0; monkeys.len()];
 
     let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
+    let total_item_count = monkeys.iter().map(|m| m.items.len()).sum();
+
+    let mut next_steps = Vec::with_capacity(total_item_count);
 
     for _ in 0..rounds {
         for mi in 0..monkeys.len() {
-            let current_items = std::mem::take(&mut monkeys[mi].items);
-            counter[mi] += current_items.len();
-
-            for item in current_items {
+            let current_monkey = &monkeys[mi];
+            counter[mi] += current_monkey.items.len();
+            for &item in &current_monkey.items {
                 let mut item = match monkeys[mi].operation {
                     Operation::Add(rhs) => item + rhs,
                     Operation::Mul(rhs) => item * rhs,
@@ -114,11 +116,16 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
                 }
                 item %= modulo;
 
-                let next_index = if item % monkeys[mi].test_div_by == 0 {
-                    monkeys[mi].if_true
+                let next_index = if item % current_monkey.test_div_by == 0 {
+                    current_monkey.if_true
                 } else {
-                    monkeys[mi].if_false
+                    current_monkey.if_false
                 };
+                next_steps.push((next_index, item));
+            }
+
+            monkeys[mi].items.clear();
+            for (next_index, item) in next_steps.drain(..) {
                 monkeys[next_index].items.push(item);
             }
         }
