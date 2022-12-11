@@ -101,6 +101,9 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
         for mi in 0..monkeys.len() {
             let current_items = std::mem::take(&mut monkeys[mi].items);
             counter[mi] += current_items.len();
+
+            let mut next_ops = Vec::with_capacity(current_items.len());
+
             for item in current_items {
                 let mut item = match monkeys[mi].operation {
                     Operation::Add(rhs) => item + rhs,
@@ -118,6 +121,10 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
                 } else {
                     monkeys[mi].if_false
                 };
+                next_ops.push((next_index, item));
+            }
+
+            for (next_index, item) in next_ops {
                 monkeys[next_index].items.push(item);
             }
         }
