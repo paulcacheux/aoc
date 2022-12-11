@@ -32,10 +32,10 @@ fn run_day(
     test: bool,
 ) -> Result<Option<Duration>, Box<dyn std::error::Error>> {
     let (input_path, results) = if test {
-        (format!("./inputs/{}/day{}_test.txt", year, day), None)
+        (format!("./inputs/{year}/day{day}_test.txt"), None)
     } else {
         (
-            format!("./inputs/{}/day{}.txt", year, day),
+            format!("./inputs/{year}/day{day}.txt"),
             Some(Results::parse(year)?),
         )
     };
@@ -45,7 +45,7 @@ fn run_day(
         2019 => aoc2019::run_solution_for_day,
         2021 => aoc2021::run_solution_for_day,
         2022 => aoc2022::run_solution_for_day,
-        _ => panic!("undefined year {}", year),
+        _ => panic!("undefined year {year}"),
     };
 
     Ok(year_runner(day, &input, results))
@@ -58,7 +58,7 @@ fn run_all(year: u32, test: bool) {
             total += elapsed;
         }
     }
-    println!("Total: {:?}", total);
+    println!("Total: {total:?}");
 }
 
 fn main() {
@@ -67,10 +67,10 @@ fn main() {
     if let Some(day) = opts.day {
         match run_day(opts.year, day, opts.test) {
             Ok(None) => {
-                panic!("no solution available for that day ({})", day)
+                panic!("no solution available for that day ({day})")
             }
             Ok(Some(_)) => {}
-            Err(err) => panic!("Error loading day: {}", err),
+            Err(err) => panic!("Error loading day: {err}"),
         }
     } else {
         run_all(opts.year, opts.test)

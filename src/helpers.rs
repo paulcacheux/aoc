@@ -11,7 +11,7 @@ pub struct Results {
 
 impl Results {
     pub fn parse(year: u32) -> Result<Self, Box<dyn std::error::Error>> {
-        let f = File::open(format!("./results/{}.json", year))?;
+        let f = File::open(format!("./results/{year}.json"))?;
         let days: Vec<DayExpectedResult> = serde_json::from_reader(f)?;
 
         Ok(Self { days })
@@ -82,11 +82,11 @@ pub fn run<A: Solution<D>, const D: u32>(
     let input = <A as ParseInput<D>>::parse_input(input);
 
     let part1 = inner_run!(Part1, A::part1, input);
-    println!("{}", part1);
+    println!("{part1}");
     part1.check_expected(expected);
 
     let part2 = inner_run!(Part2, A::part2, input);
-    println!("{}", part2);
+    println!("{part2}");
     part2.check_expected(expected);
 
     part1.elapsed + part2.elapsed

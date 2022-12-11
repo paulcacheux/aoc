@@ -94,7 +94,7 @@ fn compute_lower_points(map: &PuzzleInput) -> Vec<(usize, usize)> {
             let current = map.get(x, y);
 
             for (rx, ry) in map.get_neighbors(x, y) {
-                if map.get(rx as usize, ry as usize) <= current {
+                if map.get(rx, ry) <= current {
                     continue 'main;
                 }
             }

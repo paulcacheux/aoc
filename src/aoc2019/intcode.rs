@@ -116,7 +116,7 @@ impl IntCodeVM {
                 self.running = false;
                 PCOp::Offset(1)
             }
-            _ => panic!("Unknown opcode: {}", opcode),
+            _ => panic!("Unknown opcode: {opcode}"),
         };
 
         match pc_offset {
