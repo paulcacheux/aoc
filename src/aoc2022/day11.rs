@@ -91,7 +91,7 @@ impl ParseInput<Day11> for Aoc2022 {
     }
 }
 
-fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> u64 {
+fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut monkeys = monkeys.to_vec();
     let mut counter = vec![0; monkeys.len()];
 
@@ -99,7 +99,8 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> u64 {
 
     for _ in 0..rounds {
         for mi in 0..monkeys.len() {
-            let current_items = std::mem::replace(&mut monkeys[mi].items, Vec::new());
+            let current_items = std::mem::take(&mut monkeys[mi].items);
+            counter[mi] += current_items.len();
             for item in current_items {
                 let mut item = match monkeys[mi].operation {
                     Operation::Add(rhs) => item + rhs,
@@ -118,7 +119,6 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> u64 {
                     monkeys[mi].if_false
                 };
                 monkeys[next_index].items.push(item);
-                counter[mi] += 1;
             }
         }
     }
@@ -129,14 +129,14 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> u64 {
 }
 
 impl Solution<Day11> for Aoc2022 {
-    type Part1Output = u64;
-    type Part2Output = u64;
+    type Part1Output = usize;
+    type Part2Output = usize;
 
-    fn part1(input: &Vec<Monkey>) -> u64 {
+    fn part1(input: &Vec<Monkey>) -> usize {
         solve(input, 20, true)
     }
 
-    fn part2(input: &Vec<Monkey>) -> u64 {
+    fn part2(input: &Vec<Monkey>) -> usize {
         solve(input, 10000, false)
     }
 }
