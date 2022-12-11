@@ -11,6 +11,9 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
 
+      - name: Setup rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
       - name: Cache rust artifacts
         uses: actions/cache@v3
         with:
@@ -20,7 +23,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-debug-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-debug-${{ hashFiles('**/Cargo.lock') }}-v5
 
       - name: Run cargo fmt
         run: |
