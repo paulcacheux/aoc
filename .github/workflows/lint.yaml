@@ -13,6 +13,8 @@ jobs:
 
       - name: Setup rust toolchain
         uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rustfmt
 
       - name: Cache rust artifacts
         uses: actions/cache@v3
