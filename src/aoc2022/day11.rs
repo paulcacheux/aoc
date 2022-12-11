@@ -5,17 +5,17 @@ use crate::traits::Solution;
 
 #[derive(Debug, Default, Clone, Copy)]
 pub enum Operation {
-    Add(u32),
-    Mul(u32),
+    Add(u64),
+    Mul(u64),
     #[default]
     Square,
 }
 
 #[derive(Default, Debug, Clone)]
 pub struct Monkey {
-    items: Vec<u32>,
+    items: Vec<u64>,
     operation: Operation,
-    test_div_by: u32,
+    test_div_by: u64,
     if_true: usize,
     if_false: usize,
 }
@@ -91,40 +91,52 @@ impl ParseInput<Day11> for Aoc2022 {
     }
 }
 
-impl Solution<Day11> for Aoc2022 {
-    type Part1Output = u32;
-    type Part2Output = u32;
+fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> u64 {
+    let mut monkeys = monkeys.to_vec();
+    let mut counter = vec![0; monkeys.len()];
 
-    fn part1(input: &Vec<Monkey>) -> u32 {
-        let mut monkeys = input.clone();
-        let mut counter = vec![0; monkeys.len()];
-        for _ in 0..20 {
-            for mi in 0..monkeys.len() {
-                let current_items = std::mem::replace(&mut monkeys[mi].items, Vec::new());
-                for item in current_items {
-                    let item = match monkeys[mi].operation {
-                        Operation::Add(rhs) => item + rhs,
-                        Operation::Mul(rhs) => item * rhs,
-                        Operation::Square => item * item,
-                    } / 3;
+    let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
 
-                    let next_index = if item % monkeys[mi].test_div_by == 0 {
-                        monkeys[mi].if_true
-                    } else {
-                        monkeys[mi].if_false
-                    };
-                    monkeys[next_index].items.push(item);
-                    counter[mi] += 1;
+    for _ in 0..rounds {
+        for mi in 0..monkeys.len() {
+            let current_items = std::mem::replace(&mut monkeys[mi].items, Vec::new());
+            for item in current_items {
+                let mut item = match monkeys[mi].operation {
+                    Operation::Add(rhs) => item + rhs,
+                    Operation::Mul(rhs) => item * rhs,
+                    Operation::Square => item * item,
+                };
+
+                if div_by_3 {
+                    item /= 3;
                 }
+                item %= modulo;
+
+                let next_index = if item % monkeys[mi].test_div_by == 0 {
+                    monkeys[mi].if_true
+                } else {
+                    monkeys[mi].if_false
+                };
+                monkeys[next_index].items.push(item);
+                counter[mi] += 1;
             }
         }
-
-        counter.sort();
-        counter.reverse();
-        counter[0] * counter[1]
     }
 
-    fn part2(input: &Vec<Monkey>) -> u32 {
-        todo!()
+    counter.sort();
+    counter.reverse();
+    counter[0] * counter[1]
+}
+
+impl Solution<Day11> for Aoc2022 {
+    type Part1Output = u64;
+    type Part2Output = u64;
+
+    fn part1(input: &Vec<Monkey>) -> u64 {
+        solve(input, 20, true)
+    }
+
+    fn part2(input: &Vec<Monkey>) -> u64 {
+        solve(input, 10000, false)
     }
 }
