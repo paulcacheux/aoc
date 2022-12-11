@@ -1,4 +1,5 @@
 #![feature(iter_array_chunks)]
+#![feature(get_many_mut)]
 
 use std::time::Duration;
 

@@ -96,16 +96,22 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut counter = vec![0; monkeys.len()];
 
     let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
-    let total_item_count = monkeys.iter().map(|m| m.items.len()).sum();
-
-    let mut next_steps = Vec::with_capacity(total_item_count);
+    let total_item_count: usize = monkeys.iter().map(|m| m.items.len()).sum();
+    for m in monkeys.iter_mut() {
+        m.items.reserve(total_item_count - m.items.len());
+    }
 
     for _ in 0..rounds {
         for mi in 0..monkeys.len() {
-            let current_monkey = &monkeys[mi];
+            let if_true_index = monkeys[mi].if_true;
+            let if_false_index = monkeys[mi].if_false;
+            let [current_monkey, if_true, if_false] = monkeys
+                .get_many_mut([mi, if_true_index, if_false_index])
+                .unwrap();
+
             counter[mi] += current_monkey.items.len();
-            for &item in &current_monkey.items {
-                let mut item = match monkeys[mi].operation {
+            for item in current_monkey.items.drain(..) {
+                let mut item = match current_monkey.operation {
                     Operation::Add(rhs) => item + rhs,
                     Operation::Mul(rhs) => item * rhs,
                     Operation::Square => item * item,
@@ -113,27 +119,29 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
 
                 if div_by_3 {
                     item /= 3;
-                }
-                item %= modulo;
-
-                let next_index = if item % current_monkey.test_div_by == 0 {
-                    current_monkey.if_true
                 } else {
-                    current_monkey.if_false
-                };
-                next_steps.push((next_index, item));
-            }
+                    item %= modulo;
+                }
 
-            monkeys[mi].items.clear();
-            for (next_index, item) in next_steps.drain(..) {
-                monkeys[next_index].items.push(item);
+                if item % current_monkey.test_div_by == 0 {
+                    if_true.items.push(item);
+                } else {
+                    if_false.items.push(item);
+                }
             }
         }
     }
 
-    counter.sort();
-    counter.reverse();
-    counter[0] * counter[1]
+    let (mut max0, mut max1) = (0, 0);
+    for c in counter {
+        if c >= max0 {
+            max1 = max0;
+            max0 = c;
+        } else if c > max1 {
+            max1 = c;
+        }
+    }
+    max0 * max1
 }
 
 impl Solution<Day11> for Aoc2022 {
