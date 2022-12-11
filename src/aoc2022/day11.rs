@@ -8,8 +8,8 @@ use crate::traits::Solution;
 
 #[derive(Debug, Default, Clone, Copy)]
 pub enum Operation {
-    Add(u64),
-    Mul(u64),
+    Add(Simd<u64, CHUNK_WIDTH>),
+    Mul(Simd<u64, CHUNK_WIDTH>),
     #[default]
     Square,
 }
@@ -18,9 +18,9 @@ pub enum Operation {
 pub struct Monkey {
     items: Vec<u64>,
     operation: Operation,
-    test_div_by: u64,
-    if_true: usize,
-    if_false: usize,
+    test_div_by: Simd<u64, CHUNK_WIDTH>,
+    if_true: Simd<i64, CHUNK_WIDTH>,
+    if_false: Simd<i64, CHUNK_WIDTH>,
 }
 
 impl ParseInput<Day11> for Aoc2022 {
@@ -45,12 +45,12 @@ impl ParseInput<Day11> for Aoc2022 {
                 2 => {
                     let operation = line.trim_start_matches("Operation: new = old ");
                     current_monkey.operation = match &operation[0..1] {
-                        "+" => Operation::Add(operation[2..].parse().unwrap()),
+                        "+" => Operation::Add(Simd::splat(operation[2..].parse().unwrap())),
                         "*" => {
                             if &operation[2..] == "old" {
                                 Operation::Square
                             } else {
-                                Operation::Mul(operation[2..].parse().unwrap())
+                                Operation::Mul(Simd::splat(operation[2..].parse().unwrap()))
                             }
                         }
                         _ => unreachable!(),
@@ -58,24 +58,27 @@ impl ParseInput<Day11> for Aoc2022 {
                     3
                 }
                 3 => {
-                    current_monkey.test_div_by = line
-                        .trim_start_matches("Test: divisible by ")
-                        .parse()
-                        .unwrap();
+                    current_monkey.test_div_by = Simd::splat(
+                        line.trim_start_matches("Test: divisible by ")
+                            .parse()
+                            .unwrap(),
+                    );
                     4
                 }
                 4 => {
-                    current_monkey.if_true = line
-                        .trim_start_matches("If true: throw to monkey ")
-                        .parse()
-                        .unwrap();
+                    current_monkey.if_true = Simd::splat(
+                        line.trim_start_matches("If true: throw to monkey ")
+                            .parse()
+                            .unwrap(),
+                    );
                     5
                 }
                 5 => {
-                    current_monkey.if_false = line
-                        .trim_start_matches("If false: throw to monkey ")
-                        .parse()
-                        .unwrap();
+                    current_monkey.if_false = Simd::splat(
+                        line.trim_start_matches("If false: throw to monkey ")
+                            .parse()
+                            .unwrap(),
+                    );
                     6
                 }
                 6 => {
@@ -100,7 +103,7 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut monkeys = monkeys.to_vec();
     let mut counter = vec![0; monkeys.len()];
 
-    let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
+    let modulo = Simd::splat(monkeys.iter().map(|m| m.test_div_by[0]).product::<u64>());
 
     for _ in 0..rounds {
         for mi in 0..monkeys.len() {
@@ -109,27 +112,22 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
 
             for chunk in current_items.chunks(CHUNK_WIDTH) {
                 let mut item: Simd<_, CHUNK_WIDTH> = Simd::splat(0);
-                for (i, &citem) in chunk.iter().enumerate() {
-                    item[i] = citem;
-                }
+                item.as_mut_array()[..chunk.len()].clone_from_slice(chunk);
 
                 let mut item = match monkeys[mi].operation {
-                    Operation::Add(rhs) => item + Simd::splat(rhs),
-                    Operation::Mul(rhs) => item * Simd::splat(rhs),
+                    Operation::Add(rhs) => item + rhs,
+                    Operation::Mul(rhs) => item * rhs,
                     Operation::Square => item * item,
                 };
 
                 if div_by_3 {
                     item /= Simd::splat(3);
+                } else {
+                    item %= modulo;
                 }
-                item %= Simd::splat(modulo);
 
-                let next_idx_mask =
-                    (item % Simd::splat(monkeys[mi].test_div_by)).simd_eq(Simd::splat(0));
-                let next_indices = next_idx_mask.select(
-                    Simd::splat(monkeys[mi].if_true as i64),
-                    Simd::splat(monkeys[mi].if_false as i64),
-                );
+                let next_idx_mask = (item % monkeys[mi].test_div_by).simd_eq(Simd::splat(0));
+                let next_indices = next_idx_mask.select(monkeys[mi].if_true, monkeys[mi].if_false);
 
                 for i in 0..chunk.len() {
                     monkeys[next_indices[i] as usize].items.push(item[i]);
