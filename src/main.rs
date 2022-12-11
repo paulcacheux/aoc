@@ -1,4 +1,5 @@
 #![feature(iter_array_chunks)]
+#![feature(portable_simd)]
 
 use std::time::Duration;
 

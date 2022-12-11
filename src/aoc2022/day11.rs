@@ -1,3 +1,6 @@
+use std::simd::Simd;
+use std::simd::SimdPartialEq;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day11;
 use crate::traits::ParseInput;
@@ -91,6 +94,8 @@ impl ParseInput<Day11> for Aoc2022 {
     }
 }
 
+const CHUNK_WIDTH: usize = 8;
+
 fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut monkeys = monkeys.to_vec();
     let mut counter = vec![0; monkeys.len()];
@@ -102,24 +107,33 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
             let current_items = std::mem::take(&mut monkeys[mi].items);
             counter[mi] += current_items.len();
 
-            for item in current_items {
+            for chunk in current_items.chunks(CHUNK_WIDTH) {
+                let mut item: Simd<_, CHUNK_WIDTH> = Simd::splat(0);
+                for (i, &citem) in chunk.iter().enumerate() {
+                    item[i] = citem;
+                }
+
                 let mut item = match monkeys[mi].operation {
-                    Operation::Add(rhs) => item + rhs,
-                    Operation::Mul(rhs) => item * rhs,
+                    Operation::Add(rhs) => item + Simd::splat(rhs),
+                    Operation::Mul(rhs) => item * Simd::splat(rhs),
                     Operation::Square => item * item,
                 };
 
                 if div_by_3 {
-                    item /= 3;
+                    item /= Simd::splat(3);
                 }
-                item %= modulo;
+                item %= Simd::splat(modulo);
 
-                let next_index = if item % monkeys[mi].test_div_by == 0 {
-                    monkeys[mi].if_true
-                } else {
-                    monkeys[mi].if_false
-                };
-                monkeys[next_index].items.push(item);
+                let next_idx_mask =
+                    (item % Simd::splat(monkeys[mi].test_div_by)).simd_eq(Simd::splat(0));
+                let next_indices = next_idx_mask.select(
+                    Simd::splat(monkeys[mi].if_true as i64),
+                    Simd::splat(monkeys[mi].if_false as i64),
+                );
+
+                for i in 0..chunk.len() {
+                    monkeys[next_indices[i] as usize].items.push(item[i]);
+                }
             }
         }
     }
