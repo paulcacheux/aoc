@@ -97,7 +97,7 @@ impl ParseInput<Day11> for Aoc2022 {
     }
 }
 
-const CHUNK_WIDTH: usize = 8;
+const CHUNK_WIDTH: usize = 4;
 
 fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut monkeys = monkeys.to_vec();
