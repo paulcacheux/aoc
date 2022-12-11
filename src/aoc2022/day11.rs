@@ -131,9 +131,16 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
         }
     }
 
-    counter.sort();
-    counter.reverse();
-    counter[0] * counter[1]
+    let (mut max0, mut max1) = (0, 0);
+    for c in counter {
+        if c >= max0 {
+            max1 = max0;
+            max0 = c;
+        } else if c > max1 {
+            max1 = c;
+        }
+    }
+    max0 * max1
 }
 
 impl Solution<Day11> for Aoc2022 {
