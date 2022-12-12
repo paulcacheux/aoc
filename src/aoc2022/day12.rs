@@ -6,7 +6,7 @@ use crate::traits::days::Day12;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 use std::cmp::Ordering;
-use std::collections::BinaryHeap;
+use std::collections::VecDeque;
 
 pub struct Input {
     start: (usize, usize),
@@ -62,7 +62,24 @@ impl PartialOrd for State {
 }
 
 #[inline]
-fn dijkstra<F, N>(
+fn backtrack_parents(
+    parents: HashMap<(usize, usize), (usize, usize)>,
+    mut current: (usize, usize),
+    start: (usize, usize),
+) -> Option<u32> {
+    let mut count = 1;
+    while let Some(&next) = parents.get(&current) {
+        if next == start {
+            return Some(count);
+        }
+        current = next;
+        count += 1;
+    }
+    None
+}
+
+#[inline]
+fn bfs<F, N>(
     grid: &Grid<u8>,
     start: (usize, usize),
     end_check: F,
@@ -72,42 +89,20 @@ where
     F: Fn((usize, usize)) -> bool,
     N: Fn((usize, usize), (usize, usize)) -> bool,
 {
-    let mut dist = HashMap::default();
-    let mut open_queue = BinaryHeap::new();
+    let mut parents = HashMap::default();
+    let mut open_queue = VecDeque::new();
+    open_queue.push_back(start);
 
-    dist.insert(start, 0);
-    open_queue.push(State {
-        cost: 0,
-        position: start,
-    });
-
-    while let Some(current) = open_queue.pop() {
-        if end_check(current.position) {
-            return Some(current.cost);
+    while let Some(current) = open_queue.pop_front() {
+        if end_check(current) {
+            return backtrack_parents(parents, current, start);
         }
 
-        if dist
-            .get(&current.position)
-            .map(|&c| current.cost > c)
-            .unwrap_or(false)
-        {
-            continue;
-        }
-
-        for next_pos in grid.get_neighbors(current.position.0, current.position.1) {
-            if neighbor_validate(current.position, next_pos) {
-                let next = State {
-                    cost: current.cost + 1,
-                    position: next_pos,
-                };
-
-                if dist
-                    .get(&next_pos)
-                    .map(|&dnp| next.cost < dnp)
-                    .unwrap_or(true)
-                {
-                    open_queue.push(next);
-                    dist.insert(next_pos, next.cost);
+        for next_pos in grid.get_neighbors(current.0, current.1) {
+            if neighbor_validate(current, next_pos) {
+                if !parents.contains_key(&next_pos) {
+                    open_queue.push_back(next_pos);
+                    parents.insert(next_pos, current);
                 }
             }
         }
@@ -120,7 +115,7 @@ impl Solution<Day12> for Aoc2022 {
     type Part2Output = u32;
 
     fn part1(input: &Input) -> u32 {
-        dijkstra(
+        bfs(
             &input.grid,
             input.start,
             |pos| pos == input.end,
@@ -133,7 +128,7 @@ impl Solution<Day12> for Aoc2022 {
     }
 
     fn part2(input: &Input) -> u32 {
-        dijkstra(
+        bfs(
             &input.grid,
             input.end,
             |pos| start_end_mapping(input.grid.get(pos.0, pos.1)) == b'a',
