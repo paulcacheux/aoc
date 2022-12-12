@@ -5,8 +5,8 @@ pub struct Grid<T> {
     pub height: usize,
 }
 
-impl Grid<u8> {
-    pub fn parse(input: &str) -> Self {
+impl<T> Grid<T> {
+    pub fn parse<F: Fn(char) -> T>(input: &str, mapper: F) -> Self {
         let mut heights = Vec::new();
         let mut width = None;
         let mut height = 0;
@@ -18,7 +18,8 @@ impl Grid<u8> {
             } else {
                 width = Some(line.len());
             }
-            heights.extend(line.chars().map(|c| c.to_string().parse::<u8>().unwrap()));
+            // heights.extend(line.chars().map(|c| c.to_string().parse::<u8>().unwrap()));
+            heights.extend(line.chars().map(&mapper));
             height += 1;
         }
 
@@ -28,9 +29,7 @@ impl Grid<u8> {
             height,
         }
     }
-}
 
-impl<T> Grid<T> {
     pub fn get(&self, x: usize, y: usize) -> &T {
         &self.data[self.width * y + x]
     }
@@ -40,5 +39,30 @@ impl<T> Grid<T> {
             .iter()
             .enumerate()
             .map(|(i, val)| (i % self.width, i / self.width, val))
+    }
+
+    /*pub fn map<U, F: Fn(T) -> U>(self, mapper: F) -> Grid<U> {
+        Grid {
+            data: self.data.into_iter().map(mapper).collect(),
+            width: self.width,
+            height: self.height,
+        }
+    }*/
+
+    pub fn get_neighbors(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
+        let mut n = Vec::with_capacity(4);
+        if x != 0 {
+            n.push((x - 1, y));
+        }
+        if y != 0 {
+            n.push((x, y - 1));
+        }
+        if x != self.width - 1 {
+            n.push((x + 1, y));
+        }
+        if y != self.height - 1 {
+            n.push((x, y + 1));
+        }
+        n
     }
 }

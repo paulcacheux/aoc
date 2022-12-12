@@ -8,7 +8,7 @@ impl ParseInput<Day8> for Aoc2022 {
     type Parsed = Grid<u8>;
 
     fn parse_input(input: &str) -> Self::Parsed {
-        Grid::parse(input)
+        Grid::parse(input, |c| c.to_string().parse::<u8>().unwrap())
     }
 }
 
