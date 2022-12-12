@@ -62,22 +62,27 @@ fn bfs<F, N>(
 ) -> Option<u32>
 where
     F: Fn((usize, usize)) -> bool,
-    N: Fn((usize, usize), (usize, usize)) -> bool,
+    N: Fn(u8, u8) -> bool,
 {
     let mut parents = Grid::new(grid.width, grid.height, None);
     let mut open_queue = Queue::with_capacity(grid.width * grid.height);
     open_queue.push_back(start);
 
     while let Some(current) = open_queue.pop_front() {
+        let (cx, cy) = current;
         if end_check(current) {
             return backtrack_parents(parents, current, start);
         }
 
-        for next_pos in grid.get_neighbors(current.0, current.1) {
-            if neighbor_validate(current, next_pos) && parents.get(next_pos.0, next_pos.1).is_none()
+        let current_mapped = start_end_mapping(grid.get(cx, cy));
+
+        for next_pos in grid.get_neighbors(cx, cy) {
+            let (npx, npy) = next_pos;
+            let next_pos_value = start_end_mapping(grid.get(npx, npy));
+            if neighbor_validate(current_mapped, next_pos_value) && parents.get(npx, npy).is_none()
             {
                 open_queue.push_back(next_pos);
-                parents.set(next_pos.0, next_pos.1, Some(current));
+                parents.set(npx, npy, Some(current));
             }
         }
     }
@@ -122,10 +127,7 @@ impl Solution<Day12> for Aoc2022 {
             &input.grid,
             input.start,
             |pos| pos == input.end,
-            |current, next_pos| {
-                start_end_mapping(input.grid.get(next_pos.0, next_pos.1))
-                    <= start_end_mapping(input.grid.get(current.0, current.1)) + 1
-            },
+            |current, next_pos| next_pos <= current + 1,
         )
         .unwrap()
     }
@@ -135,10 +137,7 @@ impl Solution<Day12> for Aoc2022 {
             &input.grid,
             input.end,
             |pos| start_end_mapping(input.grid.get(pos.0, pos.1)) == b'a',
-            |current, next_pos| {
-                start_end_mapping(input.grid.get(next_pos.0, next_pos.1)) + 1
-                    >= start_end_mapping(input.grid.get(current.0, current.1))
-            },
+            |current, next_pos| next_pos + 1 >= current,
         )
         .unwrap()
     }
