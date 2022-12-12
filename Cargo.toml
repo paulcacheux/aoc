@@ -3,6 +3,14 @@ name = "aoc"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "aoc"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aoc_driver"
+path = "src/driver.rs"
+
 [profile.release-lto]
 inherits = "release"
 lto = "thin"

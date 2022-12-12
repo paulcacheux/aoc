@@ -1,19 +1,8 @@
-#![feature(iter_array_chunks)]
-#![feature(get_many_mut)]
-#![feature(generators)]
-#![feature(iter_from_generator)]
-
 use std::time::Duration;
 
 use clap::Parser;
 
-mod aoc2019;
-mod aoc2021;
-mod aoc2022;
-mod helpers;
-mod traits;
-
-use helpers::Results;
+use aoc::helpers::Results;
 
 #[derive(Parser)]
 #[command(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
@@ -45,9 +34,9 @@ fn run_day(
     let input = std::fs::read_to_string(input_path)?;
 
     let year_runner = match year {
-        2019 => aoc2019::run_solution_for_day,
-        2021 => aoc2021::run_solution_for_day,
-        2022 => aoc2022::run_solution_for_day,
+        2019 => aoc::aoc2019::run_solution_for_day,
+        2021 => aoc::aoc2021::run_solution_for_day,
+        2022 => aoc::aoc2022::run_solution_for_day,
         _ => panic!("undefined year {year}"),
     };
 
