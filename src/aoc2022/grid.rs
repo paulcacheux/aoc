@@ -42,20 +42,22 @@ impl<T> Grid<T> {
     }
 
     #[inline]
-    pub fn get_neighbors(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
-        let mut n = Vec::with_capacity(4);
-        if x != 0 {
-            n.push((x - 1, y));
-        }
-        if y != 0 {
-            n.push((x, y - 1));
-        }
-        if x != self.width - 1 {
-            n.push((x + 1, y));
-        }
-        if y != self.height - 1 {
-            n.push((x, y + 1));
-        }
-        n
+    pub fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+        let width = self.width;
+        let height = self.height;
+        std::iter::from_generator(move || {
+            if x != 0 {
+                yield (x - 1, y);
+            }
+            if y != 0 {
+                yield (x, y - 1);
+            }
+            if x != width - 1 {
+                yield (x + 1, y);
+            }
+            if y != height - 1 {
+                yield (x, y + 1);
+            }
+        })
     }
 }

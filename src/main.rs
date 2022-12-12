@@ -1,5 +1,7 @@
 #![feature(iter_array_chunks)]
 #![feature(get_many_mut)]
+#![feature(generators)]
+#![feature(iter_from_generator)]
 
 use std::time::Duration;
 
