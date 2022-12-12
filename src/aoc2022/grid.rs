@@ -5,6 +5,16 @@ pub struct Grid<T> {
     pub height: usize,
 }
 
+impl<T: Clone> Grid<T> {
+    pub fn new(width: usize, height: usize, value: T) -> Self {
+        Grid {
+            data: vec![value; width * height],
+            width,
+            height,
+        }
+    }
+}
+
 impl<T> Grid<T> {
     pub fn parse<F: Fn(char) -> T>(input: &str, mapper: F) -> Self {
         let mut heights = Vec::new();
@@ -32,6 +42,10 @@ impl<T> Grid<T> {
 
     pub fn get(&self, x: usize, y: usize) -> &T {
         &self.data[self.width * y + x]
+    }
+
+    pub fn set(&mut self, x: usize, y: usize, value: T) {
+        self.data[self.width * y + x] = value;
     }
 
     pub fn iter(&self) -> impl Iterator<Item = (usize, usize, &T)> + '_ {
