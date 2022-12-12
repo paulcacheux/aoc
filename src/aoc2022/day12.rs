@@ -4,7 +4,6 @@ use crate::traits::days::Day12;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 use std::cmp::Ordering;
-use std::collections::VecDeque;
 
 pub struct Input {
     start: (usize, usize),
@@ -88,7 +87,7 @@ where
     N: Fn((usize, usize), (usize, usize)) -> bool,
 {
     let mut parents = Grid::new(grid.width, grid.height, None);
-    let mut open_queue = VecDeque::new();
+    let mut open_queue = Queue::with_capacity(grid.width * grid.height);
     open_queue.push_back(start);
 
     while let Some(current) = open_queue.pop_front() {
@@ -106,6 +105,35 @@ where
         }
     }
     None
+}
+
+#[derive(Default)]
+struct Queue<T: Copy> {
+    inner: Vec<T>,
+    index: usize,
+}
+
+impl<T: Copy> Queue<T> {
+    fn with_capacity(cap: usize) -> Self {
+        Queue {
+            inner: Vec::with_capacity(cap),
+            index: 0,
+        }
+    }
+
+    fn push_back(&mut self, value: T) {
+        self.inner.push(value);
+    }
+
+    fn pop_front(&mut self) -> Option<T> {
+        if self.index < self.inner.len() {
+            let value = self.inner[self.index];
+            self.index += 1;
+            Some(value)
+        } else {
+            None
+        }
+    }
 }
 
 impl Solution<Day12> for Aoc2022 {
