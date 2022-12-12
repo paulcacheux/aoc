@@ -16,3 +16,10 @@ regex = "1.7"
 ahash = "0.8"
 string-interner = "0.14"
 nalgebra = "0.31"
+
+[dev-dependencies]
+criterion = "0.4"
+
+[[bench]]
+name = "bench2022"
+harness = false
