@@ -1,52 +1,14 @@
+use crate::aoc2022::grid::Grid;
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day8;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
-#[derive(Debug)]
-pub struct Grid {
-    heights: Vec<u8>,
-    width: usize,
-    height: usize,
-}
-
-impl Grid {
-    fn get(&self, x: usize, y: usize) -> u8 {
-        self.heights[self.width * y + x]
-    }
-
-    fn iter(&self) -> impl Iterator<Item = (usize, usize, u8)> + '_ {
-        self.heights
-            .iter()
-            .enumerate()
-            .map(|(i, &val)| (i % self.width, i / self.width, val))
-    }
-}
-
 impl ParseInput<Day8> for Aoc2022 {
-    type Parsed = Grid;
+    type Parsed = Grid<u8>;
 
     fn parse_input(input: &str) -> Self::Parsed {
-        let mut heights = Vec::new();
-        let mut width = None;
-        let mut height = 0;
-
-        for line in input.lines() {
-            let line = line.trim();
-            if let Some(w) = width {
-                assert_eq!(w, line.len());
-            } else {
-                width = Some(line.len());
-            }
-            heights.extend(line.chars().map(|c| c.to_string().parse::<u8>().unwrap()));
-            height += 1;
-        }
-
-        Grid {
-            heights,
-            width: width.unwrap_or_default(),
-            height,
-        }
+        Grid::parse(input, |c| c.to_string().parse::<u8>().unwrap())
     }
 }
 
@@ -54,7 +16,7 @@ impl Solution<Day8> for Aoc2022 {
     type Part1Output = usize;
     type Part2Output = usize;
 
-    fn part1(input: &Grid) -> usize {
+    fn part1(input: &Grid<u8>) -> usize {
         let mut visible_trees = vec![false; input.width * input.height];
 
         // rows
@@ -86,7 +48,7 @@ impl Solution<Day8> for Aoc2022 {
         visible_trees.iter().filter(|&&v| v).count()
     }
 
-    fn part2(input: &Grid) -> usize {
+    fn part2(input: &Grid<u8>) -> usize {
         input
             .iter()
             .filter_map(|(x, y, current_tree)| {
@@ -135,13 +97,13 @@ where
 }
 
 fn part1_check(
-    input: &Grid,
+    input: &Grid<u8>,
     x: usize,
     y: usize,
     current_max: &mut Option<u8>,
     visible_trees: &mut [bool],
 ) {
-    let current = input.get(x, y);
+    let current = *input.get(x, y);
     if current_max.map(|cm| current > cm).unwrap_or(true) {
         *current_max = Some(current);
         visible_trees[y * input.width + x] = true;
