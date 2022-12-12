@@ -3,7 +3,6 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day12;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-use std::cmp::Ordering;
 
 pub struct Input {
     start: (usize, usize),
