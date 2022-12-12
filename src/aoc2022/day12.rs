@@ -1,5 +1,3 @@
-use ahash::HashMap;
-
 use crate::aoc2022::grid::Grid;
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day12;
@@ -63,16 +61,16 @@ impl PartialOrd for State {
 
 #[inline]
 fn backtrack_parents(
-    parents: HashMap<(usize, usize), (usize, usize)>,
+    parents: Grid<Option<(usize, usize)>>,
     mut current: (usize, usize),
     start: (usize, usize),
 ) -> Option<u32> {
     let mut count = 1;
-    while let Some(&next) = parents.get(&current) {
-        if next == start {
+    while let Some(next) = parents.get(current.0, current.1) {
+        if *next == start {
             return Some(count);
         }
-        current = next;
+        current = *next;
         count += 1;
     }
     None
@@ -89,7 +87,7 @@ where
     F: Fn((usize, usize)) -> bool,
     N: Fn((usize, usize), (usize, usize)) -> bool,
 {
-    let mut parents = HashMap::default();
+    let mut parents = Grid::new(grid.width, grid.height, None);
     let mut open_queue = VecDeque::new();
     open_queue.push_back(start);
 
@@ -100,9 +98,9 @@ where
 
         for next_pos in grid.get_neighbors(current.0, current.1) {
             if neighbor_validate(current, next_pos) {
-                if !parents.contains_key(&next_pos) {
+                if parents.get(next_pos.0, next_pos.1).is_none() {
                     open_queue.push_back(next_pos);
-                    parents.insert(next_pos, current);
+                    parents.set(next_pos.0, next_pos.1, Some(current));
                 }
             }
         }
