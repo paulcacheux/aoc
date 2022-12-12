@@ -41,14 +41,7 @@ impl<T> Grid<T> {
             .map(|(i, val)| (i % self.width, i / self.width, val))
     }
 
-    /*pub fn map<U, F: Fn(T) -> U>(self, mapper: F) -> Grid<U> {
-        Grid {
-            data: self.data.into_iter().map(mapper).collect(),
-            width: self.width,
-            height: self.height,
-        }
-    }*/
-
+    #[inline]
     pub fn get_neighbors(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
         let mut n = Vec::with_capacity(4);
         if x != 0 {
