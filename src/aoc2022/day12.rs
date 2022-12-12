@@ -37,27 +37,6 @@ fn start_end_mapping(c: &u8) -> u8 {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-struct State {
-    cost: u32,
-    position: (usize, usize),
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        other
-            .cost
-            .cmp(&self.cost)
-            .then_with(|| self.position.cmp(&other.position))
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 #[inline]
 fn backtrack_parents(
     parents: Grid<Option<(usize, usize)>>,
