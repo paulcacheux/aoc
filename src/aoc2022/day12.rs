@@ -96,11 +96,10 @@ where
         }
 
         for next_pos in grid.get_neighbors(current.0, current.1) {
-            if neighbor_validate(current, next_pos) {
-                if parents.get(next_pos.0, next_pos.1).is_none() {
-                    open_queue.push_back(next_pos);
-                    parents.set(next_pos.0, next_pos.1, Some(current));
-                }
+            if neighbor_validate(current, next_pos) && parents.get(next_pos.0, next_pos.1).is_none()
+            {
+                open_queue.push_back(next_pos);
+                parents.set(next_pos.0, next_pos.1, Some(current));
             }
         }
     }
