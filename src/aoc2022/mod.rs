@@ -8,6 +8,7 @@ pub struct Aoc2022;
 pub mod day1;
 pub mod day10;
 pub mod day11;
+pub mod day12;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -16,6 +17,7 @@ pub mod day6;
 pub mod day7;
 pub mod day8;
 pub mod day9;
+pub mod grid;
 
 pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<Duration> {
     let r = results
@@ -34,6 +36,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> 
         9 => run::<Aoc2022, Day9>(input, r),
         10 => run::<Aoc2022, Day10>(input, r),
         11 => run::<Aoc2022, Day11>(input, r),
+        12 => run::<Aoc2022, Day12>(input, r),
         _ => return None,
     };
     Some(elapsed)
