@@ -2,7 +2,6 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day5;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-use regex::Regex;
 
 #[derive(Default, Debug)]
 pub struct Input {
@@ -22,7 +21,6 @@ impl ParseInput<Day5> for Aoc2022 {
 
     fn parse_input(input: &str) -> Self::Parsed {
         const STACK_END: &str = " 1   2   3";
-        let move_re = Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
 
         let mut res = Input::default();
         let mut in_move_part = false;
@@ -43,12 +41,15 @@ impl ParseInput<Day5> for Aoc2022 {
                         res.stacks[stack_index].push(c);
                     }
                 }
-            } else if let Some(groups) = move_re.captures(line) {
-                res.moves.push(Move {
-                    n: groups.get(1).unwrap().as_str().parse().unwrap(),
-                    from: groups.get(2).unwrap().as_str().parse().unwrap(),
-                    to: groups.get(3).unwrap().as_str().parse().unwrap(),
-                })
+            } else if line.starts_with("move") {
+                let mut word_iter = line.split_ascii_whitespace();
+                word_iter.next(); // skip move
+                let n = word_iter.next().unwrap().parse().unwrap();
+                word_iter.next(); // skip from
+                let from = word_iter.next().unwrap().parse().unwrap();
+                word_iter.next(); // skip to
+                let to = word_iter.next().unwrap().parse().unwrap();
+                res.moves.push(Move { n, from, to });
             }
         }
 
