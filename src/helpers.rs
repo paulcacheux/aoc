@@ -88,7 +88,7 @@ pub fn run<A: Solution<D>, const D: u32>(
     let start = std::time::Instant::now();
     let input = <A as ParseInput<D>>::parse_input(input);
     let parsing_elapsed = start.elapsed();
-    println!("Day {}, parsing in {:?}", D, parsing_elapsed);
+    println!("Day {D}, parsing in {parsing_elapsed:?}");
 
     let part1 = inner_run!(Part1, A::part1, input);
     println!("{part1}");
