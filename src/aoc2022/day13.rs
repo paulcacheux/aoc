@@ -129,28 +129,21 @@ impl Solution<Day13> for Aoc2022 {
     }
 
     fn part2(input: &Vec<(Item, Item)>) -> usize {
-        let key = create_decoder_key(2);
-        let mut index2 = 1;
-        for (a, b) in input {
-            if a < &key {
-                index2 += 1;
-            }
-            if b < &key {
-                index2 += 1;
-            }
-        }
-
-        let key = create_decoder_key(6);
-        let mut index6 = 1;
-        for (a, b) in input {
-            if a < &key {
-                index6 += 1;
-            }
-            if b < &key {
-                index6 += 1;
-            }
-        }
-
-        index2 * (index6 + 1)
+        part2_index(2, input) * (part2_index(6, input) + 1)
     }
+}
+
+#[inline]
+fn part2_index(val: u32, items: &[(Item, Item)]) -> usize {
+    let key = create_decoder_key(val);
+    let mut index = 1;
+    for (a, b) in items {
+        if a < &key {
+            index += 1;
+        }
+        if b < &key {
+            index += 1;
+        }
+    }
+    index
 }
