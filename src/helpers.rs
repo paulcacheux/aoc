@@ -75,11 +75,20 @@ macro_rules! inner_run {
     }};
 }
 
+pub struct TimingData {
+    pub parsing: Duration,
+    pub part1: Duration,
+    pub part2: Duration,
+}
+
 pub fn run<A: Solution<D>, const D: u32>(
     input: &str,
     expected: Option<&DayExpectedResult>,
-) -> Duration {
+) -> TimingData {
+    let start = std::time::Instant::now();
     let input = <A as ParseInput<D>>::parse_input(input);
+    let parsing_elapsed = start.elapsed();
+    println!("Day {}, parsing in {:?}", D, parsing_elapsed);
 
     let part1 = inner_run!(Part1, A::part1, input);
     println!("{part1}");
@@ -89,5 +98,9 @@ pub fn run<A: Solution<D>, const D: u32>(
     println!("{part2}");
     part2.check_expected(expected);
 
-    part1.elapsed + part2.elapsed
+    TimingData {
+        parsing: parsing_elapsed,
+        part1: part1.elapsed,
+        part2: part2.elapsed,
+    }
 }

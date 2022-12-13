@@ -13,7 +13,7 @@ mod aoc2022;
 mod helpers;
 mod traits;
 
-use helpers::Results;
+use helpers::{Results, TimingData};
 
 #[derive(Parser)]
 #[command(version = "1.0", author = "Paul C. <paulcacheux@gmail.com>")]
@@ -33,7 +33,7 @@ fn run_day(
     year: u32,
     day: u32,
     test: bool,
-) -> Result<Option<Duration>, Box<dyn std::error::Error>> {
+) -> Result<Option<TimingData>, Box<dyn std::error::Error>> {
     let (input_path, results) = if test {
         (format!("./inputs/{year}/day{day}_test.txt"), None)
     } else {
@@ -58,7 +58,7 @@ fn run_all(year: u32, test: bool) {
     let mut total = Duration::ZERO;
     for day in 1..=25 {
         if let Ok(Some(elapsed)) = run_day(year, day, test) {
-            total += elapsed;
+            total += elapsed.part1 + elapsed.part2;
         }
     }
     println!("Total: {total:?}");
