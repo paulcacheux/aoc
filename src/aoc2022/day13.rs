@@ -139,12 +139,10 @@ impl Solution<Day13> for Aoc2022 {
         );
         working.sort_by(|(_, a), (_, b)| a.cmp(b));
 
-        let mut res = 1;
-        for (i, (dec, _)) in working.into_iter().enumerate() {
-            if dec {
-                res *= i + 1;
-            }
-        }
-        res
+        working
+            .into_iter()
+            .enumerate()
+            .filter_map(|(i, (dec, _))| if dec { Some(i) } else { None })
+            .product()
     }
 }
