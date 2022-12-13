@@ -37,28 +37,56 @@ impl std::cmp::PartialOrd for Item {
 }
 
 #[derive(Debug)]
-enum Token {
-    Lhs,
-    Rhs,
-    Int(u32),
+struct ItemStack {
+    res: Option<Item>,
+    stack: Vec<Item>,
+}
+
+const AVG_CAP: usize = 10;
+
+impl ItemStack {
+    fn new() -> Self {
+        ItemStack {
+            res: None,
+            stack: Vec::with_capacity(AVG_CAP),
+        }
+    }
+
+    fn push(&mut self, item: Item) {
+        match self.stack.last_mut() {
+            Some(Item::List(v)) => v.push(item),
+            _ => {
+                self.res = Some(item);
+            }
+        }
+    }
+
+    fn start(&mut self) {
+        self.stack.push(Item::List(Vec::with_capacity(AVG_CAP)));
+    }
+
+    fn end(&mut self) {
+        let list = self.stack.pop().unwrap();
+        self.push(list);
+    }
 }
 
 fn parse_line(line: &str) -> Item {
-    let mut tokens = Vec::new();
+    let mut stack = ItemStack::new();
     let mut current = None;
     for c in line.chars() {
         match c {
-            '[' => tokens.push(Token::Lhs),
+            '[' => stack.start(),
             ']' => {
                 if let Some(c) = current {
-                    tokens.push(Token::Int(c));
+                    stack.push(Item::Int(c));
                     current = None;
                 }
-                tokens.push(Token::Rhs);
+                stack.end();
             }
             ',' => {
                 if let Some(c) = current {
-                    tokens.push(Token::Int(c));
+                    stack.push(Item::Int(c));
                     current = None;
                 }
             }
@@ -68,32 +96,7 @@ fn parse_line(line: &str) -> Item {
             _ => unreachable!(),
         }
     }
-
-    let mut stack = Vec::new();
-    for token in tokens {
-        match token {
-            Token::Int(i) => stack.push(Some(Item::Int(i))),
-            Token::Lhs => stack.push(None),
-            Token::Rhs => {
-                let mut sub = Vec::new();
-                loop {
-                    match stack.pop() {
-                        Some(None) => {
-                            sub.reverse();
-                            stack.push(Some(Item::List(sub)));
-                            break;
-                        }
-                        Some(Some(item)) => {
-                            sub.push(item);
-                        }
-                        None => unreachable!(),
-                    }
-                }
-            }
-        }
-    }
-
-    stack.pop().unwrap().unwrap()
+    stack.res.unwrap()
 }
 
 impl ParseInput<Day13> for Aoc2022 {
@@ -104,8 +107,9 @@ impl ParseInput<Day13> for Aoc2022 {
             .lines()
             .map(str::trim)
             .filter(|s| !s.is_empty())
+            .map(parse_line)
             .array_chunks::<2>()
-            .map(|[left, right]| (parse_line(left), parse_line(right)))
+            .map(|[left, right]| (left, right))
             .collect()
     }
 }
