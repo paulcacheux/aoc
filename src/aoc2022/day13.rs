@@ -24,7 +24,7 @@ impl std::cmp::Ord for Item {
                         return ord;
                     }
                 }
-                return a.len().cmp(&b.len());
+                a.len().cmp(&b.len())
             }
         }
     }
@@ -62,7 +62,7 @@ fn parse_line(line: &str) -> Item {
                     current = None;
                 }
             }
-            c if c.is_digit(10) => {
+            c if c.is_ascii_digit() => {
                 current = Some(current.unwrap_or(0) * 10 + c.to_digit(10).unwrap())
             }
             _ => unreachable!(),
