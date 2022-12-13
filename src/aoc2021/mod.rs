@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use crate::helpers::{run, Results};
+use crate::helpers::{run, Results, TimingData};
 use crate::traits::days::*;
 
 pub struct Aoc2021;
@@ -30,7 +28,7 @@ pub mod day9;
 
 pub mod day19_rotations;
 
-pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<Duration> {
+pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<TimingData> {
     let r = results
         .as_ref()
         .and_then(|r| r.results_for_day(day as usize));
