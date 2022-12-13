@@ -44,7 +44,7 @@ enum Token {
 }
 
 fn parse_line(line: &str) -> Item {
-    let mut tokens = Vec::new();
+    let mut tokens = Vec::with_capacity(line.len());
     let mut current = None;
     for c in line.chars() {
         match c {
@@ -69,26 +69,23 @@ fn parse_line(line: &str) -> Item {
         }
     }
 
-    let mut stack = Vec::new();
+    let mut stack = Vec::with_capacity(tokens.len());
     for token in tokens {
         match token {
             Token::Int(i) => stack.push(Some(Item::Int(i))),
             Token::Lhs => stack.push(None),
             Token::Rhs => {
-                let mut sub = Vec::new();
+                let mut index = stack.len() - 1;
                 loop {
-                    match stack.pop() {
-                        Some(None) => {
-                            sub.reverse();
-                            stack.push(Some(Item::List(sub)));
-                            break;
-                        }
-                        Some(Some(item)) => {
-                            sub.push(item);
-                        }
-                        None => unreachable!(),
+                    match &stack[index] {
+                        None => break,
+                        Some(_) => {}
                     }
+                    index -= 1;
                 }
+                let list = Item::List(stack.drain(index + 1..).map(Option::unwrap).collect());
+                stack.pop();
+                stack.push(Some(list));
             }
         }
     }
