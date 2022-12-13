@@ -129,20 +129,19 @@ impl Solution<Day13> for Aoc2022 {
     }
 
     fn part2(input: &Vec<(Item, Item)>) -> usize {
-        let mut working = vec![(0usize, create_decoder_key(2)), (1, create_decoder_key(6))];
+        let mut working = vec![(true, create_decoder_key(2)), (true, create_decoder_key(6))];
         working.extend(
             input
                 .iter()
                 .cloned()
                 .flat_map(|(a, b)| [a, b])
-                .enumerate()
-                .map(|(i, item)| (i + 2, item)),
+                .map(|item| (false, item)),
         );
         working.sort_by(|(_, a), (_, b)| a.cmp(b));
 
         let mut res = 1;
-        for (i, (wi, _)) in working.into_iter().enumerate() {
-            if wi <= 1 {
+        for (i, (dec, _)) in working.into_iter().enumerate() {
+            if dec {
                 res *= i + 1;
             }
         }
