@@ -107,8 +107,9 @@ impl ParseInput<Day13> for Aoc2022 {
             .lines()
             .map(str::trim)
             .filter(|s| !s.is_empty())
+            .map(parse_line)
             .array_chunks::<2>()
-            .map(|[left, right]| (parse_line(left), parse_line(right)))
+            .map(|[left, right]| (left, right))
             .collect()
     }
 }
