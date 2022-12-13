@@ -142,7 +142,7 @@ impl Solution<Day13> for Aoc2022 {
         working
             .into_iter()
             .enumerate()
-            .filter_map(|(i, (dec, _))| if dec { Some(i) } else { None })
+            .filter_map(|(i, (dec, _))| if dec { Some(i + 1) } else { None })
             .product()
     }
 }
