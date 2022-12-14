@@ -55,6 +55,9 @@ impl Solution<Day14> for Aoc2022 {
 
         let mut counter = 0;
         let fountain = (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny);
+        // we insert the sand starting from the last moving position
+        // because the path from the foutain to this point is always the same
+        // if we can't we default to the fountain
         let mut insertion_point = fountain;
         while let Some(sp) = insert_sand(&mut grid, insertion_point, fountain) {
             counter += 1;
