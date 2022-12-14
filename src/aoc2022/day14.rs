@@ -55,12 +55,11 @@ impl Solution<Day14> for Aoc2022 {
 
         let mut counter = 0;
         let fountain = (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny);
-        let (mut insx, mut insy) = fountain;
-        while let Some(((sx, sy), (px, py))) = insert_sand(&mut grid, (insx, insy), fountain) {
+        let mut insertion_point = fountain;
+        while let Some(sp) = insert_sand(&mut grid, insertion_point, fountain) {
             counter += 1;
-            grid.set(sx as usize, sy as usize, Cell::Sand);
-            insx = px;
-            insy = py;
+            grid.set(sp.pos.0 as usize, sp.pos.1 as usize, Cell::Sand);
+            insertion_point = sp.previous;
         }
 
         counter
@@ -117,11 +116,16 @@ fn range(start: u32, end: u32) -> RangeInclusive<u32> {
     }
 }
 
+struct SandPoint {
+    pos: (u32, u32),
+    previous: (u32, u32),
+}
+
 fn insert_sand(
     grid: &mut Grid<Cell>,
     source: (u32, u32),
     fountain: (u32, u32),
-) -> Option<((u32, u32), (u32, u32))> {
+) -> Option<SandPoint> {
     let (mut sx, mut sy) = source;
     let (mut px, mut py) = fountain;
 
@@ -144,7 +148,10 @@ fn insert_sand(
         }
 
         if !found {
-            return Some(((sx, sy), (px, py)));
+            return Some(SandPoint {
+                pos: (sx, sy),
+                previous: (px, py),
+            });
         }
     }
 }
