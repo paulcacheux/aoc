@@ -44,27 +44,7 @@ impl Solution<Day14> for Aoc2022 {
     type Part2Output = u32;
 
     fn part1(input: &Vec<Vec<(u32, u32)>>) -> u32 {
-        let mut minx = u32::MAX;
-        let mut maxx = 0;
-        let mut miny = u32::MAX;
-        let mut maxy = 0;
-        for points in input.iter().chain([&vec![SAND_FOUNTAIN]]) {
-            for &(x, y) in points {
-                if x < minx {
-                    minx = x;
-                }
-                if x > maxx {
-                    maxx = x;
-                }
-                if y < miny {
-                    miny = y;
-                }
-                if y > maxy {
-                    maxy = y;
-                }
-            }
-        }
-
+        let (minx, maxx, miny, maxy) = compute_min_max(input);
         let mut grid = Grid::new(
             (maxx - minx + 1) as usize,
             (maxy - miny + 1) as usize,
@@ -95,26 +75,7 @@ impl Solution<Day14> for Aoc2022 {
     }
 
     fn part2(input: &Vec<Vec<(u32, u32)>>) -> u32 {
-        let mut minx = u32::MAX;
-        let mut maxx = 0;
-        let mut miny = u32::MAX;
-        let mut maxy = 0;
-        for points in input.iter().chain([&vec![SAND_FOUNTAIN]]) {
-            for &(x, y) in points {
-                if x < minx {
-                    minx = x;
-                }
-                if x > maxx {
-                    maxx = x;
-                }
-                if y < miny {
-                    miny = y;
-                }
-                if y > maxy {
-                    maxy = y;
-                }
-            }
-        }
+        let (mut minx, mut maxx, miny, mut maxy) = compute_min_max(input);
 
         // part 2 required 1 more layer
         // and a bit of space around
@@ -224,4 +185,28 @@ fn offset_and_validate(grid_dim: usize, base: u32, delta: i32) -> Option<u32> {
     } else {
         Some(comb as u32)
     }
+}
+
+fn compute_min_max(input: &[Vec<(u32, u32)>]) -> (u32, u32, u32, u32) {
+    let mut minx = u32::MAX;
+    let mut maxx = 0;
+    let mut miny = u32::MAX;
+    let mut maxy = 0;
+    for points in input.iter().chain([&vec![SAND_FOUNTAIN]]) {
+        for &(x, y) in points {
+            if x < minx {
+                minx = x;
+            }
+            if x > maxx {
+                maxx = x;
+            }
+            if y < miny {
+                miny = y;
+            }
+            if y > maxy {
+                maxy = y;
+            }
+        }
+    }
+    (minx, maxx, miny, maxy)
 }
