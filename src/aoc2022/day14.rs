@@ -51,17 +51,7 @@ impl Solution<Day14> for Aoc2022 {
             Cell::Air,
         );
 
-        for walls in input {
-            for [(sx, sy), (ex, ey)] in walls.array_windows::<2>() {
-                for x in range(*sx, *ex) {
-                    for y in range(*sy, *ey) {
-                        let x = x - minx;
-                        let y = y - miny;
-                        grid.set(x as usize, y as usize, Cell::Rock);
-                    }
-                }
-            }
-        }
+        fill_grid(&mut grid, input, minx, miny);
 
         let mut counter = 0;
         while let Some((sx, sy)) =
@@ -89,17 +79,7 @@ impl Solution<Day14> for Aoc2022 {
             Cell::Air,
         );
 
-        for walls in input {
-            for [(sx, sy), (ex, ey)] in walls.array_windows::<2>() {
-                for x in range(*sx, *ex) {
-                    for y in range(*sy, *ey) {
-                        let x = x - minx;
-                        let y = y - miny;
-                        grid.set(x as usize, y as usize, Cell::Rock);
-                    }
-                }
-            }
-        }
+        fill_grid(&mut grid, input, minx, miny);
 
         let mut counter = 1;
         grid.set(
@@ -209,4 +189,18 @@ fn compute_min_max(input: &[Vec<(u32, u32)>]) -> (u32, u32, u32, u32) {
         }
     }
     (minx, maxx, miny, maxy)
+}
+
+fn fill_grid(grid: &mut Grid<Cell>, input: &[Vec<(u32, u32)>], minx: u32, miny: u32) {
+    for walls in input {
+        for [(sx, sy), (ex, ey)] in walls.array_windows::<2>() {
+            for x in range(*sx, *ex) {
+                for y in range(*sy, *ey) {
+                    let x = x - minx;
+                    let y = y - miny;
+                    grid.set(x as usize, y as usize, Cell::Rock);
+                }
+            }
+        }
+    }
 }
