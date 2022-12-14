@@ -19,7 +19,7 @@ impl ParseInput<Day14> for Aoc2022 {
                 line.split(" -> ")
                     .map(|pairs| {
                         pairs
-                            .split(",")
+                            .split(',')
                             .map(|coord| coord.parse().unwrap())
                             .collect_tuple()
                             .unwrap()
@@ -84,15 +84,11 @@ impl Solution<Day14> for Aoc2022 {
         }
 
         let mut counter = 0;
-        loop {
-            if let Some((sx, sy)) =
-                insert_sand(&mut grid, (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny))
-            {
-                counter += 1;
-                grid.set(sx as usize, sy as usize, Cell::Sand);
-            } else {
-                break;
-            }
+        while let Some((sx, sy)) =
+            insert_sand(&mut grid, (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny))
+        {
+            counter += 1;
+            grid.set(sx as usize, sy as usize, Cell::Sand);
         }
 
         counter
@@ -151,7 +147,6 @@ impl Solution<Day14> for Aoc2022 {
             Cell::Sand,
         );
         for y in 1..grid.height {
-            let y = y as usize;
             for x in 0..grid.width {
                 if *grid.get(x, y) != Cell::Air {
                     continue;
