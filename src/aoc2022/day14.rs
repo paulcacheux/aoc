@@ -54,11 +54,15 @@ impl Solution<Day14> for Aoc2022 {
         fill_grid(&mut grid, input, minx, miny);
 
         let mut counter = 0;
-        while let Some((sx, sy)) =
-            insert_sand(&mut grid, (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny))
-        {
+        let fountain = (SAND_FOUNTAIN.0 - minx, SAND_FOUNTAIN.1 - miny);
+        // we insert the sand starting from the last moving position
+        // because the path from the foutain to this point is always the same
+        // if we can't we default to the fountain
+        let mut insertion_point = fountain;
+        while let Some(sp) = insert_sand(&mut grid, insertion_point, fountain) {
             counter += 1;
-            grid.set(sx as usize, sy as usize, Cell::Sand);
+            grid.set(sp.pos.0 as usize, sp.pos.1 as usize, Cell::Sand);
+            insertion_point = sp.previous;
         }
 
         counter
@@ -115,8 +119,18 @@ fn range(start: u32, end: u32) -> RangeInclusive<u32> {
     }
 }
 
-fn insert_sand(grid: &mut Grid<Cell>, source: (u32, u32)) -> Option<(u32, u32)> {
+struct SandPoint {
+    pos: (u32, u32),
+    previous: (u32, u32),
+}
+
+fn insert_sand(
+    grid: &mut Grid<Cell>,
+    source: (u32, u32),
+    fountain: (u32, u32),
+) -> Option<SandPoint> {
     let (mut sx, mut sy) = source;
+    let (mut px, mut py) = fountain;
 
     let deltasx = [0, -1, 1];
 
@@ -127,6 +141,8 @@ fn insert_sand(grid: &mut Grid<Cell>, source: (u32, u32)) -> Option<(u32, u32)> 
             let ny = offset_and_validate(grid.height, sy, 1)?;
 
             if let Cell::Air = grid.get(nx as usize, ny as usize) {
+                px = sx;
+                py = sy;
                 sx = nx;
                 sy = ny;
                 found = true;
@@ -135,7 +151,10 @@ fn insert_sand(grid: &mut Grid<Cell>, source: (u32, u32)) -> Option<(u32, u32)> 
         }
 
         if !found {
-            return Some((sx, sy));
+            return Some(SandPoint {
+                pos: (sx, sy),
+                previous: (px, py),
+            });
         }
     }
 }
