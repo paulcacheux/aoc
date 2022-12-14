@@ -2,6 +2,7 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day11;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
+use smallvec::SmallVec;
 
 #[derive(Debug, Default, Clone, Copy)]
 pub enum Operation {
@@ -13,7 +14,7 @@ pub enum Operation {
 
 #[derive(Default, Debug, Clone)]
 pub struct Monkey {
-    items: Vec<u64>,
+    items: SmallVec<[u64; 64]>,
     operation: Operation,
     test_div_by: u64,
     if_true: usize,
@@ -91,26 +92,60 @@ impl ParseInput<Day11> for Aoc2022 {
     }
 }
 
+#[derive(Debug)]
+struct ItemBags {
+    items: Vec<u64>,
+    period: usize,
+    sizes: Vec<usize>,
+}
+
+impl ItemBags {
+    fn new(monkeys: &[Monkey]) -> Self {
+        let period = monkeys.iter().map(|m| m.items.len()).sum();
+        let mut items = vec![0; period * monkeys.len()];
+        let mut sizes = vec![0; monkeys.len()];
+
+        for (mi, monkey) in monkeys.iter().enumerate() {
+            let start = period * mi;
+            let size = monkey.items.len();
+            items[start..start + size].clone_from_slice(&monkey.items);
+            sizes[mi] = size;
+        }
+
+        ItemBags {
+            items,
+            period,
+            sizes,
+        }
+    }
+
+    fn push(&mut self, index: usize, item: u64) {
+        self.items[self.period * index + self.sizes[index]] = item;
+        self.sizes[index] += 1;
+    }
+
+    fn slice(&self, index: usize) -> &[u64] {
+        let start = self.period * index;
+        let end = start + self.sizes[index];
+        &self.items[start..end]
+    }
+
+    fn clear(&mut self, index: usize) {
+        self.sizes[index] = 0;
+    }
+}
+
 fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
-    let mut monkeys = monkeys.to_vec();
+    let mut items = ItemBags::new(monkeys);
     let mut counter = vec![0; monkeys.len()];
 
     let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
-    let total_item_count: usize = monkeys.iter().map(|m| m.items.len()).sum();
-    for m in monkeys.iter_mut() {
-        m.items.reserve(total_item_count - m.items.len());
-    }
+    let mut waiting_pushes: SmallVec<[(usize, u64); 64]> = SmallVec::new();
 
     for _ in 0..rounds {
-        for mi in 0..monkeys.len() {
-            let if_true_index = monkeys[mi].if_true;
-            let if_false_index = monkeys[mi].if_false;
-            let [current_monkey, if_true, if_false] = monkeys
-                .get_many_mut([mi, if_true_index, if_false_index])
-                .unwrap();
-
-            counter[mi] += current_monkey.items.len();
-            for item in current_monkey.items.drain(..) {
+        for (mi, current_monkey) in monkeys.iter().enumerate() {
+            counter[mi] += items.sizes[mi];
+            for item in items.slice(mi) {
                 let mut item = match current_monkey.operation {
                     Operation::Add(rhs) => item + rhs,
                     Operation::Mul(rhs) => item * rhs,
@@ -124,11 +159,17 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
                 }
 
                 if item % current_monkey.test_div_by == 0 {
-                    if_true.items.push(item);
+                    waiting_pushes.push((current_monkey.if_true, item));
                 } else {
-                    if_false.items.push(item);
+                    waiting_pushes.push((current_monkey.if_false, item));
                 }
             }
+            items.clear(mi);
+
+            for &(index, item) in &waiting_pushes {
+                items.push(index, item);
+            }
+            waiting_pushes.clear();
         }
     }
 
