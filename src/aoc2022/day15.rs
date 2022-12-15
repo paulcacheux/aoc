@@ -171,13 +171,18 @@ impl Line {
             return Some(a.origin);
         }
 
-        let det = (a.dir.0 * b.dir.1) - (b.dir.0 * a.dir.1);
-        let inv = nalgebra::Matrix2::new(-b.dir.1, b.dir.0, -a.dir.1, a.dir.0) / det;
-        let ori = nalgebra::Vector2::new(b.origin.0 - a.origin.0, b.origin.1 - a.origin.1);
-        let res = inv * ori;
+        let dx = b.origin.0 - a.origin.0;
+        let dy = b.origin.1 - a.origin.1;
+        let det = b.dir.0 * a.dir.1 - b.dir.1 * a.dir.0;
+        let u = (dy * b.dir.0 - dx * b.dir.1) / det;
+        let v = (dy * a.dir.0 - dx * a.dir.1) / det;
 
-        let x = a.origin.0 + a.dir.0 * res.x;
-        let y = a.origin.1 + a.dir.1 * res.x;
+        if u * v < 0 {
+            return None;
+        }
+
+        let x = a.origin.0 + u * a.dir.0;
+        let y = a.origin.1 + u * a.dir.1;
         Some((x, y))
     }
 }
