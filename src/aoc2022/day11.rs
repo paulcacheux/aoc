@@ -126,12 +126,6 @@ impl ItemBags {
     }
 
     #[inline]
-    fn push(&mut self, index: usize, item: u64) {
-        self.items[self.period * index + self.sizes[index]] = item;
-        self.sizes[index] += 1;
-    }
-
-    #[inline]
     fn range(&self, index: usize) -> Range<usize> {
         let start = self.period * index;
         let end = start + self.sizes[index];
@@ -153,13 +147,19 @@ impl ItemBags {
             } else {
                 item %= modulo;
             }
+            self.items[i] = item;
+        }
 
+        for i in self.range(index) {
+            let item = self.items[i];
             let next = if item % monkey.test_div_by == 0 {
                 monkey.if_true
             } else {
                 monkey.if_false
             };
-            self.push(next, item);
+
+            self.items[self.period * next + self.sizes[next]] = item;
+            self.sizes[next] += 1;
         }
         self.sizes[index] = 0;
     }
