@@ -111,21 +111,26 @@ impl Solution<Day15> for Aoc2022 {
         // let meta_range = 0..=20;
 
         for sensor in input {
+            // walk around the frontier, and check if in any other sensor radius
             let sdtb = sensor.distance_to_beacon() as i32;
-            let miny = sensor.sensor.1 - sdtb - 1;
-            let maxy = sensor.sensor.1 + sdtb + 1;
+            let mut miny = sensor.sensor.1 - sdtb - 1;
+            let mut maxy = sensor.sensor.1 + sdtb + 1;
+
+            if miny < *meta_range.start() {
+                miny = *meta_range.start();
+            }
+            if maxy > *meta_range.end() {
+                maxy = *meta_range.end();
+            }
 
             for y in miny..=maxy {
-                if !meta_range.contains(&y) {
-                    continue;
-                }
-
                 let dy = y.abs_diff(sensor.sensor.1);
                 let minx = sensor.sensor.0 - sdtb + dy as i32 - 1;
                 let maxx = sensor.sensor.0 + sdtb - dy as i32 + 1;
 
                 if meta_range.contains(&minx) {
                     if let Some(res) = part2_is_res(input, minx, y) {
+                        // stop as soon as one if found
                         return res;
                     }
                 }
@@ -141,6 +146,7 @@ impl Solution<Day15> for Aoc2022 {
     }
 }
 
+#[inline]
 fn part2_is_res(sensors: &[Sensor], x: i32, y: i32) -> Option<usize> {
     if sensors
         .iter()
