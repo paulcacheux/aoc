@@ -6,11 +6,11 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 use smallvec::SmallVec;
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Operation {
-    Add(u64),
-    Mul(u64),
     #[default]
+    Add,
+    Mul,
     Square,
 }
 
@@ -18,6 +18,7 @@ pub enum Operation {
 pub struct Monkey {
     items: SmallVec<[u64; 64]>,
     operation: Operation,
+    rhs: u64,
     test_div_by: u64,
     if_true: usize,
     if_false: usize,
@@ -44,13 +45,14 @@ impl ParseInput<Day11> for Aoc2022 {
                 }
                 2 => {
                     let operation = line.trim_start_matches("Operation: new = old ");
+                    current_monkey.rhs = operation[2..].parse().unwrap_or_default();
                     current_monkey.operation = match &operation[0..1] {
-                        "+" => Operation::Add(operation[2..].parse().unwrap()),
+                        "+" => Operation::Add,
                         "*" => {
                             if &operation[2..] == "old" {
                                 Operation::Square
                             } else {
-                                Operation::Mul(operation[2..].parse().unwrap())
+                                Operation::Mul
                             }
                         }
                         _ => unreachable!(),
@@ -137,8 +139,8 @@ impl ItemBags {
         for i in self.range(index) {
             let item = self.items[i];
             let mut item = match monkey.operation {
-                Operation::Add(rhs) => item + rhs,
-                Operation::Mul(rhs) => item * rhs,
+                Operation::Add => item + monkey.rhs,
+                Operation::Mul => item * monkey.rhs,
                 Operation::Square => item * item,
             };
 
