@@ -113,12 +113,12 @@ impl Solution<Day15> for Aoc2022 {
         let meta_range = 0..=4000000;
         // let meta_range = 0..=20;
 
-        let mut lines = Vec::new();
+        let mut lines = Vec::with_capacity(input.len() * 4);
         for sensor in input {
             // walk around the frontier, and check if in any other sensor radius
             let sdtb = sensor.distance_to_beacon as i32;
-            let mut miny = sensor.sensor.1 - sdtb - 1;
-            let mut maxy = sensor.sensor.1 + sdtb + 1;
+            let miny = sensor.sensor.1 - sdtb - 1;
+            let maxy = sensor.sensor.1 + sdtb + 1;
 
             lines.push(Line {
                 origin: (sensor.sensor.0, miny),
@@ -138,20 +138,32 @@ impl Solution<Day15> for Aoc2022 {
             });
         }
 
-        dbg!(lines);
-        todo!()
+        for linea in &lines {
+            for lineb in &lines {
+                if linea != lineb {
+                    if let Some((x, y)) = Line::intersect(linea, lineb) {
+                        if meta_range.contains(&x) && meta_range.contains(&y) {
+                            if let Some(res) = part2_is_res(input, x, y) {
+                                return res;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        unreachable!()
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Line {
     origin: (i32, i32),
     dir: (i32, i32),
 }
 
 impl Line {
-    fn intersect(a: Self, b: Self) -> Option<(i32, i32)> {
-        if a.dir == b.dir {
+    fn intersect(a: &Self, b: &Self) -> Option<(i32, i32)> {
+        if a.dir == b.dir || a.dir == (-b.dir.0, -b.dir.1) {
             return None;
         }
 
@@ -159,8 +171,13 @@ impl Line {
             return Some(a.origin);
         }
 
-        let x = (b.origin.0 - a.origin.0) / (b.dir.0 - a.dir.0);
-        let y = (b.origin.1 - a.origin.1) / (b.dir.1 - a.dir.1);
+        let det = (a.dir.0 * b.dir.1) - (b.dir.0 * a.dir.1);
+        let inv = nalgebra::Matrix2::new(-b.dir.1, b.dir.0, -a.dir.1, a.dir.0) / det;
+        let ori = nalgebra::Vector2::new(b.origin.0 - a.origin.0, b.origin.1 - a.origin.1);
+        let res = inv * ori;
+
+        let x = a.origin.0 + a.dir.0 * res.x;
+        let y = a.origin.1 + a.dir.1 * res.x;
         Some((x, y))
     }
 }
