@@ -115,11 +115,11 @@ impl Solution<Day15> for Aoc2022 {
 
         let mut lines = Vec::with_capacity(input.len() * 4);
         for sensor in input {
-            // walk around the frontier, and check if in any other sensor radius
             let sdtb = sensor.distance_to_beacon as i32;
             let miny = sensor.sensor.1 - sdtb - 1;
             let maxy = sensor.sensor.1 + sdtb + 1;
 
+            // add the four lines representing the outer layer of each diamond
             lines.push(Line {
                 origin: (sensor.sensor.0, miny),
                 dir: (-1, 1),
@@ -138,6 +138,7 @@ impl Solution<Day15> for Aoc2022 {
             });
         }
 
+        // compute the intersection of all lines, those are the interesting points
         for linea in &lines {
             for lineb in &lines {
                 if linea != lineb {
