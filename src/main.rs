@@ -3,6 +3,7 @@
 #![feature(get_many_mut)]
 #![feature(generators)]
 #![feature(iter_from_generator)]
+#![feature(portable_simd)]
 
 use std::time::Duration;
 

@@ -1,4 +1,9 @@
+use std::ops::AddAssign;
+use std::ops::DivAssign;
+use std::ops::MulAssign;
 use std::ops::Range;
+use std::ops::RemAssign;
+use std::simd::Simd;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day11;
@@ -136,23 +141,27 @@ impl ItemBags {
 
     #[inline]
     fn step(&mut self, monkey: &Monkey, index: usize, modulo: u64, div_by_3: bool) {
-        for i in self.range(index) {
-            let item = self.items[i];
-            let mut item = match monkey.operation {
-                Operation::Add => item + monkey.rhs,
-                Operation::Mul => item * monkey.rhs,
-                Operation::Square => item * item,
-            };
+        let r = self.range(index);
+        let (start, middle, end) = self.items[r.clone()].as_simd_mut::<8>();
 
-            if div_by_3 {
-                item /= 3;
-            } else {
-                item %= modulo;
-            }
-            self.items[i] = item;
+        assert_eq!(start.len(), 0);
+
+        for item in middle {
+            compute_item(
+                item,
+                Simd::splat(monkey.rhs),
+                Simd::splat(3),
+                Simd::splat(modulo),
+                monkey.operation,
+                div_by_3,
+            );
         }
 
-        for i in self.range(index) {
+        for item in end {
+            compute_item(item, monkey.rhs, 3, modulo, monkey.operation, div_by_3);
+        }
+
+        for i in r {
             let item = self.items[i];
             let next = if item % monkey.test_div_by == 0 {
                 monkey.if_true
@@ -164,6 +173,24 @@ impl ItemBags {
             self.sizes[next] += 1;
         }
         self.sizes[index] = 0;
+    }
+}
+
+#[inline]
+fn compute_item<T>(item: &mut T, rhs: T, three: T, modulo: T, op: Operation, div_by_3: bool)
+where
+    T: Copy + AddAssign<T> + MulAssign<T> + DivAssign<T> + RemAssign<T>,
+{
+    match op {
+        Operation::Add => *item += rhs,
+        Operation::Mul => *item *= rhs,
+        Operation::Square => *item *= *item,
+    };
+
+    if div_by_3 {
+        *item /= three;
+    } else {
+        *item %= modulo;
     }
 }
 
