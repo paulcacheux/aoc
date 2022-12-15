@@ -113,39 +113,55 @@ impl Solution<Day15> for Aoc2022 {
         let meta_range = 0..=4000000;
         // let meta_range = 0..=20;
 
+        let mut lines = Vec::new();
         for sensor in input {
             // walk around the frontier, and check if in any other sensor radius
             let sdtb = sensor.distance_to_beacon as i32;
             let mut miny = sensor.sensor.1 - sdtb - 1;
             let mut maxy = sensor.sensor.1 + sdtb + 1;
 
-            if miny < *meta_range.start() {
-                miny = *meta_range.start();
-            }
-            if maxy > *meta_range.end() {
-                maxy = *meta_range.end();
-            }
-
-            for y in miny..=maxy {
-                let dy = y.abs_diff(sensor.sensor.1);
-                let minx = sensor.sensor.0 - sdtb + dy as i32 - 1;
-                let maxx = sensor.sensor.0 + sdtb - dy as i32 + 1;
-
-                if meta_range.contains(&minx) {
-                    if let Some(res) = part2_is_res(input, minx, y) {
-                        // stop as soon as one if found
-                        return res;
-                    }
-                }
-
-                if meta_range.contains(&maxx) {
-                    if let Some(res) = part2_is_res(input, maxx, y) {
-                        return res;
-                    }
-                }
-            }
+            lines.push(Line {
+                origin: (sensor.sensor.0, miny),
+                dir: (-1, 1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, miny),
+                dir: (1, 1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, maxy),
+                dir: (-1, -1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, maxy),
+                dir: (1, -1),
+            });
         }
-        unreachable!()
+
+        dbg!(lines);
+        todo!()
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Line {
+    origin: (i32, i32),
+    dir: (i32, i32),
+}
+
+impl Line {
+    fn intersect(a: Self, b: Self) -> Option<(i32, i32)> {
+        if a.dir == b.dir {
+            return None;
+        }
+
+        if a.origin == b.origin {
+            return Some(a.origin);
+        }
+
+        let x = (b.origin.0 - a.origin.0) / (b.dir.0 - a.dir.0);
+        let y = (b.origin.1 - a.origin.1) / (b.dir.1 - a.dir.1);
+        Some((x, y))
     }
 }
 
