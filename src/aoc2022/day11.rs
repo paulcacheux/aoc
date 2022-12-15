@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day11;
 use crate::traits::ParseInput;
@@ -101,7 +103,11 @@ struct ItemBags {
 
 impl ItemBags {
     fn new(monkeys: &[Monkey]) -> Self {
-        let period = monkeys.iter().map(|m| m.items.len()).sum();
+        let period = monkeys
+            .iter()
+            .map(|m| m.items.len())
+            .sum::<usize>()
+            .next_power_of_two();
         let mut items = vec![0; period * monkeys.len()];
         let mut sizes = vec![0; monkeys.len()];
 
@@ -119,18 +125,42 @@ impl ItemBags {
         }
     }
 
+    #[inline]
     fn push(&mut self, index: usize, item: u64) {
         self.items[self.period * index + self.sizes[index]] = item;
         self.sizes[index] += 1;
     }
 
-    fn slice(&self, index: usize) -> &[u64] {
+    #[inline]
+    fn range(&self, index: usize) -> Range<usize> {
         let start = self.period * index;
         let end = start + self.sizes[index];
-        &self.items[start..end]
+        start..end
     }
 
-    fn clear(&mut self, index: usize) {
+    #[inline]
+    fn step(&mut self, monkey: &Monkey, index: usize, modulo: u64, div_by_3: bool) {
+        for i in self.range(index) {
+            let item = self.items[i];
+            let mut item = match monkey.operation {
+                Operation::Add(rhs) => item + rhs,
+                Operation::Mul(rhs) => item * rhs,
+                Operation::Square => item * item,
+            };
+
+            if div_by_3 {
+                item /= 3;
+            } else {
+                item %= modulo;
+            }
+
+            let next = if item % monkey.test_div_by == 0 {
+                monkey.if_true
+            } else {
+                monkey.if_false
+            };
+            self.push(next, item);
+        }
         self.sizes[index] = 0;
     }
 }
@@ -140,36 +170,11 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     let mut counter = vec![0; monkeys.len()];
 
     let modulo = monkeys.iter().map(|m| m.test_div_by).product::<u64>();
-    let mut waiting_pushes: SmallVec<[(usize, u64); 64]> = SmallVec::new();
 
     for _ in 0..rounds {
         for (mi, current_monkey) in monkeys.iter().enumerate() {
             counter[mi] += items.sizes[mi];
-            for item in items.slice(mi) {
-                let mut item = match current_monkey.operation {
-                    Operation::Add(rhs) => item + rhs,
-                    Operation::Mul(rhs) => item * rhs,
-                    Operation::Square => item * item,
-                };
-
-                if div_by_3 {
-                    item /= 3;
-                } else {
-                    item %= modulo;
-                }
-
-                if item % current_monkey.test_div_by == 0 {
-                    waiting_pushes.push((current_monkey.if_true, item));
-                } else {
-                    waiting_pushes.push((current_monkey.if_false, item));
-                }
-            }
-            items.clear(mi);
-
-            for &(index, item) in &waiting_pushes {
-                items.push(index, item);
-            }
-            waiting_pushes.clear();
+            items.step(current_monkey, mi, modulo, div_by_3);
         }
     }
 
