@@ -107,8 +107,6 @@ impl Solution<Day15> for Aoc2022 {
     }
 
     fn part2(input: &Vec<Sensor>) -> usize {
-        let mut points = Vec::new();
-
         let meta_range = 0..=4000000;
         // let meta_range = 0..=20;
 
@@ -118,30 +116,38 @@ impl Solution<Day15> for Aoc2022 {
             let maxy = sensor.sensor.1 + sdtb + 1;
 
             for y in miny..=maxy {
+                if !meta_range.contains(&y) {
+                    continue;
+                }
+
                 let dy = y.abs_diff(sensor.sensor.1);
                 let minx = sensor.sensor.0 - sdtb + dy as i32 - 1;
                 let maxx = sensor.sensor.0 + sdtb - dy as i32 + 1;
 
-                let min = (minx, y);
-                if meta_range.contains(&min.0) && meta_range.contains(&min.1) {
-                    points.push(min);
+                if meta_range.contains(&minx) {
+                    if let Some(res) = part2_is_res(input, minx, y) {
+                        return res;
+                    }
                 }
 
-                let max = (maxx, y);
-                if meta_range.contains(&max.0) && meta_range.contains(&max.1) {
-                    points.push(max);
+                if meta_range.contains(&maxx) {
+                    if let Some(res) = part2_is_res(input, maxx, y) {
+                        return res;
+                    }
                 }
-            }
-        }
-
-        for point in points {
-            if input
-                .iter()
-                .all(|sensor| sensor.distance_to(point.0, point.1) > sensor.distance_to_beacon())
-            {
-                return point.0 as usize * 4000000 + point.1 as usize;
             }
         }
         unreachable!()
+    }
+}
+
+fn part2_is_res(sensors: &[Sensor], x: i32, y: i32) -> Option<usize> {
+    if sensors
+        .iter()
+        .all(|sensor| sensor.distance_to(x, y) > sensor.distance_to_beacon())
+    {
+        Some(x as usize * 4000000 + y as usize)
+    } else {
+        None
     }
 }
