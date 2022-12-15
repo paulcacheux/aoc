@@ -54,7 +54,7 @@ impl ParseInput<Day15> for Aoc2022 {
 
 impl Solution<Day15> for Aoc2022 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<Sensor>) -> usize {
         let y = 2000000i32; // 10 for test input
@@ -106,7 +106,42 @@ impl Solution<Day15> for Aoc2022 {
         count
     }
 
-    fn part2(_input: &Vec<Sensor>) -> u32 {
-        todo!()
+    fn part2(input: &Vec<Sensor>) -> usize {
+        let mut points = Vec::new();
+
+        let meta_range = 0..=4000000;
+        // let meta_range = 0..=20;
+
+        for sensor in input {
+            let sdtb = sensor.distance_to_beacon() as i32;
+            let miny = sensor.sensor.1 - sdtb - 1;
+            let maxy = sensor.sensor.1 + sdtb + 1;
+
+            for y in miny..=maxy {
+                let dy = y.abs_diff(sensor.sensor.1);
+                let minx = sensor.sensor.0 - sdtb + dy as i32 - 1;
+                let maxx = sensor.sensor.0 + sdtb - dy as i32 + 1;
+
+                let min = (minx, y);
+                if meta_range.contains(&min.0) && meta_range.contains(&min.1) {
+                    points.push(min);
+                }
+
+                let max = (maxx, y);
+                if meta_range.contains(&max.0) && meta_range.contains(&max.1) {
+                    points.push(max);
+                }
+            }
+        }
+
+        for point in points {
+            if input
+                .iter()
+                .all(|sensor| sensor.distance_to(point.0, point.1) > sensor.distance_to_beacon())
+            {
+                return point.0 as usize * 4000000 + point.1 as usize;
+            }
+        }
+        unreachable!()
     }
 }
