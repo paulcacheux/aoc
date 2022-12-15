@@ -142,7 +142,12 @@ impl ItemBags {
     #[inline]
     fn step(&mut self, monkey: &Monkey, index: usize, modulo: u64, div_by_3: bool) {
         let r = self.range(index);
-        let (start, middle, end) = self.items[r.clone()].as_simd_mut::<8>();
+        let slice = &mut self.items[r.clone()];
+        let (start, middle, end) = if slice.len() >= 16 {
+            slice.as_simd_mut::<8>()
+        } else {
+            (&mut [] as &mut [_], &mut [] as &mut [_], slice)
+        };
 
         assert_eq!(start.len(), 0);
 
