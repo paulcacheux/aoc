@@ -113,39 +113,78 @@ impl Solution<Day15> for Aoc2022 {
         let meta_range = 0..=4000000;
         // let meta_range = 0..=20;
 
+        let mut lines = Vec::with_capacity(input.len() * 4);
         for sensor in input {
-            // walk around the frontier, and check if in any other sensor radius
             let sdtb = sensor.distance_to_beacon as i32;
-            let mut miny = sensor.sensor.1 - sdtb - 1;
-            let mut maxy = sensor.sensor.1 + sdtb + 1;
+            let miny = sensor.sensor.1 - sdtb - 1;
+            let maxy = sensor.sensor.1 + sdtb + 1;
 
-            if miny < *meta_range.start() {
-                miny = *meta_range.start();
-            }
-            if maxy > *meta_range.end() {
-                maxy = *meta_range.end();
-            }
+            // add the four lines representing the outer layer of each diamond
+            lines.push(Line {
+                origin: (sensor.sensor.0, miny),
+                dir: (-1, 1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, miny),
+                dir: (1, 1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, maxy),
+                dir: (-1, -1),
+            });
+            lines.push(Line {
+                origin: (sensor.sensor.0, maxy),
+                dir: (1, -1),
+            });
+        }
 
-            for y in miny..=maxy {
-                let dy = y.abs_diff(sensor.sensor.1);
-                let minx = sensor.sensor.0 - sdtb + dy as i32 - 1;
-                let maxx = sensor.sensor.0 + sdtb - dy as i32 + 1;
-
-                if meta_range.contains(&minx) {
-                    if let Some(res) = part2_is_res(input, minx, y) {
-                        // stop as soon as one if found
-                        return res;
-                    }
-                }
-
-                if meta_range.contains(&maxx) {
-                    if let Some(res) = part2_is_res(input, maxx, y) {
-                        return res;
+        // compute the intersection of all lines, those are the interesting points
+        for linea in &lines {
+            for lineb in &lines {
+                if linea != lineb {
+                    if let Some((x, y)) = Line::intersect(linea, lineb) {
+                        if meta_range.contains(&x) && meta_range.contains(&y) {
+                            if let Some(res) = part2_is_res(input, x, y) {
+                                return res;
+                            }
+                        }
                     }
                 }
             }
         }
         unreachable!()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Line {
+    origin: (i32, i32),
+    dir: (i32, i32),
+}
+
+impl Line {
+    fn intersect(a: &Self, b: &Self) -> Option<(i32, i32)> {
+        if a.dir == b.dir || a.dir == (-b.dir.0, -b.dir.1) {
+            return None;
+        }
+
+        if a.origin == b.origin {
+            return Some(a.origin);
+        }
+
+        let dx = b.origin.0 - a.origin.0;
+        let dy = b.origin.1 - a.origin.1;
+        let det = b.dir.0 * a.dir.1 - b.dir.1 * a.dir.0;
+        let u = (dy * b.dir.0 - dx * b.dir.1) / det;
+        let v = (dy * a.dir.0 - dx * a.dir.1) / det;
+
+        if u * v < 0 {
+            return None;
+        }
+
+        let x = a.origin.0 + u * a.dir.0;
+        let y = a.origin.1 + u * a.dir.1;
+        Some((x, y))
     }
 }
 
