@@ -11,12 +11,18 @@ use crate::traits::Solution;
 pub struct Sensor {
     sensor: (i32, i32),
     beacon: (i32, i32),
+    distance_to_beacon: u32,
 }
 
 impl Sensor {
-    fn distance_to_beacon(&self) -> u32 {
-        let (bx, by) = self.beacon;
-        self.distance_to(bx, by)
+    fn new(sensor: (i32, i32), beacon: (i32, i32)) -> Self {
+        let mut s = Sensor {
+            sensor,
+            beacon,
+            distance_to_beacon: 0,
+        };
+        s.distance_to_beacon = s.distance_to(beacon.0, beacon.1);
+        s
     }
 
     fn distance_to(&self, x: i32, y: i32) -> u32 {
@@ -43,10 +49,7 @@ impl ParseInput<Day15> for Aoc2022 {
                 let sy = captures.get(2).unwrap().as_str().parse().unwrap();
                 let bx = captures.get(3).unwrap().as_str().parse().unwrap();
                 let by = captures.get(4).unwrap().as_str().parse().unwrap();
-                Sensor {
-                    sensor: (sx, sy),
-                    beacon: (bx, by),
-                }
+                Sensor::new((sx, sy), (bx, by))
             })
             .collect()
     }
@@ -63,7 +66,7 @@ impl Solution<Day15> for Aoc2022 {
 
         // collect ranges, and points to substract
         for sensor in input {
-            let sdtb = sensor.distance_to_beacon();
+            let sdtb = sensor.distance_to_beacon;
             let dy = y.abs_diff(sensor.sensor.1);
             if dy > sdtb {
                 continue;
@@ -112,7 +115,7 @@ impl Solution<Day15> for Aoc2022 {
 
         for sensor in input {
             // walk around the frontier, and check if in any other sensor radius
-            let sdtb = sensor.distance_to_beacon() as i32;
+            let sdtb = sensor.distance_to_beacon as i32;
             let mut miny = sensor.sensor.1 - sdtb - 1;
             let mut maxy = sensor.sensor.1 + sdtb + 1;
 
@@ -150,7 +153,7 @@ impl Solution<Day15> for Aoc2022 {
 fn part2_is_res(sensors: &[Sensor], x: i32, y: i32) -> Option<usize> {
     if sensors
         .iter()
-        .all(|sensor| sensor.distance_to(x, y) > sensor.distance_to_beacon())
+        .all(|sensor| sensor.distance_to(x, y) > sensor.distance_to_beacon)
     {
         Some(x as usize * 4000000 + y as usize)
     } else {
