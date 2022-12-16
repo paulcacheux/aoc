@@ -58,6 +58,8 @@ impl Solution<Day16> for Aoc2022 {
 
         let mut res = Vec::new();
 
+        let mut skipper = HashMap::default();
+
         while let Some(current) = queue.pop() {
             // dbg!(&current, current.time(), queue.len());
 
@@ -67,6 +69,15 @@ impl Solution<Day16> for Aoc2022 {
             }
 
             let current_name = current.last();
+            let best = skipper
+                .entry((current_name.to_owned(), current.time()))
+                .or_insert(current.score);
+            if *best < current.score {
+                continue;
+            }
+
+            *best = current.score;
+
             let valve = mapping.get(current_name).unwrap();
             for edge in &valve.edges {
                 // push move node
