@@ -133,23 +133,28 @@ impl ItemBags {
     }
 
     #[inline]
-    fn range(&self, index: usize) -> Range<usize> {
+    fn range(&self, index: usize, aligned: bool) -> Range<usize> {
         let start = self.period * index;
-        let end = start + self.sizes[index];
+        let mut size = self.sizes[index];
+        if aligned {
+            size = (size + 3) & !3
+        }
+        let end = start + size;
         start..end
     }
 
     #[inline]
     fn step(&mut self, monkey: &Monkey, index: usize, modulo: u64, div_by_3: bool) {
-        let r = self.range(index);
+        let r = self.range(index, true);
         let slice = &mut self.items[r.clone()];
-        let (start, middle, end) = if slice.len() >= 16 {
-            slice.as_simd_mut::<8>()
+        let (start, middle, end) = if true {
+            slice.as_simd_mut::<4>()
         } else {
             (&mut [] as &mut [_], &mut [] as &mut [_], slice)
         };
 
         assert_eq!(start.len(), 0);
+        assert_eq!(end.len(), 0);
 
         for item in middle {
             compute_item(
@@ -166,7 +171,7 @@ impl ItemBags {
             compute_item(item, monkey.rhs, 3, modulo, monkey.operation, div_by_3);
         }
 
-        for i in r {
+        for i in self.range(index, false) {
             let item = self.items[i];
             let next = if item % monkey.test_div_by == 0 {
                 monkey.if_true
