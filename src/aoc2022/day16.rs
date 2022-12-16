@@ -90,12 +90,8 @@ impl Solution<Day16> for Aoc2022 {
         let mut max = 0;
         for a in &paths {
             for b in &paths {
-                if intersect(&a.nodes, &b.nodes) {
-                    continue;
-                }
-
                 let rate = a.total_rate + b.total_rate;
-                if rate > max {
+                if rate > max && !intersect(&a.nodes, &b.nodes) {
                     max = rate;
                 }
             }
