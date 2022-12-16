@@ -50,7 +50,7 @@ impl ParseInput<Day16> for Aoc2022 {
                     .unwrap()
                     .as_str()
                     .split(", ")
-                    .map(|s| interner.get_or_intern(s.to_owned()))
+                    .map(|s| interner.get_or_intern(s))
                     .collect();
                 Valve {
                     name: interner.get_or_intern(name),
@@ -182,7 +182,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
                 last: *next,
                 total_rate: current.total_rate + valves[next].rate * (steps - time),
                 time,
-            })
+            });
         }
 
         // for test case, since we have the time to switch on all valves
