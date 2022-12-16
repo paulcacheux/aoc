@@ -45,68 +45,7 @@ impl Solution<Day16> for Aoc2022 {
     type Part1Output = u32;
     type Part2Output = u32;
 
-    fn part1(input: &Vec<Valve>) -> u32 {
-        let mut mapping = HashMap::default();
-        for valve in input {
-            mapping.insert(valve.name.clone(), valve.clone());
-        }
-
-        let mut queue = vec![Path {
-            nodes: vec![("AA".into(), false)],
-            score: 0,
-        }];
-
-        let mut res = Vec::new();
-
-        let mut skipper = HashMap::default();
-
-        while let Some(current) = queue.pop() {
-            // dbg!(&current, current.time(), queue.len());
-
-            if current.time() == 30 {
-                res.push(current);
-                continue;
-            }
-
-            let current_name = current.last();
-            let best = skipper
-                .entry((current_name.to_owned(), current.time()))
-                .or_insert(current.score);
-            if *best < current.score {
-                continue;
-            }
-
-            *best = current.score;
-
-            let valve = mapping.get(current_name).unwrap();
-            for edge in &valve.edges {
-                // push move node
-                let mut nodes = current.nodes.clone();
-                nodes.push((edge.clone(), false));
-
-                queue.push(Path {
-                    nodes,
-                    score: current.score,
-                });
-            }
-
-            // push switch on node
-            let next = (current_name.to_owned(), true);
-            if !current.nodes.contains(&next) {
-                let mut nodes = current.nodes.clone();
-                nodes.push(next);
-
-                let rate = mapping[current_name].rate;
-
-                queue.push(Path {
-                    nodes,
-                    score: current.score + rate * (30 - (current.time())),
-                });
-            }
-        }
-        dbg!(res.len());
-        todo!()
-    }
+    fn part1(input: &Vec<Valve>) -> u32 {}
 
     fn part2(_input: &Vec<Valve>) -> u32 {
         todo!()
