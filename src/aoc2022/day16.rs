@@ -8,13 +8,8 @@ use crate::traits::Solution;
 use ahash::HashMap;
 use regex::Regex;
 
-use string_interner::DefaultBackend;
-use string_interner::StringInterner;
+type StringSymbol = u8;
 
-type StringSymbol = string_interner::symbol::SymbolU16;
-type StrInterner = StringInterner<DefaultBackend<StringSymbol>>;
-
-#[derive(Debug, Clone)]
 pub struct Input {
     aa_symbol: StringSymbol,
     valves: Vec<Valve>,
@@ -27,6 +22,21 @@ pub struct Valve {
     edges: Vec<StringSymbol>,
 }
 
+#[derive(Default)]
+struct Interner {
+    map: HashMap<String, StringSymbol>,
+    count: StringSymbol,
+}
+
+impl Interner {
+    fn intern(&mut self, s: String) -> StringSymbol {
+        *self.map.entry(s).or_insert_with(|| {
+            self.count += 1;
+            self.count
+        })
+    }
+}
+
 impl ParseInput<Day16> for Aoc2022 {
     type Parsed = Input;
 
@@ -35,7 +45,8 @@ impl ParseInput<Day16> for Aoc2022 {
             Regex::new(r"Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? ((\w|[, ])+)")
                 .unwrap();
 
-        let mut interner = StrInterner::new();
+        let mut interner = Interner::default();
+        let aa_symbol = interner.intern("AA".to_owned());
 
         let valves = input
             .lines()
@@ -49,17 +60,16 @@ impl ParseInput<Day16> for Aoc2022 {
                     .unwrap()
                     .as_str()
                     .split(", ")
-                    .map(|s| interner.get_or_intern(s))
+                    .map(|s| interner.intern(s.to_owned()))
                     .collect();
                 Valve {
-                    name: interner.get_or_intern(name),
+                    name: interner.intern(name),
                     rate,
                     edges,
                 }
             })
             .collect();
 
-        let aa_symbol = interner.get_or_intern_static("AA");
         Input { aa_symbol, valves }
     }
 }
