@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::VecDeque;
 
 use crate::aoc2022::Aoc2022;
@@ -6,7 +7,6 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 use ahash::HashMap;
-use ahash::HashSet;
 use regex::Regex;
 
 use string_interner::DefaultBackend;
@@ -75,11 +75,22 @@ impl Solution<Day16> for Aoc2022 {
     }
 
     fn part2(input: &Input) -> u32 {
-        let paths = solve_part1(&input.valves, 26, input.aa_symbol);
+        let paths: Vec<_> = solve_part1(&input.valves, 26, input.aa_symbol)
+            .into_iter()
+            .map(|p| {
+                let mut p2 = PathPart2 {
+                    nodes: p.nodes,
+                    total_rate: p.total_rate,
+                };
+                p2.nodes.sort();
+                p2
+            })
+            .collect();
+
         let mut max = 0;
         for a in &paths {
             for b in &paths {
-                if !a.nodes.is_disjoint(&b.nodes) {
+                if intersect(&a.nodes, &b.nodes) {
                     continue;
                 }
 
@@ -116,10 +127,16 @@ fn bfs(edges: &HashMap<StringSymbol, Valve>, start: StringSymbol) -> HashMap<Str
 
 #[derive(Debug)]
 struct Path {
-    nodes: HashSet<StringSymbol>,
+    nodes: Vec<StringSymbol>,
     last: StringSymbol,
     total_rate: u32,
     time: u32,
+}
+
+#[derive(Debug)]
+struct PathPart2 {
+    nodes: Vec<StringSymbol>,
+    total_rate: u32,
 }
 
 fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path> {
@@ -153,7 +170,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
 
     // dfs
     let mut queue = vec![Path {
-        nodes: HashSet::default(),
+        nodes: Vec::new(),
         last: aa_symbol,
         total_rate: 0,
         time: 0,
@@ -175,7 +192,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
 
             found_next = true;
             let mut nodes = current.nodes.clone();
-            nodes.insert(*next);
+            nodes.push(*next);
 
             queue.push(Path {
                 nodes,
@@ -192,4 +209,22 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
         }
     }
     paths
+}
+
+fn intersect(a: &[StringSymbol], b: &[StringSymbol]) -> bool {
+    if a.is_empty() || b.is_empty() {
+        return false;
+    }
+
+    let mut i = 0;
+    let mut j = 0;
+
+    while i < a.len() && j < b.len() {
+        match a[i].cmp(&b[j]) {
+            Ordering::Less => i += 1,
+            Ordering::Equal => return true,
+            Ordering::Greater => j += 1,
+        }
+    }
+    false
 }
