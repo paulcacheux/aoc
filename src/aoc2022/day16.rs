@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::collections::VecDeque;
 
 use crate::aoc2022::Aoc2022;
@@ -75,17 +74,7 @@ impl Solution<Day16> for Aoc2022 {
     }
 
     fn part2(input: &Input) -> u32 {
-        let paths: Vec<_> = solve_part1(&input.valves, 26, input.aa_symbol)
-            .into_iter()
-            .map(|p| {
-                let mut p2 = PathPart2 {
-                    nodes: p.nodes,
-                    total_rate: p.total_rate,
-                };
-                p2.nodes.sort();
-                p2
-            })
-            .collect();
+        let paths = solve_part1(&input.valves, 26, input.aa_symbol);
 
         let mut max = 0;
         for a in &paths {
@@ -127,12 +116,6 @@ struct Path {
     last: StringSymbol,
     total_rate: u32,
     time: u32,
-}
-
-#[derive(Debug)]
-struct PathPart2 {
-    nodes: Vec<StringSymbol>,
-    total_rate: u32,
 }
 
 fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path> {
@@ -208,18 +191,11 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
 }
 
 fn intersect(a: &[StringSymbol], b: &[StringSymbol]) -> bool {
-    if a.is_empty() || b.is_empty() {
-        return false;
-    }
-
-    let mut i = 0;
-    let mut j = 0;
-
-    while i < a.len() && j < b.len() {
-        match a[i].cmp(&b[j]) {
-            Ordering::Less => i += 1,
-            Ordering::Equal => return true,
-            Ordering::Greater => j += 1,
+    for i in a {
+        for j in b {
+            if i == j {
+                return true;
+            }
         }
     }
     false
