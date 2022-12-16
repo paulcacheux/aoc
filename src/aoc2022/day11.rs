@@ -108,6 +108,8 @@ struct ItemBags {
     sizes: Vec<usize>,
 }
 
+const SIMD_LANES: usize = 4;
+
 impl ItemBags {
     fn new(monkeys: &[Monkey]) -> Self {
         let period = monkeys
@@ -137,38 +139,29 @@ impl ItemBags {
         let start = self.period * index;
         let mut size = self.sizes[index];
         if aligned {
-            size = (size + 3) & !3
+            size = (size + (SIMD_LANES - 1)) & !(SIMD_LANES - 1);
         }
         let end = start + size;
         start..end
     }
 
     #[inline]
-    fn step(&mut self, monkey: &Monkey, index: usize, modulo: u64, div_by_3: bool) {
+    fn step<const DIV3: bool>(&mut self, monkey: &Monkey, index: usize, modulo: u64) {
         let r = self.range(index, true);
         let slice = &mut self.items[r.clone()];
-        let (start, middle, end) = if true {
-            slice.as_simd_mut::<4>()
-        } else {
-            (&mut [] as &mut [_], &mut [] as &mut [_], slice)
-        };
+        let (start, middle, end) = slice.as_simd_mut::<SIMD_LANES>();
 
         assert_eq!(start.len(), 0);
         assert_eq!(end.len(), 0);
 
         for item in middle {
-            compute_item(
+            compute_item::<DIV3, _>(
                 item,
                 Simd::splat(monkey.rhs),
                 Simd::splat(3),
                 Simd::splat(modulo),
                 monkey.operation,
-                div_by_3,
             );
-        }
-
-        for item in end {
-            compute_item(item, monkey.rhs, 3, modulo, monkey.operation, div_by_3);
         }
 
         for i in self.range(index, false) {
@@ -187,7 +180,7 @@ impl ItemBags {
 }
 
 #[inline]
-fn compute_item<T>(item: &mut T, rhs: T, three: T, modulo: T, op: Operation, div_by_3: bool)
+fn compute_item<const DIV3: bool, T>(item: &mut T, rhs: T, three: T, modulo: T, op: Operation)
 where
     T: Copy + AddAssign<T> + MulAssign<T> + DivAssign<T> + RemAssign<T>,
 {
@@ -197,14 +190,14 @@ where
         Operation::Square => *item *= *item,
     };
 
-    if div_by_3 {
+    if DIV3 {
         *item /= three;
     } else {
         *item %= modulo;
     }
 }
 
-fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
+fn solve<const DIV3: bool>(monkeys: &[Monkey], rounds: usize) -> usize {
     let mut items = ItemBags::new(monkeys);
     let mut counter = vec![0; monkeys.len()];
 
@@ -213,7 +206,7 @@ fn solve(monkeys: &[Monkey], rounds: usize, div_by_3: bool) -> usize {
     for _ in 0..rounds {
         for (mi, current_monkey) in monkeys.iter().enumerate() {
             counter[mi] += items.sizes[mi];
-            items.step(current_monkey, mi, modulo, div_by_3);
+            items.step::<DIV3>(current_monkey, mi, modulo);
         }
     }
 
@@ -234,10 +227,10 @@ impl Solution<Day11> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<Monkey>) -> usize {
-        solve(input, 20, true)
+        solve::<true>(input, 20)
     }
 
     fn part2(input: &Vec<Monkey>) -> usize {
-        solve(input, 10000, false)
+        solve::<false>(input, 10000)
     }
 }
