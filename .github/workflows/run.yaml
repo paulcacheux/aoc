@@ -1,5 +1,4 @@
-on:
-  push
+on: push
 
 name: Run
 
@@ -23,13 +22,13 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-v5
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-{{ hashFiles('rust-toolchain.toml') }}-v5
 
       - name: Run cargo build
         run: |
           cargo build --profile release-lto
         env:
-          RUSTFLAGS: '-C target-cpu=native'
+          RUSTFLAGS: "-C target-cpu=native"
 
       - name: Run 2022 days
         run: |
