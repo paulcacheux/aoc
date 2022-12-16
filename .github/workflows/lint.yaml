@@ -10,11 +10,6 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v3
 
-      - name: Setup rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: clippy, rustfmt
-
       - name: Cache rust artifacts
         uses: actions/cache@v3
         with:
