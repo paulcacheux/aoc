@@ -2,6 +2,7 @@ use std::ops::AddAssign;
 use std::ops::DivAssign;
 use std::ops::MulAssign;
 use std::ops::Range;
+use std::ops::Rem;
 use std::ops::RemAssign;
 use std::simd::Simd;
 
@@ -104,6 +105,7 @@ impl ParseInput<Day11> for Aoc2022 {
 #[derive(Debug)]
 struct ItemBags {
     items: Vec<u64>,
+    divres: Vec<u64>,
     period: usize,
     sizes: Vec<usize>,
 }
@@ -119,6 +121,7 @@ impl ItemBags {
             .next_power_of_two();
         let mut items = vec![0; period * monkeys.len()];
         let mut sizes = vec![0; monkeys.len()];
+        let divres = vec![0; items.len()];
 
         for (mi, monkey) in monkeys.iter().enumerate() {
             let start = period * mi;
@@ -129,6 +132,7 @@ impl ItemBags {
 
         ItemBags {
             items,
+            divres,
             period,
             sizes,
         }
@@ -148,25 +152,29 @@ impl ItemBags {
     #[inline]
     fn step<const DIV3: bool>(&mut self, monkey: &Monkey, index: usize, modulo: u64) {
         let r = self.range(index, true);
-        let slice = &mut self.items[r.clone()];
-        let (start, middle, end) = slice.as_simd_mut::<SIMD_LANES>();
+        let (start, middle, end) = self.items[r.clone()].as_simd_mut::<SIMD_LANES>();
+        let (nstart, nmiddle, nend) = self.divres[r].as_simd_mut::<SIMD_LANES>();
 
         assert_eq!(start.len(), 0);
         assert_eq!(end.len(), 0);
+        assert_eq!(nstart.len(), 0);
+        assert_eq!(nend.len(), 0);
 
-        for item in middle {
-            compute_item::<DIV3, _>(
+        for (item, divres) in middle.iter_mut().zip(nmiddle) {
+            compute_item::<DIV3, _, _>(
                 item,
+                divres,
                 Simd::splat(monkey.rhs),
                 Simd::splat(3),
                 Simd::splat(modulo),
+                Simd::splat(monkey.test_div_by),
                 monkey.operation,
             );
         }
 
         for i in self.range(index, false) {
             let item = self.items[i];
-            let next = if item % monkey.test_div_by == 0 {
+            let next = if self.divres[i] == 0 {
                 monkey.if_true
             } else {
                 monkey.if_false
@@ -180,9 +188,16 @@ impl ItemBags {
 }
 
 #[inline]
-fn compute_item<const DIV3: bool, T>(item: &mut T, rhs: T, three: T, modulo: T, op: Operation)
-where
-    T: Copy + AddAssign<T> + MulAssign<T> + DivAssign<T> + RemAssign<T>,
+fn compute_item<const DIV3: bool, T, D>(
+    item: &mut T,
+    divres: &mut D,
+    rhs: T,
+    three: T,
+    modulo: T,
+    test_div_by: T,
+    op: Operation,
+) where
+    T: Copy + AddAssign<T> + MulAssign<T> + DivAssign<T> + RemAssign<T> + Rem<T> + Rem<Output = D>,
 {
     match op {
         Operation::Add => *item += rhs,
@@ -195,6 +210,7 @@ where
     } else {
         *item %= modulo;
     }
+    *divres = *item % test_div_by;
 }
 
 fn solve<const DIV3: bool>(monkeys: &[Monkey], rounds: usize) -> usize {
