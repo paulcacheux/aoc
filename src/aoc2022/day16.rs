@@ -88,7 +88,15 @@ impl Solution<Day16> for Aoc2022 {
         let paths = solve_part1(&input.valves, 26, input.aa_symbol);
 
         let mut max = 0;
+        let semi_max = paths.iter().map(|p| p.total_rate).max().unwrap();
+
         for a in &paths {
+            // if there is no way we can match the current max
+            // skip directly
+            if a.total_rate + semi_max < max {
+                continue;
+            }
+
             for b in &paths {
                 let rate = a.total_rate + b.total_rate;
                 if rate > max && (a.nodes & b.nodes) == 0 {
