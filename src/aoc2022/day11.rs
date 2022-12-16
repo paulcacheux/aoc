@@ -106,7 +106,7 @@ impl ParseInput<Day11> for Aoc2022 {
 struct ItemBags {
     items: Vec<u64>,
     divres: Vec<u64>,
-    period: usize,
+    period_shift: usize,
     sizes: Vec<usize>,
 }
 
@@ -119,12 +119,13 @@ impl ItemBags {
             .map(|m| m.items.len())
             .sum::<usize>()
             .next_power_of_two();
-        let mut items = vec![0; period * monkeys.len()];
+        let period_shift = period.trailing_zeros() as usize;
+        let mut items = vec![0; monkeys.len() << period_shift];
         let mut sizes = vec![0; monkeys.len()];
         let divres = vec![0; items.len()];
 
         for (mi, monkey) in monkeys.iter().enumerate() {
-            let start = period * mi;
+            let start = mi << period_shift;
             let size = monkey.items.len();
             items[start..start + size].clone_from_slice(&monkey.items);
             sizes[mi] = size;
@@ -133,14 +134,14 @@ impl ItemBags {
         ItemBags {
             items,
             divres,
-            period,
+            period_shift,
             sizes,
         }
     }
 
     #[inline]
     fn range(&self, index: usize, aligned: bool) -> Range<usize> {
-        let start = self.period * index;
+        let start = index << self.period_shift;
         let mut size = self.sizes[index];
         if aligned {
             size = (size + (SIMD_LANES - 1)) & !(SIMD_LANES - 1);
@@ -180,7 +181,7 @@ impl ItemBags {
                 monkey.if_false
             };
 
-            self.items[self.period * next + self.sizes[next]] = item;
+            self.items[(next << self.period_shift) + self.sizes[next]] = item;
             self.sizes[next] += 1;
         }
         self.sizes[index] = 0;
