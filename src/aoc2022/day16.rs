@@ -32,6 +32,7 @@ impl Interner {
     fn intern(&mut self, s: String) -> StringSymbol {
         *self.map.entry(s).or_insert_with(|| {
             self.count += 1;
+            assert!(self.count < 64);
             self.count
         })
     }
@@ -90,7 +91,7 @@ impl Solution<Day16> for Aoc2022 {
         for a in &paths {
             for b in &paths {
                 let rate = a.total_rate + b.total_rate;
-                if rate > max && !intersect(&a.nodes, &b.nodes) {
+                if rate > max && (a.nodes & b.nodes) == 0 {
                     max = rate;
                 }
             }
@@ -122,7 +123,7 @@ fn bfs(edges: &HashMap<StringSymbol, Valve>, start: StringSymbol) -> HashMap<Str
 
 #[derive(Debug)]
 struct Path {
-    nodes: Vec<StringSymbol>,
+    nodes: u64,
     last: StringSymbol,
     total_rate: u32,
     time: u32,
@@ -159,7 +160,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
 
     // dfs
     let mut queue = vec![Path {
-        nodes: Vec::new(),
+        nodes: 0,
         last: aa_symbol,
         total_rate: 0,
         time: 0,
@@ -170,7 +171,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
     while let Some(current) = queue.pop() {
         let mut found_next = false;
         for (next, cost) in &costs[(&current.last)] {
-            if current.nodes.contains(next) {
+            if (current.nodes & (1 << next)) != 0 {
                 continue;
             }
 
@@ -180,8 +181,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
             }
 
             found_next = true;
-            let mut nodes = current.nodes.clone();
-            nodes.push(*next);
+            let nodes = current.nodes | (1 << *next);
 
             queue.push(Path {
                 nodes,
@@ -198,15 +198,4 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
         }
     }
     paths
-}
-
-fn intersect(a: &[StringSymbol], b: &[StringSymbol]) -> bool {
-    for i in a {
-        for j in b {
-            if i == j {
-                return true;
-            }
-        }
-    }
-    false
 }
