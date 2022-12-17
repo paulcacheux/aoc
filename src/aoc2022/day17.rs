@@ -1,3 +1,5 @@
+use ahash::HashMap;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day17;
 use crate::traits::ParseInput;
@@ -24,57 +26,11 @@ impl Solution<Day17> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<i32>) -> usize {
-        solve_part1(input, 2022, None)
+        solve(input, 2022)
     }
 
     fn part2(input: &Vec<i32>) -> usize {
-        let base_period = input.len() * 5; // wind period * block period
-        let mut heights = Vec::new();
-        solve_part1(input, base_period * 4096, Some(&mut heights));
-
-        dbg!("found heights");
-
-        let mut per_heights = heights.clone();
-        const STABLE: usize = 20;
-
-        let mut best_factor = None;
-        for factor in (1..128).rev() {
-            let mut current_bottom = 0;
-            for (i, h) in per_heights.iter_mut().enumerate() {
-                if i % (base_period * factor) == 0 {
-                    current_bottom = *h;
-                }
-                *h -= current_bottom;
-            }
-
-            // skip the beginning
-            if per_heights[base_period * factor * STABLE..base_period * factor * (STABLE + 1)]
-                == per_heights
-                    [base_period * factor * (STABLE + 1)..base_period * factor * (STABLE + 2)]
-                && per_heights
-                    [base_period * factor * (STABLE + 1)..base_period * factor * (STABLE + 2)]
-                    == per_heights
-                        [base_period * factor * (STABLE + 2)..base_period * factor * (STABLE + 3)]
-                && heights[base_period * factor * (STABLE + 2)]
-                    - heights[base_period * factor * (STABLE + 1)]
-                    == heights[base_period * factor * (STABLE + 1)]
-                        - heights[base_period * factor * STABLE]
-            {
-                best_factor = Some(factor);
-                break;
-            }
-        }
-        let best_factor = best_factor.unwrap();
-
-        const GOAL: usize = 1000000000000 - 1; // -1 to go to 0-index
-
-        let offset = GOAL % (base_period * best_factor);
-        let coeff = GOAL / (base_period * best_factor);
-        let res = heights[base_period * best_factor * STABLE + offset]
-            + (heights[base_period * best_factor * (STABLE + 1)]
-                - heights[base_period * best_factor * STABLE])
-                * (coeff - STABLE);
-        res
+        solve(input, 1000000000000)
     }
 }
 
@@ -128,7 +84,7 @@ fn dbg_state(state: &Vec<Vec<bool>>) {
 }
 
 #[inline]
-fn solve_part1(input: &[i32], steps: usize, mut heights: Option<&mut Vec<usize>>) -> usize {
+fn solve(input: &[i32], steps: usize) -> usize {
     let blocks = vec![
         vec![
             [true, false, false, false],
@@ -153,9 +109,32 @@ fn solve_part1(input: &[i32], steps: usize, mut heights: Option<&mut Vec<usize>>
     let mut wind = Repeater::new(input);
     let mut current_state = vec![Vec::with_capacity(steps * 4); 7];
 
-    for b in 0..steps {
-        let current_block = &blocks[b % blocks.len()];
-        let mut height = current_state.iter().map(Vec::len).max().unwrap() + 3;
+    let mut state_cache = HashMap::default();
+
+    let mut b = 0;
+    let mut add_h = 0;
+    while b < steps {
+        let bmod = b % blocks.len();
+
+        let current_height = current_state.iter().map(Vec::len).max().unwrap();
+        if add_h == 0 {
+            let cache_key = CacheKey::new(wind.index, bmod, &current_state);
+            if let Some((step, h)) = state_cache.get(&cache_key) {
+                let dh = current_height - h;
+                let ds = b - step;
+
+                let skip_steps = (steps - step) / ds;
+                b = skip_steps * ds + step;
+                assert_eq!(b % blocks.len(), bmod);
+
+                add_h += dh * (skip_steps - 1);
+            } else {
+                state_cache.insert(cache_key, (b, current_height));
+            }
+        }
+
+        let current_block = &blocks[bmod];
+        let mut height = current_height + 3;
         let mut xoff = 2;
 
         let mut step_state = true;
@@ -205,10 +184,40 @@ fn solve_part1(input: &[i32], steps: usize, mut heights: Option<&mut Vec<usize>>
             }
             step_state = !step_state;
         }
+        b += 1;
+    }
+    add_h + current_state.iter().map(Vec::len).max().unwrap()
+}
 
-        if let Some(h) = &mut heights {
-            h.push(current_state.iter().map(Vec::len).max().unwrap());
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct CacheKey {
+    jet_index: usize,
+    block_index: usize,
+    depths: [usize; 7],
+    top: [bool; 7],
+}
+
+impl CacheKey {
+    fn new(jet_index: usize, block_index: usize, state: &Vec<Vec<bool>>) -> Self {
+        let height = state.iter().map(Vec::len).max().unwrap();
+        let mut depths = [0; 7];
+        let mut top = [false; 7];
+        for (coli, col) in state.iter().enumerate() {
+            for i in (0..height).rev() {
+                if !get(col, i) {
+                    depths[coli] += 1;
+                } else {
+                    break;
+                }
+            }
+            top[coli] = get(col, height - 1);
+        }
+
+        CacheKey {
+            jet_index,
+            block_index,
+            depths,
+            top,
         }
     }
-    current_state.iter().map(Vec::len).max().unwrap()
 }
