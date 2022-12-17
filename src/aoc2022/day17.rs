@@ -198,7 +198,7 @@ struct CacheKey {
 
 impl CacheKey {
     #[inline]
-    fn new(jet_index: usize, block_index: usize, state: &Vec<Vec<bool>>, height: usize) -> Self {
+    fn new(jet_index: usize, block_index: usize, state: &[Vec<bool>], height: usize) -> Self {
         let mut depths = [0; 7];
         for (coli, col) in state.iter().enumerate() {
             for i in (0..height).rev() {
