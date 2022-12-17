@@ -194,14 +194,12 @@ struct CacheKey {
     jet_index: usize,
     block_index: usize,
     depths: [usize; 7],
-    top: [bool; 7],
 }
 
 impl CacheKey {
     fn new(jet_index: usize, block_index: usize, state: &Vec<Vec<bool>>) -> Self {
         let height = state.iter().map(Vec::len).max().unwrap();
         let mut depths = [0; 7];
-        let mut top = [false; 7];
         for (coli, col) in state.iter().enumerate() {
             for i in (0..height).rev() {
                 if !get(col, i) {
@@ -210,14 +208,12 @@ impl CacheKey {
                     break;
                 }
             }
-            top[coli] = get(col, height - 1);
         }
 
         CacheKey {
             jet_index,
             block_index,
             depths,
-            top,
         }
     }
 }
