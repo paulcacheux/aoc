@@ -191,9 +191,9 @@ fn solve(input: &[i32], steps: usize) -> usize {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct CacheKey {
-    jet_index: usize,
-    block_index: usize,
-    depths: [usize; 7],
+    jet_index: u32,
+    block_index: u8,
+    depths: [u8; 7],
 }
 
 impl CacheKey {
@@ -211,8 +211,8 @@ impl CacheKey {
         }
 
         CacheKey {
-            jet_index,
-            block_index,
+            jet_index: jet_index as _,
+            block_index: block_index as _,
             depths,
         }
     }
