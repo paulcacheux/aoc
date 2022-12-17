@@ -107,7 +107,7 @@ fn solve(input: &[i32], steps: usize) -> usize {
     ];
 
     let mut wind = Repeater::new(input);
-    let mut current_state = vec![Vec::with_capacity(steps * 4); 7];
+    let mut current_state = vec![Vec::new(); 7];
 
     let mut state_cache = HashMap::default();
 
