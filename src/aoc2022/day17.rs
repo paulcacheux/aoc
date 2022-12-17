@@ -118,7 +118,7 @@ fn solve(input: &[i32], steps: usize) -> usize {
 
         let current_height = current_state.iter().map(Vec::len).max().unwrap();
         if add_h == 0 {
-            let cache_key = CacheKey::new(wind.index, bmod, &current_state);
+            let cache_key = CacheKey::new(wind.index, bmod, &current_state, current_height);
             if let Some((step, h)) = state_cache.get(&cache_key) {
                 let dh = current_height - h;
                 let ds = b - step;
@@ -197,8 +197,8 @@ struct CacheKey {
 }
 
 impl CacheKey {
-    fn new(jet_index: usize, block_index: usize, state: &Vec<Vec<bool>>) -> Self {
-        let height = state.iter().map(Vec::len).max().unwrap();
+    #[inline]
+    fn new(jet_index: usize, block_index: usize, state: &Vec<Vec<bool>>, height: usize) -> Self {
         let mut depths = [0; 7];
         for (coli, col) in state.iter().enumerate() {
             for i in (0..height).rev() {
