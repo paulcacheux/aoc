@@ -119,6 +119,9 @@ impl Solution<Day16> for Aoc2022 {
             assert_eq!(rmiddle.len(), nmiddle.len());
             assert_eq!(rend.len(), nend.len());
 
+            let irate = rates[i];
+            let inode = nodes[i];
+
             for (r, n) in rstart.iter().zip(nstart) {
                 let rate = rates[i] + r;
                 if rate > max && (nodes[i] & n) == 0 {
@@ -127,8 +130,8 @@ impl Solution<Day16> for Aoc2022 {
             }
 
             for (r, n) in rmiddle.iter().zip(nmiddle) {
-                let rate = Simd::splat(rates[i]) + r;
-                let mask = (Simd::splat(nodes[i]) & n).simd_eq(Simd::splat(0));
+                let rate = Simd::splat(irate) + r;
+                let mask = (Simd::splat(inode) & n).simd_eq(Simd::splat(0));
 
                 let current_max = mask.select(rate, Simd::splat(0)).reduce_max();
                 if current_max > max {
@@ -137,8 +140,8 @@ impl Solution<Day16> for Aoc2022 {
             }
 
             for (r, n) in rend.iter().zip(nend) {
-                let rate = rates[i] + r;
-                if rate > max && (nodes[i] & n) == 0 {
+                let rate = irate + r;
+                if rate > max && (inode & n) == 0 {
                     max = rate;
                 }
             }
