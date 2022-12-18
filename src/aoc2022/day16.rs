@@ -95,7 +95,7 @@ impl Solution<Day16> for Aoc2022 {
             // if there is no way we can match the current max
             // skip directly
             if a.total_rate + semi_max < max {
-                continue;
+                break;
             }
 
             for b in &paths {
