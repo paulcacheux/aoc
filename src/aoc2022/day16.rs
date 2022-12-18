@@ -87,19 +87,29 @@ impl Solution<Day16> for Aoc2022 {
     fn part2(input: &Input) -> u32 {
         let paths = solve_part1(&input.valves, 26, input.aa_symbol);
 
-        let mut max = 0;
-        let semi_max = paths.iter().map(|p| p.total_rate).max().unwrap();
+        let mut semi_max = 0;
 
-        for a in &paths {
+        let mut nodes = Vec::with_capacity(paths.len());
+        let mut rates = Vec::with_capacity(paths.len());
+        for path in &paths {
+            nodes.push(path.nodes);
+            rates.push(path.total_rate);
+            if path.total_rate > semi_max {
+                semi_max = path.total_rate;
+            }
+        }
+
+        let mut max = 0;
+        for i in 0..nodes.len() {
             // if there is no way we can match the current max
             // skip directly
-            if a.total_rate + semi_max < max {
+            if rates[i] + semi_max < max {
                 continue;
             }
 
-            for b in &paths {
-                let rate = a.total_rate + b.total_rate;
-                if rate > max && (a.nodes & b.nodes) == 0 {
+            for j in 0..nodes.len() {
+                let rate = rates[i] + rates[j];
+                if rate > max && (nodes[i] & nodes[j]) == 0 {
                     max = rate;
                 }
             }
