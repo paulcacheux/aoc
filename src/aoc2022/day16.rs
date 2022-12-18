@@ -85,7 +85,8 @@ impl Solution<Day16> for Aoc2022 {
     }
 
     fn part2(input: &Input) -> u32 {
-        let paths = solve_part1(&input.valves, 26, input.aa_symbol);
+        let mut paths = solve_part1(&input.valves, 26, input.aa_symbol);
+        paths.sort_by_key(|p| std::cmp::Reverse(p.total_rate));
 
         let mut max = 0;
         let semi_max = paths.iter().map(|p| p.total_rate).max().unwrap();
@@ -94,13 +95,14 @@ impl Solution<Day16> for Aoc2022 {
             // if there is no way we can match the current max
             // skip directly
             if a.total_rate + semi_max < max {
-                continue;
+                break;
             }
 
             for b in &paths {
                 let rate = a.total_rate + b.total_rate;
                 if rate > max && (a.nodes & b.nodes) == 0 {
                     max = rate;
+                    break;
                 }
             }
         }
