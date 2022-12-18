@@ -27,13 +27,7 @@ impl Solution<Day18> for Aoc2022 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<(u32, u32, u32)>) -> usize {
-        let width = input
-            .iter()
-            .map(|t| [t.0, t.1, t.2])
-            .flatten()
-            .max()
-            .unwrap()
-            + 1;
+        let width = input.iter().flat_map(|t| [t.0, t.1, t.2]).max().unwrap() + 1;
         let width = width as usize;
 
         let mut cube = Cube3D::new(width, false);
@@ -45,13 +39,7 @@ impl Solution<Day18> for Aoc2022 {
     }
 
     fn part2(input: &Vec<(u32, u32, u32)>) -> usize {
-        let width = input
-            .iter()
-            .map(|t| [t.0, t.1, t.2])
-            .flatten()
-            .max()
-            .unwrap()
-            + 1;
+        let width = input.iter().flat_map(|t| [t.0, t.1, t.2]).max().unwrap() + 1;
         let width = width as usize;
 
         let mut cube = Cube3D::new(width, false);
