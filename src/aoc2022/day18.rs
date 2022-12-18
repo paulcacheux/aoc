@@ -36,13 +36,12 @@ impl Solution<Day18> for Aoc2022 {
             + 1;
         let width = width as usize;
 
-        let mut grid = vec![vec![vec![false; width]; width]; width];
-
+        let mut cube = Cube3D::new(width, false);
         for &(x, y, z) in input {
-            grid[x as usize][y as usize][z as usize] = true;
+            cube.set(x as usize, y as usize, z as usize, true);
         }
 
-        solve_part1(&grid, width)
+        solve_part1(&cube, width)
     }
 
     fn part2(input: &Vec<(u32, u32, u32)>) -> usize {
@@ -55,21 +54,21 @@ impl Solution<Day18> for Aoc2022 {
             + 1;
         let width = width as usize;
 
-        let mut grid = vec![vec![vec![false; width]; width]; width];
+        let mut cube = Cube3D::new(width, false);
         for &(x, y, z) in input {
-            grid[x as usize][y as usize][z as usize] = true;
+            cube.set(x as usize, y as usize, z as usize, true);
         }
 
-        assert!(!grid[0][0][0]);
+        assert!(!cube.get(0, 0, 0));
 
-        let mut flood_filled = vec![vec![vec![true; width]; width]; width];
+        let mut flood_filled = Cube3D::new(width, true);
         let mut queue = vec![(0, 0, 0)];
 
         while let Some((x, y, z)) = queue.pop() {
-            flood_filled[x][y][z] = false;
+            flood_filled.set(x, y, z, false);
 
             for (nx, ny, nz) in neighbors(x, y, z, width) {
-                if flood_filled[nx][ny][nz] && !grid[nx][ny][nz] {
+                if flood_filled.get(nx, ny, nz) && !cube.get(nx, ny, nz) {
                     queue.push((nx, ny, nz));
                 }
             }
@@ -79,19 +78,19 @@ impl Solution<Day18> for Aoc2022 {
     }
 }
 
-fn solve_part1(grid: &[Vec<Vec<bool>>], width: usize) -> usize {
+fn solve_part1(cube: &Cube3D, width: usize) -> usize {
     let mut counter = 0;
     for x in 0..width {
         for y in 0..width {
             for z in 0..width {
-                if !grid[x][y][z] {
+                if !cube.get(x, y, z) {
                     continue;
                 }
 
                 let mut side_counter = 6;
                 for (nx, ny, nz) in neighbors(x, y, z, width) {
                     side_counter -= 1;
-                    if !grid[nx][ny][nz] {
+                    if !cube.get(nx, ny, nz) {
                         counter += 1;
                     }
                 }
@@ -129,4 +128,28 @@ fn neighbors(
             yield (x, y, z + 1);
         }
     })
+}
+
+struct Cube3D {
+    items: Vec<bool>,
+    width: usize,
+}
+
+impl Cube3D {
+    fn new(width: usize, val: bool) -> Self {
+        Cube3D {
+            items: vec![val; width * width * width],
+            width,
+        }
+    }
+
+    fn get(&self, x: usize, y: usize, z: usize) -> bool {
+        let w = self.width;
+        self.items[z * w * w + y * w + x]
+    }
+
+    fn set(&mut self, x: usize, y: usize, z: usize, val: bool) {
+        let w = self.width;
+        self.items[z * w * w + y * w + x] = val;
+    }
 }
