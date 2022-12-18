@@ -1,4 +1,7 @@
 use std::collections::VecDeque;
+use std::simd::Simd;
+use std::simd::SimdPartialEq;
+use std::simd::SimdUint;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day16;
@@ -77,14 +80,14 @@ impl ParseInput<Day16> for Aoc2022 {
 
 impl Solution<Day16> for Aoc2022 {
     type Part1Output = u32;
-    type Part2Output = u32;
+    type Part2Output = u64;
 
     fn part1(input: &Input) -> u32 {
         let paths = solve_part1(&input.valves, 30, input.aa_symbol);
         paths.into_iter().map(|path| path.total_rate).max().unwrap()
     }
 
-    fn part2(input: &Input) -> u32 {
+    fn part2(input: &Input) -> u64 {
         let paths = solve_part1(&input.valves, 26, input.aa_symbol);
 
         let mut semi_max = 0;
@@ -93,11 +96,14 @@ impl Solution<Day16> for Aoc2022 {
         let mut rates = Vec::with_capacity(paths.len());
         for path in &paths {
             nodes.push(path.nodes);
-            rates.push(path.total_rate);
-            if path.total_rate > semi_max {
-                semi_max = path.total_rate;
+            let ptr = path.total_rate as u64;
+            rates.push(ptr);
+            if ptr > semi_max {
+                semi_max = ptr;
             }
         }
+
+        const LANES: usize = 8;
 
         let mut max = 0;
         for i in 0..nodes.len() {
@@ -107,9 +113,32 @@ impl Solution<Day16> for Aoc2022 {
                 continue;
             }
 
-            for j in 0..nodes.len() {
-                let rate = rates[i] + rates[j];
-                if rate > max && (nodes[i] & nodes[j]) == 0 {
+            let (rstart, rmiddle, rend) = rates.as_simd::<LANES>();
+            let (nstart, nmiddle, nend) = nodes.as_simd::<LANES>();
+            assert_eq!(rstart.len(), nstart.len());
+            assert_eq!(rmiddle.len(), nmiddle.len());
+            assert_eq!(rend.len(), nend.len());
+
+            for (r, n) in rstart.iter().zip(nstart) {
+                let rate = rates[i] + r;
+                if rate > max && (nodes[i] & n) == 0 {
+                    max = rate;
+                }
+            }
+
+            for (r, n) in rmiddle.iter().zip(nmiddle) {
+                let rate = Simd::splat(rates[i]) + r;
+                let mask = (Simd::splat(nodes[i]) & n).simd_eq(Simd::splat(0));
+
+                let current_max = mask.select(rate, Simd::splat(0)).reduce_max();
+                if current_max > max {
+                    max = current_max;
+                }
+            }
+
+            for (r, n) in rend.iter().zip(nend) {
+                let rate = rates[i] + r;
+                if rate > max && (nodes[i] & n) == 0 {
                     max = rate;
                 }
             }
