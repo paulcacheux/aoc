@@ -103,7 +103,7 @@ impl Solution<Day16> for Aoc2022 {
             }
         }
 
-        const LANES: usize = 8;
+        const LANES: usize = 4;
 
         let mut max = 0;
         for i in 0..nodes.len() {
