@@ -68,11 +68,7 @@ impl Solution<Day18> for Aoc2022 {
         while let Some((x, y, z)) = queue.pop() {
             flood_filled[x][y][z] = false;
 
-            let deltas = compute_deltas(x, y, z, width);
-            for (dx, dy, dz) in deltas {
-                let nx = x.wrapping_add_signed(dx);
-                let ny = y.wrapping_add_signed(dy);
-                let nz = z.wrapping_add_signed(dz);
+            for (nx, ny, nz) in neighbors(x, y, z, width) {
                 if flood_filled[nx][ny][nz] && !grid[nx][ny][nz] {
                     queue.push((nx, ny, nz));
                 }
@@ -92,13 +88,11 @@ fn solve_part1(grid: &[Vec<Vec<bool>>], width: usize) -> usize {
                     continue;
                 }
 
-                let deltas = compute_deltas(x, y, z, width);
+                let neighbors = neighbors(x, y, z, width);
 
-                counter += 6 - deltas.len();
-                for (dx, dy, dz) in deltas {
-                    if !grid[x.wrapping_add_signed(dx)][y.wrapping_add_signed(dy)]
-                        [z.wrapping_add_signed(dz)]
-                    {
+                counter += 6 - neighbors.len();
+                for (nx, ny, nz) in neighbors {
+                    if !grid[nx][ny][nz] {
                         counter += 1;
                     }
                 }
@@ -108,25 +102,25 @@ fn solve_part1(grid: &[Vec<Vec<bool>>], width: usize) -> usize {
     counter
 }
 
-fn compute_deltas(x: usize, y: usize, z: usize, width: usize) -> Vec<(isize, isize, isize)> {
-    let mut deltas = Vec::with_capacity(6);
+fn neighbors(x: usize, y: usize, z: usize, width: usize) -> Vec<(usize, usize, usize)> {
+    let mut neighbors = Vec::with_capacity(6);
     if x > 0 {
-        deltas.push((-1, 0, 0));
+        neighbors.push((x - 1, y, z));
     }
     if x + 1 < width {
-        deltas.push((1, 0, 0));
+        neighbors.push((x + 1, y, z));
     }
     if y > 0 {
-        deltas.push((0, -1, 0));
+        neighbors.push((x, y - 1, z));
     }
     if y + 1 < width {
-        deltas.push((0, 1, 0));
+        neighbors.push((x, y + 1, z));
     }
     if z > 0 {
-        deltas.push((0, 0, -1));
+        neighbors.push((x, y, z - 1));
     }
     if z + 1 < width {
-        deltas.push((0, 0, 1));
+        neighbors.push((x, y, z + 1));
     }
-    deltas
+    neighbors
 }
