@@ -88,39 +88,45 @@ fn solve_part1(grid: &[Vec<Vec<bool>>], width: usize) -> usize {
                     continue;
                 }
 
-                let neighbors = neighbors(x, y, z, width);
-
-                counter += 6 - neighbors.len();
-                for (nx, ny, nz) in neighbors {
+                let mut side_counter = 6;
+                for (nx, ny, nz) in neighbors(x, y, z, width) {
+                    side_counter -= 1;
                     if !grid[nx][ny][nz] {
                         counter += 1;
                     }
                 }
+                counter += side_counter;
             }
         }
     }
     counter
 }
 
-fn neighbors(x: usize, y: usize, z: usize, width: usize) -> Vec<(usize, usize, usize)> {
-    let mut neighbors = Vec::with_capacity(6);
-    if x > 0 {
-        neighbors.push((x - 1, y, z));
-    }
-    if x + 1 < width {
-        neighbors.push((x + 1, y, z));
-    }
-    if y > 0 {
-        neighbors.push((x, y - 1, z));
-    }
-    if y + 1 < width {
-        neighbors.push((x, y + 1, z));
-    }
-    if z > 0 {
-        neighbors.push((x, y, z - 1));
-    }
-    if z + 1 < width {
-        neighbors.push((x, y, z + 1));
-    }
-    neighbors
+#[inline]
+fn neighbors(
+    x: usize,
+    y: usize,
+    z: usize,
+    width: usize,
+) -> impl Iterator<Item = (usize, usize, usize)> {
+    std::iter::from_generator(move || {
+        if x > 0 {
+            yield (x - 1, y, z);
+        }
+        if x + 1 < width {
+            yield (x + 1, y, z);
+        }
+        if y > 0 {
+            yield (x, y - 1, z);
+        }
+        if y + 1 < width {
+            yield (x, y + 1, z);
+        }
+        if z > 0 {
+            yield (x, y, z - 1);
+        }
+        if z + 1 < width {
+            yield (x, y, z + 1);
+        }
+    })
 }
