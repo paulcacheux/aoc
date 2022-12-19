@@ -24,6 +24,22 @@ pub struct Blueprint {
     geode_robot: Cost,
 }
 
+impl Blueprint {
+    fn max_use(&self) -> Cost {
+        let arr = [
+            self.ore_robot,
+            self.clay_robot,
+            self.obsidian_robot,
+            self.geode_robot,
+        ];
+        Cost {
+            ore: arr.iter().map(|c| c.ore).max().unwrap(),
+            clay: arr.iter().map(|c| c.clay).max().unwrap(),
+            obsidian: arr.iter().map(|c| c.obsidian).max().unwrap(),
+        }
+    }
+}
+
 impl ParseInput<Day19> for Aoc2022 {
     type Parsed = Vec<Blueprint>;
 
@@ -136,7 +152,7 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
             continue;
         }
 
-        for next in current.next_states(bp) {
+        for next in current.next_states::<STEPS>(bp) {
             if !visited.contains(&next) {
                 queue.push(next);
             }
@@ -158,7 +174,6 @@ struct RobotState {
     ore_robot: u16,
     clay_robot: u16,
     obsidian_robot: u16,
-    geode_robot: u16,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -193,7 +208,7 @@ impl State {
         }
 
         let mut count = self.count.geode_count;
-        let mut geode_bot = self.bot.geode_robot;
+        let mut geode_bot = 0;
         for _ in 0..remaining_steps {
             count += geode_bot;
             geode_bot += 1;
@@ -211,16 +226,17 @@ impl State {
         self.count.ore_count += self.bot.ore_robot;
         self.count.clay_count += self.bot.clay_robot;
         self.count.obsidian_count += self.bot.obsidian_robot;
-        self.count.geode_count += self.bot.geode_robot;
     }
 
-    fn next_states(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
+    fn next_states<const STEPS: u16>(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
         self.step += 1;
 
         let ore_bot = bp.ore_robot;
         let clay_bot = bp.clay_robot;
         let obs_bot = bp.obsidian_robot;
         let geode_bot = bp.geode_robot;
+
+        let max_use = bp.max_use();
 
         std::iter::from_generator(move || {
             // not buying
@@ -229,24 +245,30 @@ impl State {
             yield ns;
 
             // buying
-            if let Some(next) = self.count.can_buy(ore_bot) {
-                let mut ns = self.prepare(next);
-                ns.bot.ore_robot += 1;
-                yield ns;
+            if self.bot.ore_robot < max_use.ore {
+                if let Some(next) = self.count.can_buy(ore_bot) {
+                    let mut ns = self.prepare(next);
+                    ns.bot.ore_robot += 1;
+                    yield ns;
+                }
             }
-            if let Some(next) = self.count.can_buy(clay_bot) {
-                let mut ns = self.prepare(next);
-                ns.bot.clay_robot += 1;
-                yield ns;
+            if self.bot.clay_robot < max_use.clay {
+                if let Some(next) = self.count.can_buy(clay_bot) {
+                    let mut ns = self.prepare(next);
+                    ns.bot.clay_robot += 1;
+                    yield ns;
+                }
             }
-            if let Some(next) = self.count.can_buy(obs_bot) {
-                let mut ns = self.prepare(next);
-                ns.bot.obsidian_robot += 1;
-                yield ns;
+            if self.bot.obsidian_robot < max_use.obsidian {
+                if let Some(next) = self.count.can_buy(obs_bot) {
+                    let mut ns = self.prepare(next);
+                    ns.bot.obsidian_robot += 1;
+                    yield ns;
+                }
             }
             if let Some(next) = self.count.can_buy(geode_bot) {
                 let mut ns = self.prepare(next);
-                ns.bot.geode_robot += 1;
+                ns.count.geode_count += STEPS - ns.step;
                 yield ns;
             }
         })
