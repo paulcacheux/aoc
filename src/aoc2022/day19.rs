@@ -189,7 +189,7 @@ impl State {
     fn best_possible<const STEPS: u16>(&self) -> u16 {
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
-            return 0;
+            return self.count.geode_count;
         }
 
         let mut count = self.count.geode_count;
