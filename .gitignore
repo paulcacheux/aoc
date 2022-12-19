@@ -1,1 +1,7 @@
 /target
+/.env
+/.vscode
+
+# inputs
+/inputs/*/day*.txt
+!/inputs/*/day*_test*.txt
