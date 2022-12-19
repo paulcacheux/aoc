@@ -1,3 +1,4 @@
+use ahash::HashSet;
 use rayon::prelude::IntoParallelRefIterator;
 use rayon::prelude::ParallelIterator;
 use regex::Regex;
@@ -118,9 +119,12 @@ fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
     };
 
     let mut queue = vec![init_state];
+    let mut visited = HashSet::default();
 
     let mut max = 0;
     while let Some(current) = queue.pop() {
+        visited.insert(current);
+
         if current.step == STEPS {
             if current.count.geode_count > max {
                 max = current.count.geode_count;
@@ -133,7 +137,9 @@ fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
         }
 
         for next in current.next_states(bp).into_iter() {
-            queue.push(next);
+            if !visited.contains(&next) {
+                queue.push(next);
+            }
         }
     }
     max
