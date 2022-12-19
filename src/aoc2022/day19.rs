@@ -192,13 +192,7 @@ impl State {
             return self.count.geode_count;
         }
 
-        let mut count = self.count.geode_count;
-        let mut geode_bot = 0;
-        for _ in 0..remaining_steps {
-            count += geode_bot;
-            geode_bot += 1;
-        }
-        count
+        self.count.geode_count + remaining_steps * (remaining_steps - 1) / 2
     }
 
     fn prepare(mut self, count: CountState) -> Self {
