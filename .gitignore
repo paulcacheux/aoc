@@ -4,4 +4,4 @@
 
 # inputs
 /inputs/*/day*.txt
-!/inputs/*/day*_test.txt
+!/inputs/*/day*_test*.txt
