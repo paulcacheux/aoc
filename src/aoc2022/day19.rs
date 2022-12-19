@@ -1,3 +1,5 @@
+use rayon::prelude::IntoParallelRefIterator;
+use rayon::prelude::ParallelIterator;
 use regex::Regex;
 
 use crate::aoc2022::Aoc2022;
@@ -76,53 +78,65 @@ impl ParseInput<Day19> for Aoc2022 {
     }
 }
 
-const STEPS: u32 = 24;
-
 impl Solution<Day19> for Aoc2022 {
     type Part1Output = u32;
     type Part2Output = u32;
 
     fn part1(input: &Vec<Blueprint>) -> u32 {
-        let mut res = 0;
-        for bp in input {
-            let init_state = State {
-                step: 0,
-                bot: RobotState {
-                    ore_robot: 1,
-                    ..Default::default()
-                },
-                ..Default::default()
-            };
+        input
+            .par_iter()
+            .map(|bp| {
+                let max = solve::<24>(bp);
+                println!("{} => {max}", bp.id);
+                max * bp.id
+            })
+            .sum()
+    }
 
-            let mut queue = vec![init_state];
+    fn part2(input: &Vec<Blueprint>) -> u32 {
+        let end_index = std::cmp::min(3, input.len());
 
-            let mut max = 0;
-            while let Some(current) = queue.pop() {
-                if current.step == STEPS {
-                    if current.count.geode_count > max {
-                        max = current.count.geode_count;
-                    }
-                    continue;
-                }
+        input[..end_index]
+            .par_iter()
+            .map(|bp| {
+                let max = solve::<32>(bp);
+                println!("{} => {max}", bp.id);
+                max
+            })
+            .product()
+    }
+}
 
-                if current.best_possible() <= max {
-                    continue;
-                }
+fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
+    let init_state = State {
+        step: 0,
+        bot: RobotState {
+            ore_robot: 1,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
 
-                for next in current.next_states(bp).into_iter() {
-                    queue.push(next);
-                }
+    let mut queue = vec![init_state];
+
+    let mut max = 0;
+    while let Some(current) = queue.pop() {
+        if current.step == STEPS {
+            if current.count.geode_count > max {
+                max = current.count.geode_count;
             }
-
-            println!("{} => {max}", bp.id);
-            res += max * bp.id;
+            continue;
         }
-        res
-    }
 
-    fn part2(_input: &Vec<Blueprint>) -> u32 {
-        todo!()
+        if current.best_possible::<STEPS>() <= max {
+            continue;
+        }
+
+        for next in current.next_states(bp).into_iter() {
+            queue.push(next);
+        }
     }
+    max
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -166,7 +180,7 @@ impl CountState {
 }
 
 impl State {
-    fn best_possible(&self) -> u32 {
+    fn best_possible<const STEPS: u32>(&self) -> u32 {
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
             return 0;
