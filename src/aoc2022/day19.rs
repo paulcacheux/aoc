@@ -8,7 +8,7 @@ use crate::traits::days::Day19;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 struct Cost {
     ore: u32,
     clay: u32,
@@ -170,7 +170,7 @@ struct CountState {
 }
 
 impl CountState {
-    fn can_buy(mut self, cost: &Cost) -> Option<Self> {
+    fn can_buy(mut self, cost: Cost) -> Option<Self> {
         if cost.ore > self.ore_count
             || cost.clay > self.clay_count
             || cost.obsidian > self.obsidian_count
@@ -214,36 +214,41 @@ impl State {
         self.count.geode_count += self.bot.geode_robot;
     }
 
-    fn next_states(mut self, bp: &Blueprint) -> Vec<Self> {
+    fn next_states(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
         self.step += 1;
 
-        let mut nexts = Vec::with_capacity(5);
+        let ore_bot = bp.ore_robot;
+        let clay_bot = bp.clay_robot;
+        let obs_bot = bp.obsidian_robot;
+        let geode_bot = bp.geode_robot;
 
-        // not buying
-        let mut ns = self;
-        ns.collect();
-        nexts.push(ns);
-        // buying
-        if let Some(next) = self.count.can_buy(&bp.ore_robot) {
-            let mut ns = self.prepare(next);
-            ns.bot.ore_robot += 1;
-            nexts.push(ns);
-        }
-        if let Some(next) = self.count.can_buy(&bp.clay_robot) {
-            let mut ns = self.prepare(next);
-            ns.bot.clay_robot += 1;
-            nexts.push(ns);
-        }
-        if let Some(next) = self.count.can_buy(&bp.obsidian_robot) {
-            let mut ns = self.prepare(next);
-            ns.bot.obsidian_robot += 1;
-            nexts.push(ns);
-        }
-        if let Some(next) = self.count.can_buy(&bp.geode_robot) {
-            let mut ns = self.prepare(next);
-            ns.bot.geode_robot += 1;
-            nexts.push(ns);
-        }
-        nexts
+        std::iter::from_generator(move || {
+            // not buying
+            let mut ns = self;
+            ns.collect();
+            yield ns;
+
+            // buying
+            if let Some(next) = self.count.can_buy(ore_bot) {
+                let mut ns = self.prepare(next);
+                ns.bot.ore_robot += 1;
+                yield ns;
+            }
+            if let Some(next) = self.count.can_buy(clay_bot) {
+                let mut ns = self.prepare(next);
+                ns.bot.clay_robot += 1;
+                yield ns;
+            }
+            if let Some(next) = self.count.can_buy(obs_bot) {
+                let mut ns = self.prepare(next);
+                ns.bot.obsidian_robot += 1;
+                yield ns;
+            }
+            if let Some(next) = self.count.can_buy(geode_bot) {
+                let mut ns = self.prepare(next);
+                ns.bot.geode_robot += 1;
+                yield ns;
+            }
+        })
     }
 }
