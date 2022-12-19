@@ -21,11 +21,25 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-{{ hashFiles('rust-toolchain.toml') }}-v5
 
+      - name: Cache inputs
+        uses: actions/cache@v3
+        with:
+          path: |
+            inputs
+          key: aoc-inputs-${{ hashFiles('inputs/**') }}
+
       - name: Run cargo build
         run: |
           cargo build --profile release-lto
         env:
           RUSTFLAGS: "-C target-cpu=native"
+
+      - name: Fetch inputs
+        env:
+          AOC_SESSION: ${{ secrets.AOC_SESSION }}
+        run: |
+          pip3 install -r scripts/requirements.txt
+          python3 ./scripts/fetch_inputs.py
 
       - name: Run 2022 days
         run: |

@@ -8,7 +8,7 @@ impl ParseInput<Day4> for Aoc2019 {
     type Parsed = (u32, u32);
 
     fn parse_input(input: &str) -> (u32, u32) {
-        let mut iter = input.split('-');
+        let mut iter = input.trim().split('-');
         let start = iter.next().unwrap().parse().unwrap();
         let end = iter.next().unwrap().parse().unwrap();
         (start, end)
