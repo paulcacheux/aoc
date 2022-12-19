@@ -100,27 +100,12 @@ impl Solution<Day19> for Aoc2022 {
     type Part2Output = u16;
 
     fn part1(input: &Vec<Blueprint>) -> u16 {
-        input
-            .par_iter()
-            .map(|bp| {
-                let max = solve::<24>(bp);
-                println!("{} => {max}", bp.id);
-                max * bp.id
-            })
-            .sum()
+        input.par_iter().map(|bp| solve::<24>(bp) * bp.id).sum()
     }
 
     fn part2(input: &Vec<Blueprint>) -> u16 {
         let end_index = std::cmp::min(3, input.len());
-
-        input[..end_index]
-            .par_iter()
-            .map(|bp| {
-                let max = solve::<32>(bp);
-                println!("{} => {max}", bp.id);
-                max
-            })
-            .product()
+        input[..end_index].par_iter().map(solve::<32>).product()
     }
 }
 
