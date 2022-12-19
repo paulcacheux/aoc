@@ -136,7 +136,7 @@ fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
             continue;
         }
 
-        for next in current.next_states(bp).into_iter() {
+        for next in current.next_states(bp) {
             if !visited.contains(&next) {
                 queue.push(next);
             }
