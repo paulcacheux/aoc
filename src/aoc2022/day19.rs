@@ -119,7 +119,8 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
         ..Default::default()
     };
 
-    let mut queue = vec![init_state];
+    let mut queue = Vec::with_capacity(64);
+    queue.push(init_state);
     let mut visited = HashSet::default();
 
     let mut max = 0;
