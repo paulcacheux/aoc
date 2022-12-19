@@ -10,14 +10,14 @@ use crate::traits::Solution;
 
 #[derive(Debug, Default, Clone, Copy)]
 struct Cost {
-    ore: u32,
-    clay: u32,
-    obsidian: u32,
+    ore: u16,
+    clay: u16,
+    obsidian: u16,
 }
 
 #[derive(Debug)]
 pub struct Blueprint {
-    id: u32,
+    id: u16,
     ore_robot: Cost,
     clay_robot: Cost,
     obsidian_robot: Cost,
@@ -80,10 +80,10 @@ impl ParseInput<Day19> for Aoc2022 {
 }
 
 impl Solution<Day19> for Aoc2022 {
-    type Part1Output = u32;
-    type Part2Output = u32;
+    type Part1Output = u16;
+    type Part2Output = u16;
 
-    fn part1(input: &Vec<Blueprint>) -> u32 {
+    fn part1(input: &Vec<Blueprint>) -> u16 {
         input
             .par_iter()
             .map(|bp| {
@@ -94,7 +94,7 @@ impl Solution<Day19> for Aoc2022 {
             .sum()
     }
 
-    fn part2(input: &Vec<Blueprint>) -> u32 {
+    fn part2(input: &Vec<Blueprint>) -> u16 {
         let end_index = std::cmp::min(3, input.len());
 
         input[..end_index]
@@ -108,7 +108,7 @@ impl Solution<Day19> for Aoc2022 {
     }
 }
 
-fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
+fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
     let init_state = State {
         step: 0,
         bot: RobotState {
@@ -147,7 +147,7 @@ fn solve<const STEPS: u32>(bp: &Blueprint) -> u32 {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct State {
-    step: u32,
+    step: u16,
 
     bot: RobotState,
     count: CountState,
@@ -155,18 +155,18 @@ struct State {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct RobotState {
-    ore_robot: u32,
-    clay_robot: u32,
-    obsidian_robot: u32,
-    geode_robot: u32,
+    ore_robot: u16,
+    clay_robot: u16,
+    obsidian_robot: u16,
+    geode_robot: u16,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct CountState {
-    ore_count: u32,
-    clay_count: u32,
-    obsidian_count: u32,
-    geode_count: u32,
+    ore_count: u16,
+    clay_count: u16,
+    obsidian_count: u16,
+    geode_count: u16,
 }
 
 impl CountState {
@@ -186,7 +186,7 @@ impl CountState {
 }
 
 impl State {
-    fn best_possible<const STEPS: u32>(&self) -> u32 {
+    fn best_possible<const STEPS: u16>(&self) -> u16 {
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
             return 0;
