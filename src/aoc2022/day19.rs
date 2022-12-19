@@ -124,8 +124,6 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
 
     let mut max = 0;
     while let Some(current) = queue.pop() {
-        visited.insert(current);
-
         if current.step == STEPS {
             if current.count.geode_count > max {
                 max = current.count.geode_count;
@@ -136,6 +134,8 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
         if current.best_possible::<STEPS>() <= max {
             continue;
         }
+
+        visited.insert(current);
 
         for next in current.next_states::<STEPS>(bp) {
             if !visited.contains(&next) {
