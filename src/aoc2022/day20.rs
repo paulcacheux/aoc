@@ -16,54 +16,53 @@ impl ParseInput<Day20> for Aoc2022 {
 
 impl Solution<Day20> for Aoc2022 {
     type Part1Output = i32;
-    type Part2Output = u32;
+    type Part2Output = i32;
 
     fn part1(input: &Vec<i32>) -> i32 {
         let mut cycle = Cycle::new(input);
+        mix(&mut cycle);
+        cycle.result()
+    }
 
-        for i in 0..input.len() {
-            let (j, (p, val)) = cycle
-                .inner
-                .iter()
-                .copied()
-                .enumerate()
-                .find(|&(_, (pi, _))| pi == i)
-                .unwrap();
+    fn part2(input: &Vec<i32>) -> i32 {
+        const DEC_KEY: i32 = 811589153;
+        let mut cycle = Cycle::new(input);
+        cycle.multiply(DEC_KEY);
 
-            let index_val = if val >= 0 {
-                val
-            } else {
-                let mut fake_val = val;
-                while fake_val < 0 {
-                    fake_val += cycle.inner.len() as i32;
-                }
-                fake_val -= 1;
-                fake_val
-            };
-
-            for offset in 0..index_val {
-                let t = cycle.get(j, offset + 1);
-                cycle.set(j, offset, t);
-            }
-            cycle.set(j, index_val, (p, val));
+        for i in 0..10 {
+            println!("turn {i}");
+            mix(&mut cycle);
         }
+        cycle.result()
+    }
+}
 
-        let (index0, _) = cycle
+fn mix(cycle: &mut Cycle) {
+    for i in 0..cycle.inner.len() {
+        let (j, (p, val)) = cycle
             .inner
             .iter()
             .copied()
             .enumerate()
-            .find(|(_, p)| p.1 == 0)
+            .find(|&(_, (pi, _))| pi == i)
             .unwrap();
 
-        let a = cycle.get(index0, 1000).1;
-        let b = cycle.get(index0, 2000).1;
-        let c = cycle.get(index0, 3000).1;
-        a + b + c
-    }
+        let index_val = if val >= 0 {
+            val
+        } else {
+            let mut fake_val = val;
+            while fake_val < 0 {
+                fake_val += cycle.inner.len() as i32;
+            }
+            fake_val -= 1;
+            fake_val
+        };
 
-    fn part2(_input: &Vec<i32>) -> u32 {
-        todo!()
+        for offset in 0..index_val {
+            let t = cycle.get(j, offset + 1);
+            cycle.set(j, offset, t);
+        }
+        cycle.set(j, index_val, (p, val));
     }
 }
 
@@ -86,6 +85,12 @@ impl Cycle {
         }
     }
 
+    fn multiply(&mut self, key: i32) {
+        for (_, val) in self.inner.iter_mut() {
+            *val *= key;
+        }
+    }
+
     fn get(&self, base: usize, offset: i32) -> (usize, i32) {
         self.inner[compute_new_index(base, offset, self.inner.len())]
     }
@@ -93,5 +98,20 @@ impl Cycle {
     fn set(&mut self, base: usize, offset: i32, new_val: (usize, i32)) {
         let len = self.inner.len();
         self.inner[compute_new_index(base, offset, len)] = new_val;
+    }
+
+    fn result(&self) -> i32 {
+        let (index0, _) = self
+            .inner
+            .iter()
+            .copied()
+            .enumerate()
+            .find(|(_, p)| p.1 == 0)
+            .unwrap();
+
+        let a = self.get(index0, 1000).1;
+        let b = self.get(index0, 2000).1;
+        let c = self.get(index0, 3000).1;
+        a + b + c
     }
 }
