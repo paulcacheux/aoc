@@ -233,10 +233,10 @@ impl State {
                 ns.count.geode_count += STEPS - ns.step;
                 yield ns;
             }
-            if self.bot.ore_robot < max_use.ore {
-                if let Some(next) = self.count.can_buy(ore_bot) {
+            if self.bot.obsidian_robot < max_use.obsidian {
+                if let Some(next) = self.count.can_buy(obs_bot) {
                     let mut ns = self.prepare(next);
-                    ns.bot.ore_robot += 1;
+                    ns.bot.obsidian_robot += 1;
                     yield ns;
                 }
             }
@@ -247,10 +247,10 @@ impl State {
                     yield ns;
                 }
             }
-            if self.bot.obsidian_robot < max_use.obsidian {
-                if let Some(next) = self.count.can_buy(obs_bot) {
+            if self.bot.ore_robot < max_use.ore {
+                if let Some(next) = self.count.can_buy(ore_bot) {
                     let mut ns = self.prepare(next);
-                    ns.bot.obsidian_robot += 1;
+                    ns.bot.ore_robot += 1;
                     yield ns;
                 }
             }
