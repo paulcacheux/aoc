@@ -188,6 +188,8 @@ impl CountState {
 
 impl State {
     fn best_possible<const STEPS: u16>(&self) -> u16 {
+        // compute the best possible geode count if we create a robot
+        // each step
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
             return self.count.geode_count;
@@ -225,10 +227,16 @@ impl State {
             yield ns;
 
             // buying
-            if self.bot.ore_robot < max_use.ore {
-                if let Some(next) = self.count.can_buy(ore_bot) {
+            if let Some(next) = self.count.can_buy(geode_bot) {
+                let mut ns = self.prepare(next);
+                // directly add all geodes instead of creating a robot
+                ns.count.geode_count += STEPS - ns.step;
+                yield ns;
+            }
+            if self.bot.obsidian_robot < max_use.obsidian {
+                if let Some(next) = self.count.can_buy(obs_bot) {
                     let mut ns = self.prepare(next);
-                    ns.bot.ore_robot += 1;
+                    ns.bot.obsidian_robot += 1;
                     yield ns;
                 }
             }
@@ -239,17 +247,12 @@ impl State {
                     yield ns;
                 }
             }
-            if self.bot.obsidian_robot < max_use.obsidian {
-                if let Some(next) = self.count.can_buy(obs_bot) {
+            if self.bot.ore_robot < max_use.ore {
+                if let Some(next) = self.count.can_buy(ore_bot) {
                     let mut ns = self.prepare(next);
-                    ns.bot.obsidian_robot += 1;
+                    ns.bot.ore_robot += 1;
                     yield ns;
                 }
-            }
-            if let Some(next) = self.count.can_buy(geode_bot) {
-                let mut ns = self.prepare(next);
-                ns.count.geode_count += STEPS - ns.step;
-                yield ns;
             }
         })
     }
