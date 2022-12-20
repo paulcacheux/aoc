@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day20;
 use crate::traits::ParseInput;
@@ -23,8 +21,7 @@ impl Solution<Day20> for Aoc2022 {
     fn part1(input: &Vec<i32>) -> i32 {
         let mut cycle = Cycle::new(input);
 
-        let mut i = 0;
-        for _ in 0..input.len() {
+        for i in 0..input.len() {
             let (j, (p, val)) = cycle
                 .inner
                 .iter()
@@ -33,35 +30,22 @@ impl Solution<Day20> for Aoc2022 {
                 .find(|&(_, (pi, _))| pi == i)
                 .unwrap();
 
-            if val > 0 {
-                for offset in 0..val {
-                    let t = cycle.get(j, offset + 1);
-                    cycle.set(j, offset, t);
-                }
-                cycle.set(j, val, (p, val));
-            } else if val < 0 {
+            let index_val = if val >= 0 {
+                val
+            } else {
                 let mut fake_val = val;
                 while fake_val < 0 {
                     fake_val += cycle.inner.len() as i32;
                 }
                 fake_val -= 1;
+                fake_val
+            };
 
-                for offset in 0..fake_val {
-                    let t = cycle.get(j, offset + 1);
-                    cycle.set(j, offset, t);
-                }
-                cycle.set(j, fake_val, (p, val));
+            for offset in 0..index_val {
+                let t = cycle.get(j, offset + 1);
+                cycle.set(j, offset, t);
             }
-
-            i += 1;
-
-            let d = cycle
-                .inner
-                .iter()
-                .copied()
-                .map(|p| format!("{} - {}", p.1, p.0))
-                .collect_vec();
-            // dbg!(d);
+            cycle.set(j, index_val, (p, val));
         }
 
         let (index0, _) = cycle
