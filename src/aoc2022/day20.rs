@@ -8,7 +8,7 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 impl ParseInput<Day20> for Aoc2022 {
-    type Parsed = Vec<i32>;
+    type Parsed = Vec<i64>;
 
     fn parse_input(input: &str) -> Self::Parsed {
         input
@@ -19,35 +19,45 @@ impl ParseInput<Day20> for Aoc2022 {
 }
 
 impl Solution<Day20> for Aoc2022 {
-    type Part1Output = i32;
-    type Part2Output = i32;
+    type Part1Output = i64;
+    type Part2Output = i64;
 
-    fn part1(input: &Vec<i32>) -> i32 {
+    fn part1(input: &Vec<i64>) -> i64 {
         let mut ring: VecDeque<_> = input.iter().copied().enumerate().collect();
         mix(&mut ring, input.len());
         extract_res(ring)
     }
 
-    fn part2(_input: &Vec<i32>) -> i32 {
-        todo!()
+    fn part2(input: &Vec<i64>) -> i64 {
+        const DEC_KEY: i64 = 811589153;
+        let mut ring: VecDeque<_> = input
+            .iter()
+            .copied()
+            .map(|val| val * DEC_KEY)
+            .enumerate()
+            .collect();
+
+        for _ in 0..10 {
+            mix(&mut ring, input.len());
+        }
+        extract_res(ring)
     }
 }
 
 #[allow(dead_code)]
-fn dbg_ring(ring: &VecDeque<(usize, i32)>) {
+fn dbg_ring(ring: &VecDeque<(usize, i64)>) {
     for (_, val) in ring.iter() {
         print!("{val}, ")
     }
     println!()
 }
 
-fn mix(ring: &mut VecDeque<(usize, i32)>, count: usize) {
+fn mix(ring: &mut VecDeque<(usize, i64)>, count: usize) {
     for i in 0..count {
         let (j, (_, val)) = ring
             .iter()
             .copied()
-            .enumerate()
-            .find(|&(_, (index, _))| index == i)
+            .find_position(|&(index, _)| index == i)
             .unwrap();
 
         // pop elem
@@ -69,7 +79,7 @@ fn mix(ring: &mut VecDeque<(usize, i32)>, count: usize) {
     }
 }
 
-fn extract_res(mut ring: VecDeque<(usize, i32)>) -> i32 {
+fn extract_res(mut ring: VecDeque<(usize, i64)>) -> i64 {
     let index0 = ring
         .iter()
         .copied()
