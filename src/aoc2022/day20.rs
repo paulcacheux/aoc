@@ -25,7 +25,6 @@ impl Solution<Day20> for Aoc2022 {
     }
 
     fn part2(input: &Vec<i32>) -> i32 {
-        /*
         const DEC_KEY: i32 = 811589153;
         let mut cycle = Cycle::new(input, Some(DEC_KEY));
 
@@ -34,8 +33,6 @@ impl Solution<Day20> for Aoc2022 {
             mix(&mut cycle);
         }
         cycle.result()
-        */
-        todo!()
     }
 }
 
