@@ -69,11 +69,10 @@ fn mix(ring: &mut VecDeque<(usize, i64)>, count: usize) {
         // push elem
         if val >= 0 {
             ring.rotate_left((val as usize) % ring.len());
-            ring.push_front((i, val));
         } else {
             ring.rotate_right((-val as usize) % ring.len());
-            ring.push_front((i, val));
         }
+        ring.push_front((i, val));
 
         // dbg_ring(&ring);
     }
