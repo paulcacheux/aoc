@@ -19,50 +19,41 @@ impl Solution<Day20> for Aoc2022 {
     type Part2Output = i32;
 
     fn part1(input: &Vec<i32>) -> i32 {
-        let mut cycle = Cycle::new(input);
+        let mut cycle = Cycle::new(input, None);
         mix(&mut cycle);
         cycle.result()
     }
 
     fn part2(input: &Vec<i32>) -> i32 {
+        /*
         const DEC_KEY: i32 = 811589153;
-        let mut cycle = Cycle::new(input);
-        cycle.multiply(DEC_KEY);
+        let mut cycle = Cycle::new(input, Some(DEC_KEY));
 
         for i in 0..10 {
             println!("turn {i}");
             mix(&mut cycle);
         }
         cycle.result()
+        */
+        todo!()
     }
 }
 
 fn mix(cycle: &mut Cycle) {
     for i in 0..cycle.inner.len() {
-        let (j, (p, val)) = cycle
+        let (j, item) = cycle
             .inner
             .iter()
             .copied()
             .enumerate()
-            .find(|&(_, (pi, _))| pi == i)
+            .find(|&(_, item)| item.index == i)
             .unwrap();
 
-        let index_val = if val >= 0 {
-            val
-        } else {
-            let mut fake_val = val;
-            while fake_val < 0 {
-                fake_val += cycle.inner.len() as i32;
-            }
-            fake_val -= 1;
-            fake_val
-        };
-
-        for offset in 0..index_val {
+        for offset in 0..item.index_val {
             let t = cycle.get(j, offset + 1);
             cycle.set(j, offset, t);
         }
-        cycle.set(j, index_val, (p, val));
+        cycle.set(j, item.index_val, item);
     }
 }
 
@@ -75,27 +66,52 @@ fn compute_new_index(base: usize, offset: i32, len: usize) -> usize {
 }
 
 struct Cycle {
-    inner: Vec<(usize, i32)>,
+    inner: Vec<CycleItem>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct CycleItem {
+    index: usize,
+    val: i32,
+    index_val: i32,
 }
 
 impl Cycle {
-    fn new(input: &[i32]) -> Self {
+    fn new(input: &[i32], multiply: Option<i32>) -> Self {
         Cycle {
-            inner: input.iter().copied().enumerate().collect(),
+            inner: input
+                .iter()
+                .copied()
+                .enumerate()
+                .map(|(index, val)| {
+                    let val = if let Some(m) = multiply { val * m } else { val };
+
+                    let index_val = if val >= 0 {
+                        val
+                    } else {
+                        let mut fake_val = val;
+                        while fake_val < 0 {
+                            fake_val += input.len() as i32;
+                        }
+                        fake_val -= 1;
+                        fake_val
+                    };
+
+                    CycleItem {
+                        index,
+                        val,
+                        index_val,
+                    }
+                })
+                .collect(),
         }
     }
 
-    fn multiply(&mut self, key: i32) {
-        for (_, val) in self.inner.iter_mut() {
-            *val *= key;
-        }
-    }
-
-    fn get(&self, base: usize, offset: i32) -> (usize, i32) {
+    fn get(&self, base: usize, offset: i32) -> CycleItem {
         self.inner[compute_new_index(base, offset, self.inner.len())]
     }
 
-    fn set(&mut self, base: usize, offset: i32, new_val: (usize, i32)) {
+    fn set(&mut self, base: usize, offset: i32, new_val: CycleItem) {
         let len = self.inner.len();
         self.inner[compute_new_index(base, offset, len)] = new_val;
     }
@@ -106,12 +122,12 @@ impl Cycle {
             .iter()
             .copied()
             .enumerate()
-            .find(|(_, p)| p.1 == 0)
+            .find(|(_, p)| p.val == 0)
             .unwrap();
 
-        let a = self.get(index0, 1000).1;
-        let b = self.get(index0, 2000).1;
-        let c = self.get(index0, 3000).1;
+        let a = self.get(index0, 1000).val;
+        let b = self.get(index0, 2000).val;
+        let c = self.get(index0, 3000).val;
         a + b + c
     }
 }
