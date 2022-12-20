@@ -188,6 +188,8 @@ impl CountState {
 
 impl State {
     fn best_possible<const STEPS: u16>(&self) -> u16 {
+        // compute the best possible geode count if we create a robot
+        // each step
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
             return self.count.geode_count;
@@ -248,6 +250,7 @@ impl State {
             }
             if let Some(next) = self.count.can_buy(geode_bot) {
                 let mut ns = self.prepare(next);
+                // directly add all geodes instead of creating a robot
                 ns.count.geode_count += STEPS - ns.step;
                 yield ns;
             }
