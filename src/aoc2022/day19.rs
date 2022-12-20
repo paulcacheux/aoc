@@ -227,6 +227,12 @@ impl State {
             yield ns;
 
             // buying
+            if let Some(next) = self.count.can_buy(geode_bot) {
+                let mut ns = self.prepare(next);
+                // directly add all geodes instead of creating a robot
+                ns.count.geode_count += STEPS - ns.step;
+                yield ns;
+            }
             if self.bot.ore_robot < max_use.ore {
                 if let Some(next) = self.count.can_buy(ore_bot) {
                     let mut ns = self.prepare(next);
@@ -247,12 +253,6 @@ impl State {
                     ns.bot.obsidian_robot += 1;
                     yield ns;
                 }
-            }
-            if let Some(next) = self.count.can_buy(geode_bot) {
-                let mut ns = self.prepare(next);
-                // directly add all geodes instead of creating a robot
-                ns.count.geode_count += STEPS - ns.step;
-                yield ns;
             }
         })
     }
