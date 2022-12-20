@@ -22,20 +22,25 @@ pub struct Blueprint {
     clay_robot: Cost,
     obsidian_robot: Cost,
     geode_robot: Cost,
+    max_use: Cost,
 }
 
 impl Blueprint {
-    fn max_use(&self) -> Cost {
-        let arr = [
-            self.ore_robot,
-            self.clay_robot,
-            self.obsidian_robot,
-            self.geode_robot,
-        ];
-        Cost {
+    fn new(id: u16, ore: Cost, clay: Cost, obsidian: Cost, geode: Cost) -> Self {
+        let arr = [ore, clay, obsidian, geode];
+        let max_use = Cost {
             ore: arr.iter().map(|c| c.ore).max().unwrap(),
             clay: arr.iter().map(|c| c.clay).max().unwrap(),
             obsidian: arr.iter().map(|c| c.obsidian).max().unwrap(),
+        };
+
+        Self {
+            id,
+            ore_robot: ore,
+            clay_robot: clay,
+            obsidian_robot: obsidian,
+            geode_robot: geode,
+            max_use,
         }
     }
 }
@@ -83,13 +88,7 @@ impl ParseInput<Day19> for Aoc2022 {
                     ..Default::default()
                 };
 
-                Blueprint {
-                    id,
-                    ore_robot,
-                    clay_robot,
-                    obsidian_robot,
-                    geode_robot,
-                }
+                Blueprint::new(id, ore_robot, clay_robot, obsidian_robot, geode_robot)
             })
             .collect()
     }
@@ -217,8 +216,7 @@ impl State {
         let clay_bot = bp.clay_robot;
         let obs_bot = bp.obsidian_robot;
         let geode_bot = bp.geode_robot;
-
-        let max_use = bp.max_use();
+        let max_use = bp.max_use;
 
         std::iter::from_generator(move || {
             // not buying
