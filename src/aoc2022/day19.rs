@@ -22,6 +22,8 @@ pub struct Blueprint {
     clay_robot: Cost,
     obsidian_robot: Cost,
     geode_robot: Cost,
+
+    min_use: Cost,
     max_use: Cost,
 }
 
@@ -34,12 +36,20 @@ impl Blueprint {
             obsidian: arr.iter().map(|c| c.obsidian).max().unwrap(),
         };
 
+        let min_use = Cost {
+            ore: arr.iter().map(|c| c.ore).min().unwrap(),
+            clay: arr.iter().map(|c| c.clay).min().unwrap(),
+            obsidian: arr.iter().map(|c| c.obsidian).min().unwrap(),
+        };
+
         Self {
             id,
             ore_robot: ore,
             clay_robot: clay,
             obsidian_robot: obsidian,
             geode_robot: geode,
+
+            min_use,
             max_use,
         }
     }
@@ -137,7 +147,8 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
 
         visited.insert(current);
 
-        for next in current.next_states::<STEPS>(bp) {
+        for mut next in current.next_states::<STEPS>(bp) {
+            next.move_ahead::<STEPS>(bp);
             if !visited.contains(&next) {
                 queue.push(next);
             }
@@ -183,6 +194,17 @@ impl CountState {
 }
 
 impl State {
+    fn move_ahead<const STEPS: u16>(&mut self, bp: &Blueprint) {
+        while self.count.ore < bp.min_use.ore
+            && self.count.clay < bp.min_use.clay
+            && self.count.obsidian < bp.min_use.obsidian
+            && self.step <= STEPS
+        {
+            self.step += 1;
+            self.collect();
+        }
+    }
+
     fn best_possible<const STEPS: u16>(&self) -> u16 {
         // compute the best possible geode count if we create a robot
         // each step
