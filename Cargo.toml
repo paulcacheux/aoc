@@ -6,6 +6,7 @@ edition = "2021"
 [profile.release-lto]
 inherits = "release"
 lto = "thin"
+panic = "abort"
 
 [dependencies]
 clap = { version = "4.0.29", features = ["derive"] }
