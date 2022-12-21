@@ -64,7 +64,6 @@ impl Solution<Day21> for Aoc2022 {
 
     fn part1(input: &HashMap<String, Computation>) -> i64 {
         let stack = build_stack(input, "root".to_owned(), false);
-        let stack = opt_stack(stack);
         eval_stack(&stack, 0)
     }
 
