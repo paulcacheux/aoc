@@ -147,8 +147,7 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
 
         visited.insert(current);
 
-        for mut next in current.next_states::<STEPS>(bp) {
-            next.move_ahead::<STEPS>(bp);
+        for next in current.next_states::<STEPS>(bp) {
             if !visited.contains(&next) {
                 queue.push(next);
             }
@@ -194,10 +193,10 @@ impl CountState {
 }
 
 impl State {
-    fn move_ahead<const STEPS: u16>(&mut self, bp: &Blueprint) {
-        while self.count.ore < bp.min_use.ore
-            && self.count.clay < bp.min_use.clay
-            && self.count.obsidian < bp.min_use.obsidian
+    fn move_ahead<const STEPS: u16>(&mut self, min_use: Cost) {
+        while self.count.ore < min_use.ore
+            && self.count.clay < min_use.clay
+            && self.count.obsidian < min_use.obsidian
             && self.step <= STEPS
         {
             self.step += 1;
@@ -235,12 +234,14 @@ impl State {
         let clay_bot = bp.clay_robot;
         let obs_bot = bp.obsidian_robot;
         let geode_bot = bp.geode_robot;
+        let min_use = bp.min_use;
         let max_use = bp.max_use;
 
         std::iter::from_generator(move || {
             // not buying
             let mut ns = self;
             ns.collect();
+            ns.move_ahead::<STEPS>(min_use);
             yield ns;
 
             // buying
