@@ -229,8 +229,8 @@ impl HumanSymbol {
             self.a *= -1;
             self.b *= -1;
         }
-        let gcd = gcd::binary_u64(self.a.abs() as u64, self.b.abs() as u64);
-        let gcd = gcd::binary_u64(gcd, self.c.abs() as u64);
+        let gcd = gcd::binary_u64(self.a.unsigned_abs(), self.b.unsigned_abs());
+        let gcd = gcd::binary_u64(gcd, self.c.unsigned_abs());
         let gcd = gcd as i64;
 
         self.a /= gcd;
@@ -306,6 +306,5 @@ fn eval_stack_symbolic(stack: &[StackItem]) -> HumanSymbol {
     }
 
     assert_eq!(real_stack.len(), 1);
-    let hs = real_stack.pop().unwrap();
-    hs
+    real_stack.pop().unwrap()
 }
