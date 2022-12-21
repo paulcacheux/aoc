@@ -1,4 +1,6 @@
 use ahash::HashMap;
+use rayon::prelude::IntoParallelIterator;
+use rayon::prelude::ParallelIterator;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day21;
@@ -62,6 +64,7 @@ impl Solution<Day21> for Aoc2022 {
 
     fn part1(input: &HashMap<String, Computation>) -> i64 {
         let stack = build_stack(input, "root".to_owned(), false);
+        let stack = opt_stack(stack);
         eval_stack(&stack, 0)
     }
 
@@ -72,15 +75,18 @@ impl Solution<Day21> for Aoc2022 {
         };
 
         let lhs = build_stack(input, lhs, true);
+        let lhs = opt_stack(lhs);
         let rhs = build_stack(input, rhs, true);
+        let rhs = opt_stack(rhs);
 
         dbg!(&lhs);
+        dbg!(&rhs);
 
-        for humn_value in 0..1000000 {
-            if eval_stack(&lhs, humn_value) == eval_stack(&rhs, humn_value) {
-                return humn_value;
-            }
-        }
+        let res: Vec<_> = (0..100000000)
+            .into_par_iter()
+            .filter(|&humn_value| eval_stack(&lhs, humn_value) == eval_stack(&rhs, humn_value))
+            .collect();
+        dbg!(res);
         unreachable!()
     }
 }
@@ -120,6 +126,61 @@ fn build_stack(
         }
     }
     stack
+}
+
+fn opt_stack(stack: Vec<StackItem>) -> Vec<StackItem> {
+    fn mix(a: &StackItem, b: &StackItem, f: fn(i64, i64) -> i64) -> Option<StackItem> {
+        match (a, b) {
+            (StackItem::Val(a), StackItem::Val(b)) => Some(StackItem::Val(f(*a, *b))),
+            _ => None,
+        }
+    }
+
+    let stack_len = stack.len();
+    let mut opt = Vec::with_capacity(stack.len());
+    for item in stack {
+        match item {
+            StackItem::Add => {
+                let rhs = opt.pop().unwrap();
+                let lhs = opt.pop().unwrap();
+                if let Some(res) = mix(&lhs, &rhs, |a, b| a + b) {
+                    opt.push(res);
+                } else {
+                    opt.extend([lhs, rhs, StackItem::Add]);
+                }
+            }
+            StackItem::Sub => {
+                let rhs = opt.pop().unwrap();
+                let lhs = opt.pop().unwrap();
+                if let Some(res) = mix(&lhs, &rhs, |a, b| a - b) {
+                    opt.push(res);
+                } else {
+                    opt.extend([lhs, rhs, StackItem::Sub]);
+                }
+            }
+            StackItem::Mul => {
+                let rhs = opt.pop().unwrap();
+                let lhs = opt.pop().unwrap();
+                if let Some(res) = mix(&lhs, &rhs, |a, b| a * b) {
+                    opt.push(res);
+                } else {
+                    opt.extend([lhs, rhs, StackItem::Mul]);
+                }
+            }
+            StackItem::Div => {
+                let rhs = opt.pop().unwrap();
+                let lhs = opt.pop().unwrap();
+                if let Some(res) = mix(&lhs, &rhs, |a, b| a / b) {
+                    opt.push(res);
+                } else {
+                    opt.extend([lhs, rhs, StackItem::Div]);
+                }
+            }
+            other => opt.push(other),
+        }
+    }
+    println!("{} => {}", stack_len, opt.len());
+    opt
 }
 
 fn eval_stack(stack: &[StackItem], humn_value: i64) -> i64 {
