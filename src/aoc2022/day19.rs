@@ -8,7 +8,7 @@ use crate::traits::days::Day19;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 struct Cost {
     ore: u16,
     clay: u16,
@@ -121,7 +121,7 @@ impl Solution<Day19> for Aoc2022 {
 fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
     let init_state = State {
         step: 0,
-        bot: RobotState {
+        bot: Cost {
             ore: 1,
             ..Default::default()
         },
@@ -135,8 +135,8 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
     let mut max = 0;
     while let Some(current) = queue.pop() {
         if current.step == STEPS {
-            if current.count.geode > max {
-                max = current.count.geode;
+            if current.geode > max {
+                max = current.geode;
             }
             continue;
         }
@@ -160,39 +160,27 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
 struct State {
     step: u16,
 
-    bot: RobotState,
-    count: CountState,
-}
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct RobotState {
-    ore: u16,
-    clay: u16,
-    obsidian: u16,
-}
-
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct CountState {
-    ore: u16,
-    clay: u16,
-    obsidian: u16,
+    bot: Cost,
+    count: Cost,
     geode: u16,
 }
 
-impl CountState {
-    fn can_buy(mut self, cost: Cost) -> Option<Self> {
-        if cost.ore > self.ore || cost.clay > self.clay || cost.obsidian > self.obsidian {
+impl State {
+    fn can_buy(self, cost: Cost) -> Option<Cost> {
+        if cost.ore > self.count.ore
+            || cost.clay > self.count.clay
+            || cost.obsidian > self.count.obsidian
+        {
             return None;
         }
 
-        self.ore -= cost.ore;
-        self.clay -= cost.clay;
-        self.obsidian -= cost.obsidian;
-        Some(self)
+        let mut count = self.count;
+        count.ore -= cost.ore;
+        count.clay -= cost.clay;
+        count.obsidian -= cost.obsidian;
+        Some(count)
     }
-}
 
-impl State {
     fn move_ahead<const STEPS: u16>(&mut self, min_use: Cost) {
         while self.count.ore < min_use.ore
             && self.count.clay < min_use.clay
@@ -209,13 +197,13 @@ impl State {
         // each step
         let remaining_steps = STEPS - self.step;
         if remaining_steps == 0 {
-            return self.count.geode;
+            return self.geode;
         }
 
-        self.count.geode + remaining_steps * (remaining_steps - 1) / 2
+        self.geode + remaining_steps * (remaining_steps - 1) / 2
     }
 
-    fn prepare(mut self, count: CountState) -> Self {
+    fn prepare(mut self, count: Cost) -> Self {
         self.count = count;
         self.collect();
         self
@@ -245,28 +233,28 @@ impl State {
             yield ns;
 
             // buying
-            if let Some(next) = self.count.can_buy(geode_bot) {
+            if let Some(next) = self.can_buy(geode_bot) {
                 let mut ns = self.prepare(next);
                 // directly add all geodes instead of creating a robot
-                ns.count.geode += STEPS - ns.step;
+                ns.geode += STEPS - ns.step;
                 yield ns;
             }
             if self.bot.obsidian < max_use.obsidian {
-                if let Some(next) = self.count.can_buy(obs_bot) {
+                if let Some(next) = self.can_buy(obs_bot) {
                     let mut ns = self.prepare(next);
                     ns.bot.obsidian += 1;
                     yield ns;
                 }
             }
             if self.bot.clay < max_use.clay {
-                if let Some(next) = self.count.can_buy(clay_bot) {
+                if let Some(next) = self.can_buy(clay_bot) {
                     let mut ns = self.prepare(next);
                     ns.bot.clay += 1;
                     yield ns;
                 }
             }
             if self.bot.ore < max_use.ore {
-                if let Some(next) = self.count.can_buy(ore_bot) {
+                if let Some(next) = self.can_buy(ore_bot) {
                     let mut ns = self.prepare(next);
                     ns.bot.ore += 1;
                     yield ns;
