@@ -1,6 +1,4 @@
 use ahash::HashMap;
-use rayon::prelude::IntoParallelIterator;
-use rayon::prelude::ParallelIterator;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day21;
@@ -64,7 +62,7 @@ impl Solution<Day21> for Aoc2022 {
 
     fn part1(input: &HashMap<String, Computation>) -> i64 {
         let stack = build_stack(input, "root".to_owned(), false);
-        eval_stack(&stack, 0)
+        eval_stack(&stack)
     }
 
     fn part2(input: &HashMap<String, Computation>) -> i64 {
@@ -73,20 +71,15 @@ impl Solution<Day21> for Aoc2022 {
             _ => unreachable!(),
         };
 
+        // in the example and in the actual input, rhs is directly evaluable
+        let rhs = build_stack(input, rhs, true);
+        let rhs = eval_stack(&rhs);
+
         let lhs = build_stack(input, lhs, true);
         let lhs = opt_stack(lhs);
-        let rhs = build_stack(input, rhs, true);
-        let rhs = opt_stack(rhs);
+        let lhs = eval_stack_symbolic(&lhs);
 
-        dbg!(&lhs);
-        dbg!(&rhs);
-
-        let res: Vec<_> = (0..100000000)
-            .into_par_iter()
-            .filter(|&humn_value| eval_stack(&lhs, humn_value) == eval_stack(&rhs, humn_value))
-            .collect();
-        dbg!(res);
-        unreachable!()
+        ((rhs * lhs.c) - lhs.a) / lhs.b
     }
 }
 
@@ -135,7 +128,6 @@ fn opt_stack(stack: Vec<StackItem>) -> Vec<StackItem> {
         }
     }
 
-    let stack_len = stack.len();
     let mut opt = Vec::with_capacity(stack.len());
     for item in stack {
         match item {
@@ -178,16 +170,15 @@ fn opt_stack(stack: Vec<StackItem>) -> Vec<StackItem> {
             other => opt.push(other),
         }
     }
-    println!("{} => {}", stack_len, opt.len());
     opt
 }
 
-fn eval_stack(stack: &[StackItem], humn_value: i64) -> i64 {
+fn eval_stack(stack: &[StackItem]) -> i64 {
     let mut real_stack = Vec::new();
     for item in stack {
         match item {
             StackItem::Val(val) => real_stack.push(*val),
-            StackItem::Humn => real_stack.push(humn_value),
+            StackItem::Humn => unimplemented!(),
             StackItem::Add => {
                 let rhs = real_stack.pop().unwrap();
                 let lhs = real_stack.pop().unwrap();
@@ -213,4 +204,108 @@ fn eval_stack(stack: &[StackItem], humn_value: i64) -> i64 {
 
     assert_eq!(real_stack.len(), 1);
     real_stack.pop().unwrap()
+}
+
+// represents (a + b*x) / c
+#[derive(Debug, Clone, Copy)]
+struct HumanSymbol {
+    a: i64,
+    b: i64,
+    c: i64,
+}
+
+impl HumanSymbol {
+    fn from_humn() -> Self {
+        HumanSymbol { a: 0, b: 1, c: 1 }
+    }
+
+    fn from_val(val: i64) -> Self {
+        HumanSymbol { a: val, b: 0, c: 1 }
+    }
+
+    fn normalized(mut self) -> Self {
+        // sign on top
+        if self.c < 0 {
+            self.a *= -1;
+            self.b *= -1;
+        }
+        let gcd = gcd::binary_u64(self.a.abs() as u64, self.b.abs() as u64);
+        let gcd = gcd::binary_u64(gcd, self.c.abs() as u64);
+        let gcd = gcd as i64;
+
+        self.a /= gcd;
+        self.b /= gcd;
+        self.c /= gcd;
+        self
+    }
+
+    fn add(lhs: Self, rhs: Self) -> Self {
+        let c = lhs.c * rhs.c;
+        let a = lhs.a * rhs.c + rhs.a * lhs.c;
+        let b = lhs.b * rhs.c + rhs.b * lhs.c;
+        HumanSymbol { a, b, c }.normalized()
+    }
+
+    fn sub(lhs: Self, rhs: Self) -> Self {
+        let c = lhs.c * rhs.c;
+        let a = lhs.a * rhs.c - rhs.a * lhs.c;
+        let b = lhs.b * rhs.c - rhs.b * lhs.c;
+        HumanSymbol { a, b, c }.normalized()
+    }
+
+    fn mul(lhs: Self, rhs: Self) -> Self {
+        if lhs.b != 0 && rhs.b != 0 {
+            unimplemented!()
+        }
+
+        let c = lhs.c * rhs.c;
+        let a = lhs.a * rhs.a;
+        let b = lhs.a * rhs.b + rhs.a * lhs.b;
+        HumanSymbol { a, b, c }.normalized()
+    }
+
+    fn div(lhs: Self, rhs: Self) -> Self {
+        if rhs.b != 0 {
+            unimplemented!()
+        }
+
+        let a = lhs.a * rhs.c;
+        let b = lhs.b * rhs.c;
+        let c = lhs.c * rhs.a;
+        HumanSymbol { a, b, c }.normalized()
+    }
+}
+
+fn eval_stack_symbolic(stack: &[StackItem]) -> HumanSymbol {
+    let mut real_stack = Vec::new();
+    for item in stack {
+        match item {
+            StackItem::Val(val) => real_stack.push(HumanSymbol::from_val(*val)),
+            StackItem::Humn => real_stack.push(HumanSymbol::from_humn()),
+            StackItem::Add => {
+                let rhs = real_stack.pop().unwrap();
+                let lhs = real_stack.pop().unwrap();
+                real_stack.push(HumanSymbol::add(lhs, rhs));
+            }
+            StackItem::Sub => {
+                let rhs = real_stack.pop().unwrap();
+                let lhs = real_stack.pop().unwrap();
+                real_stack.push(HumanSymbol::sub(lhs, rhs));
+            }
+            StackItem::Mul => {
+                let rhs = real_stack.pop().unwrap();
+                let lhs = real_stack.pop().unwrap();
+                real_stack.push(HumanSymbol::mul(lhs, rhs));
+            }
+            StackItem::Div => {
+                let rhs = real_stack.pop().unwrap();
+                let lhs = real_stack.pop().unwrap();
+                real_stack.push(HumanSymbol::div(lhs, rhs));
+            }
+        }
+    }
+
+    assert_eq!(real_stack.len(), 1);
+    let hs = real_stack.pop().unwrap();
+    hs
 }
