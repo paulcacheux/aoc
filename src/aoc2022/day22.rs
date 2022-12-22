@@ -143,9 +143,11 @@ impl Solution<Day22> for Aoc2022 {
     }
 
     fn part2(input: &Input) -> usize {
-        let test_map = [[0, 0, 1, 0], [2, 3, 4, 0], [0, 0, 5, 6]];
-        let subheight = input.grid.height / test_map.len();
-        let subwidth = input.grid.width / test_map[0].len();
+        // let map = [[0, 0, 1, 0], [2, 3, 4, 0], [0, 0, 5, 6]];
+        let map = [[0, 1, 2], [0, 3, 0], [4, 5, 0], [6, 0, 0]];
+
+        let subheight = input.grid.height / map.len();
+        let subwidth = input.grid.width / map[0].len();
         assert_eq!(subwidth, subheight);
 
         let mut subgrids = vec![Grid::new(subwidth, subheight, Cell::Empty); 6];
@@ -153,7 +155,7 @@ impl Solution<Day22> for Aoc2022 {
         for (x, y, val) in input.grid.iter() {
             let gx = x / subwidth;
             let gy = y / subheight;
-            let gindex = test_map[gy][gx];
+            let gindex = map[gy][gx];
             if gindex == 0 {
                 assert!(val.is_none());
                 continue;
@@ -207,7 +209,7 @@ impl Solution<Day22> for Aoc2022 {
 
         let mut gx = 0;
         let mut gy = 0;
-        'top: for (y, line) in test_map.into_iter().enumerate() {
+        'top: for (y, line) in map.into_iter().enumerate() {
             for (x, g) in line.into_iter().enumerate() {
                 if g - 1 == state.g {
                     gx = x;
@@ -279,13 +281,15 @@ struct State {
 
 fn compute_next_pos_part2(grids: &[Grid<Cell>], s: &State, width: usize) -> State {
     let mut dir_map = HashMap::<
-        _,
+        (usize, (isize, isize)),
         (
             usize,
             (isize, isize),
             Box<dyn Fn(usize, usize) -> (usize, usize)>,
         ),
     >::default();
+    /*
+    test input
     dir_map.insert((0, (0, 1)), (3, (0, 1), Box::new(|x, _y| (x, 0))));
     dir_map.insert(
         (3, (1, 0)),
@@ -298,6 +302,43 @@ fn compute_next_pos_part2(grids: &[Grid<Cell>], s: &State, width: usize) -> Stat
     );
     dir_map.insert((1, (1, 0)), (2, (1, 0), Box::new(|_x, y| (0, y))));
     dir_map.insert((2, (0, -1)), (0, (1, 0), Box::new(|x, _y| (0, x))));
+    */
+    dir_map.insert((0, (0, -1)), (5, (1, 0), Box::new(|x, _y| (0, x))));
+    dir_map.insert((5, (0, -1)), (3, (0, -1), Box::new(|x, _y| (x, width - 1))));
+    dir_map.insert(
+        (3, (-1, 0)),
+        (0, (1, 0), Box::new(|_x, y| (0, width - y - 1))),
+    );
+    dir_map.insert((3, (0, 1)), (5, (0, 1), Box::new(|x, _y| (x, 0))));
+    dir_map.insert((5, (-1, 0)), (0, (0, 1), Box::new(|_x, y| (y, 0))));
+    dir_map.insert((0, (1, 0)), (1, (1, 0), Box::new(|_x, y| (0, y))));
+    dir_map.insert((1, (-1, 0)), (0, (-1, 0), Box::new(|_x, y| (width - 1, y))));
+    dir_map.insert((0, (0, 1)), (2, (0, 1), Box::new(|x, _y| (x, 0))));
+    dir_map.insert((2, (1, 0)), (1, (0, -1), Box::new(|_x, y| (y, width - 1))));
+    dir_map.insert((1, (0, 1)), (2, (-1, 0), Box::new(|x, _y| (width - 1, x))));
+    dir_map.insert((2, (0, 1)), (4, (0, 1), Box::new(|x, _y| (x, 0))));
+    dir_map.insert((4, (0, -1)), (2, (0, -1), Box::new(|x, _y| (x, width - 1))));
+    dir_map.insert(
+        (4, (1, 0)),
+        (1, (-1, 0), Box::new(|_x, y| (width - 1, width - y - 1))),
+    );
+    dir_map.insert(
+        (1, (1, 0)),
+        (4, (-1, 0), Box::new(|_x, y| (width - 1, width - y - 1))),
+    );
+    dir_map.insert((4, (-1, 0)), (3, (-1, 0), Box::new(|_x, y| (width - 1, y))));
+    dir_map.insert((3, (1, 0)), (4, (1, 0), Box::new(|_x, y| (0, y))));
+    dir_map.insert((1, (0, -1)), (5, (0, -1), Box::new(|x, _y| (x, width - 1))));
+    dir_map.insert((5, (0, 1)), (1, (0, 1), Box::new(|x, _y| (x, 0))));
+    dir_map.insert(
+        (0, (-1, 0)),
+        (3, (1, 0), Box::new(|_x, y| (0, width - 1 - y))),
+    );
+    dir_map.insert((5, (1, 0)), (4, (0, -1), Box::new(|_x, y| (y, width - 1))));
+    dir_map.insert((4, (0, 1)), (5, (-1, 0), Box::new(|x, _y| (width - 1, x))));
+    dir_map.insert((3, (0, -1)), (2, (1, 0), Box::new(|x, _y| (0, x))));
+    dir_map.insert((2, (0, -1)), (0, (0, -1), Box::new(|x, _y| (x, width - 1))));
+    dir_map.insert((2, (-1, 0)), (3, (0, 1), Box::new(|_x, y| (y, 0))));
 
     assert!(s.dx.abs() <= 1);
     assert!(s.dy.abs() <= 1);
