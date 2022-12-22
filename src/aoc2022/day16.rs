@@ -57,7 +57,7 @@ impl ParseInput<Day16> for Aoc2022 {
                     .next()
                     .unwrap()
                     .trim_start_matches("rate=")
-                    .trim_end_matches(";")
+                    .trim_end_matches(';')
                     .parse()
                     .unwrap();
 
