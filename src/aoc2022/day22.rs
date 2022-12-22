@@ -7,7 +7,6 @@ use super::grid::Grid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cell {
-    Void,
     Empty,
     Wall,
 }
@@ -21,7 +20,7 @@ pub enum Instruction {
 
 #[derive(Debug)]
 pub struct Input {
-    grid: Grid<Cell>,
+    grid: Grid<Option<Cell>>,
     instructions: Vec<Instruction>,
 }
 
@@ -47,9 +46,9 @@ impl ParseInput<Day22> for Aoc2022 {
             predata.push(
                 line.chars()
                     .map(|c| match c {
-                        ' ' => Cell::Void,
-                        '.' => Cell::Empty,
-                        '#' => Cell::Wall,
+                        ' ' => None,
+                        '.' => Some(Cell::Empty),
+                        '#' => Some(Cell::Wall),
                         _ => unreachable!(),
                     })
                     .collect::<Vec<_>>(),
@@ -62,7 +61,7 @@ impl ParseInput<Day22> for Aoc2022 {
         for line in predata {
             let missing = width - line.len();
             data.extend(line);
-            data.extend(std::iter::repeat(Cell::Void).take(missing));
+            data.extend(std::iter::repeat(None).take(missing));
         }
 
         let mut instructions = Vec::new();
@@ -116,7 +115,7 @@ impl Solution<Day22> for Aoc2022 {
         let mut x = 0;
         let mut y = 0;
 
-        while *input.grid.get(x, y) == Cell::Void {
+        while input.grid.get(x, y).is_none() {
             x += 1;
         }
 
@@ -126,7 +125,7 @@ impl Solution<Day22> for Aoc2022 {
                 Instruction::Move(offset) => {
                     for _ in 0..*offset {
                         let (nx, ny) = compute_offset(&input.grid, x, y, dx, dy);
-                        if *input.grid.get(nx, ny) == Cell::Wall {
+                        if let Some(Cell::Wall) = *input.grid.get(nx, ny) {
                             break;
                         }
                         x = nx;
@@ -142,11 +141,21 @@ impl Solution<Day22> for Aoc2022 {
     }
 
     fn part2(_input: &Input) -> u32 {
+        let test_map = [[0, 0, 1, 0], [2, 3, 4, 0], [0, 0, 5, 6]];
+
+        // let subgrids = vec![Grid<]
+
         todo!()
     }
 }
 
-fn compute_offset(grid: &Grid<Cell>, x: usize, y: usize, dx: isize, dy: isize) -> (usize, usize) {
+fn compute_offset(
+    grid: &Grid<Option<Cell>>,
+    x: usize,
+    y: usize,
+    dx: isize,
+    dy: isize,
+) -> (usize, usize) {
     let mut nx = x;
     let mut ny = y;
     loop {
@@ -163,7 +172,7 @@ fn compute_offset(grid: &Grid<Cell>, x: usize, y: usize, dx: isize, dy: isize) -
         nx = nx.wrapping_add_signed(dx) % grid.width;
         ny = ny.wrapping_add_signed(dy) % grid.height;
 
-        if *grid.get(nx, ny) != Cell::Void {
+        if grid.get(nx, ny).is_some() {
             break;
         }
     }
