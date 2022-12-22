@@ -10,9 +10,9 @@ use crate::traits::Solution;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 struct Cost {
-    ore: u16,
-    clay: u16,
-    obsidian: u16,
+    ore: u8,
+    clay: u8,
+    obsidian: u8,
 }
 
 #[derive(Debug)]
@@ -118,7 +118,7 @@ impl Solution<Day19> for Aoc2022 {
     }
 }
 
-fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
+fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
     let init_state = State {
         step: 0,
         bot: Cost {
@@ -158,7 +158,7 @@ fn solve<const STEPS: u16>(bp: &Blueprint) -> u16 {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct State {
-    step: u16,
+    step: u8,
 
     bot: Cost,
     count: Cost,
@@ -184,7 +184,7 @@ impl State {
         Some(next)
     }
 
-    fn move_ahead<const STEPS: u16>(&mut self, min_use: Cost) {
+    fn move_ahead<const STEPS: u8>(&mut self, min_use: Cost) {
         while self.count.ore < min_use.ore
             && self.count.clay < min_use.clay
             && self.count.obsidian < min_use.obsidian
@@ -195,10 +195,10 @@ impl State {
         }
     }
 
-    fn best_possible<const STEPS: u16>(&self) -> u16 {
+    fn best_possible<const STEPS: u8>(&self) -> u16 {
         // compute the best possible geode count if we create a robot
         // each step
-        let remaining_steps = STEPS - self.step;
+        let remaining_steps = (STEPS - self.step) as u16;
         if remaining_steps == 0 {
             return self.geode;
         }
@@ -213,7 +213,7 @@ impl State {
         self.count.obsidian += self.bot.obsidian;
     }
 
-    fn next_states<const STEPS: u16>(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
+    fn next_states<const STEPS: u8>(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
         self.step += 1;
 
         let ore_bot = bp.ore_robot;
@@ -233,7 +233,7 @@ impl State {
             // buying
             if let Some(mut next) = self.can_buy(geode_bot) {
                 // directly add all geodes instead of creating a robot
-                next.geode += STEPS - ns.step;
+                next.geode += (STEPS - ns.step) as u16;
                 yield next;
             }
             if self.bot.obsidian < max_use.obsidian {
