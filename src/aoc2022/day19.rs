@@ -121,8 +121,11 @@ impl Solution<Day19> for Aoc2022 {
 fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
     let init_state = State {
         step: 0,
-        bot: Cost {
-            ore: 1,
+        key: Key {
+            bot: Cost {
+                ore: 1,
+                ..Default::default()
+            },
             ..Default::default()
         },
         ..Default::default()
@@ -135,8 +138,8 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
     let mut max = 0;
     while let Some(current) = queue.pop() {
         if current.step == STEPS {
-            if current.geode > max {
-                max = current.geode;
+            if current.key.geode > max {
+                max = current.key.geode;
             }
             continue;
         }
@@ -145,10 +148,10 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
             continue;
         }
 
-        visited.insert(current.key());
+        visited.insert(current.key_u64());
 
         for next in current.next_states::<STEPS>(bp) {
-            if !visited.contains(&next.key()) {
+            if !visited.contains(&next.key_u64()) {
                 queue.push(next);
             }
         }
@@ -160,12 +163,10 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
 struct State {
     step: u8,
 
-    bot: Cost,
-    count: Cost,
-    geode: u16,
+    key: Key,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Key {
     bot: Cost,
     count: Cost,
@@ -174,39 +175,34 @@ struct Key {
 
 impl State {
     #[inline]
-    fn key(&self) -> u64 {
-        let key = Key {
-            bot: self.bot,
-            count: self.count,
-            geode: self.geode,
-        };
+    fn key_u64(&self) -> u64 {
         // what an horrible hack, but it seems the hasher if faster on u64...
         assert_eq!(std::mem::size_of::<Key>(), std::mem::size_of::<u64>());
-        unsafe { std::mem::transmute(key) }
+        unsafe { std::mem::transmute(self.key) }
     }
 
     #[inline]
     fn can_buy(&self, cost: Cost) -> Option<State> {
-        if cost.ore > self.count.ore
-            || cost.clay > self.count.clay
-            || cost.obsidian > self.count.obsidian
+        if cost.ore > self.key.count.ore
+            || cost.clay > self.key.count.clay
+            || cost.obsidian > self.key.count.obsidian
         {
             return None;
         }
 
         let mut next = *self;
-        next.count.ore -= cost.ore;
-        next.count.clay -= cost.clay;
-        next.count.obsidian -= cost.obsidian;
+        next.key.count.ore -= cost.ore;
+        next.key.count.clay -= cost.clay;
+        next.key.count.obsidian -= cost.obsidian;
         next.collect();
 
         Some(next)
     }
 
     fn move_ahead<const STEPS: u8>(&mut self, min_use: Cost) {
-        while self.count.ore < min_use.ore
-            && self.count.clay < min_use.clay
-            && self.count.obsidian < min_use.obsidian
+        while self.key.count.ore < min_use.ore
+            && self.key.count.clay < min_use.clay
+            && self.key.count.obsidian < min_use.obsidian
             && self.step <= STEPS
         {
             self.step += 1;
@@ -219,17 +215,17 @@ impl State {
         // each step
         let remaining_steps = (STEPS - self.step) as u16;
         if remaining_steps == 0 {
-            return self.geode;
+            return self.key.geode;
         }
 
-        self.geode + remaining_steps * (remaining_steps - 1) / 2
+        self.key.geode + remaining_steps * (remaining_steps - 1) / 2
     }
 
     #[inline]
     fn collect(&mut self) {
-        self.count.ore += self.bot.ore;
-        self.count.clay += self.bot.clay;
-        self.count.obsidian += self.bot.obsidian;
+        self.key.count.ore += self.key.bot.ore;
+        self.key.count.clay += self.key.bot.clay;
+        self.key.count.obsidian += self.key.bot.obsidian;
     }
 
     fn next_states<const STEPS: u8>(mut self, bp: &Blueprint) -> impl Iterator<Item = Self> {
@@ -252,24 +248,24 @@ impl State {
             // buying
             if let Some(mut next) = self.can_buy(geode_bot) {
                 // directly add all geodes instead of creating a robot
-                next.geode += (STEPS - ns.step) as u16;
+                next.key.geode += (STEPS - ns.step) as u16;
                 yield next;
             }
-            if self.bot.obsidian < max_use.obsidian {
+            if self.key.bot.obsidian < max_use.obsidian {
                 if let Some(mut next) = self.can_buy(obs_bot) {
-                    next.bot.obsidian += 1;
+                    next.key.bot.obsidian += 1;
                     yield next;
                 }
             }
-            if self.bot.clay < max_use.clay {
+            if self.key.bot.clay < max_use.clay {
                 if let Some(mut next) = self.can_buy(clay_bot) {
-                    next.bot.clay += 1;
+                    next.key.bot.clay += 1;
                     yield next;
                 }
             }
-            if self.bot.ore < max_use.ore {
+            if self.key.bot.ore < max_use.ore {
                 if let Some(mut next) = self.can_buy(ore_bot) {
-                    next.bot.ore += 1;
+                    next.key.bot.ore += 1;
                     yield next;
                 }
             }
