@@ -166,7 +166,8 @@ struct State {
 }
 
 impl State {
-    fn can_buy(mut self, cost: Cost) -> Option<State> {
+    #[inline]
+    fn can_buy(&self, cost: Cost) -> Option<State> {
         if cost.ore > self.count.ore
             || cost.clay > self.count.clay
             || cost.obsidian > self.count.obsidian
@@ -174,12 +175,13 @@ impl State {
             return None;
         }
 
-        self.count.ore -= cost.ore;
-        self.count.clay -= cost.clay;
-        self.count.obsidian -= cost.obsidian;
+        let mut next = *self;
+        next.count.ore -= cost.ore;
+        next.count.clay -= cost.clay;
+        next.count.obsidian -= cost.obsidian;
+        next.collect();
 
-        self.collect();
-        Some(self)
+        Some(next)
     }
 
     fn move_ahead<const STEPS: u16>(&mut self, min_use: Cost) {
@@ -204,6 +206,7 @@ impl State {
         self.geode + remaining_steps * (remaining_steps - 1) / 2
     }
 
+    #[inline]
     fn collect(&mut self) {
         self.count.ore += self.bot.ore;
         self.count.clay += self.bot.clay;
