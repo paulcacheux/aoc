@@ -174,12 +174,15 @@ struct Key {
 
 impl State {
     #[inline]
-    fn key(&self) -> Key {
-        Key {
+    fn key(&self) -> u64 {
+        let key = Key {
             bot: self.bot,
             count: self.count,
             geode: self.geode,
-        }
+        };
+        // what an horrible hack, but it seems the hasher if faster on u64...
+        assert_eq!(std::mem::size_of::<Key>(), std::mem::size_of::<u64>());
+        unsafe { std::mem::transmute(key) }
     }
 
     #[inline]
