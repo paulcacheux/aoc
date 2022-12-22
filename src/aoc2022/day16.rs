@@ -6,7 +6,6 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 use ahash::HashMap;
-use regex::Regex;
 
 type StringSymbol = u8;
 
@@ -42,10 +41,6 @@ impl ParseInput<Day16> for Aoc2022 {
     type Parsed = Input;
 
     fn parse_input(input: &str) -> Self::Parsed {
-        let line_re =
-            Regex::new(r"Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? ((\w|[, ])+)")
-                .unwrap();
-
         let mut interner = Interner::default();
         let aa_symbol = interner.intern("AA".to_owned());
 
@@ -53,14 +48,26 @@ impl ParseInput<Day16> for Aoc2022 {
             .lines()
             .map(str::trim)
             .map(|line| {
-                let captures = line_re.captures(line).unwrap();
-                let name = captures.get(1).unwrap().as_str().to_owned();
-                let rate = captures.get(2).unwrap().as_str().parse().unwrap();
-                let edges = captures
-                    .get(3)
+                let mut words = line.split_ascii_whitespace();
+                words.next(); // Skip Valve
+                let name = words.next().unwrap().to_owned();
+                words.next(); // Skip has
+                words.next(); // Skip flow
+                let rate = words
+                    .next()
                     .unwrap()
-                    .as_str()
-                    .split(", ")
+                    .trim_start_matches("rate=")
+                    .trim_end_matches(';')
+                    .parse()
+                    .unwrap();
+
+                words.next(); // Skip tunnels?
+                words.next(); // Skip leads?
+                words.next(); // Skip to
+                words.next(); // Skip valves?
+
+                let edges = words
+                    .map(|w| w.trim_end_matches(','))
                     .map(|s| interner.intern(s.to_owned()))
                     .collect();
                 Valve {
