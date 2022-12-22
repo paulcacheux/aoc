@@ -153,7 +153,7 @@ fn compute_offset(grid: &Grid<Cell>, x: usize, y: usize, dx: isize, dy: isize) -
         if nx == 0 && dx < 0 {
             nx = grid.width;
         }
-        if y == 0 && dy < 0 {
+        if ny == 0 && dy < 0 {
             ny = grid.height;
         }
 
