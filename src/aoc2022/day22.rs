@@ -124,7 +124,7 @@ impl Solution<Day22> for Aoc2022 {
             match inst {
                 Instruction::Move(offset) => {
                     for _ in 0..*offset {
-                        let (nx, ny) = compute_offset(&input.grid, x, y, dx, dy);
+                        let (nx, ny) = compute_offset_part1(&input.grid, x, y, dx, dy);
                         if let Some(Cell::Wall) = *input.grid.get(nx, ny) {
                             break;
                         }
@@ -140,16 +140,34 @@ impl Solution<Day22> for Aoc2022 {
         (y + 1) * 1000 + (x + 1) * 4 + di
     }
 
-    fn part2(_input: &Input) -> u32 {
+    fn part2(input: &Input) -> u32 {
         let test_map = [[0, 0, 1, 0], [2, 3, 4, 0], [0, 0, 5, 6]];
+        let subheight = input.grid.height / test_map.len();
+        let subwidth = input.grid.width / test_map[0].len();
+        dbg!(subwidth, subheight);
 
-        // let subgrids = vec![Grid<]
+        let mut subgrids = vec![Grid::new(subwidth, subheight, Cell::Empty); 6];
+
+        for (x, y, val) in input.grid.iter() {
+            let gx = x / subwidth;
+            let gy = y / subheight;
+            let gindex = test_map[gy][gx];
+            if gindex == 0 {
+                assert!(val.is_none());
+                continue;
+            } else {
+                assert!(val.is_some());
+            }
+            let gindex = gindex - 1;
+            subgrids[gindex].set(x % subwidth, y % subheight, val.unwrap());
+        }
+        dbg!(subgrids);
 
         todo!()
     }
 }
 
-fn compute_offset(
+fn compute_offset_part1(
     grid: &Grid<Option<Cell>>,
     x: usize,
     y: usize,
