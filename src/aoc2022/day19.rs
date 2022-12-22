@@ -128,7 +128,6 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
             },
             ..Default::default()
         },
-        ..Default::default()
     };
 
     let mut queue = Vec::with_capacity(64);
