@@ -1,3 +1,5 @@
+use ahash::HashMap;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day22;
 use crate::traits::ParseInput;
@@ -106,7 +108,7 @@ impl ParseInput<Day22> for Aoc2022 {
 
 impl Solution<Day22> for Aoc2022 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Input) -> usize {
         let deltas = [(1, 0), (0, 1), (-1, 0), (0, -1)];
@@ -140,11 +142,11 @@ impl Solution<Day22> for Aoc2022 {
         (y + 1) * 1000 + (x + 1) * 4 + di
     }
 
-    fn part2(input: &Input) -> u32 {
+    fn part2(input: &Input) -> usize {
         let test_map = [[0, 0, 1, 0], [2, 3, 4, 0], [0, 0, 5, 6]];
         let subheight = input.grid.height / test_map.len();
         let subwidth = input.grid.width / test_map[0].len();
-        dbg!(subwidth, subheight);
+        assert_eq!(subwidth, subheight);
 
         let mut subgrids = vec![Grid::new(subwidth, subheight, Cell::Empty); 6];
 
@@ -161,9 +163,69 @@ impl Solution<Day22> for Aoc2022 {
             let gindex = gindex - 1;
             subgrids[gindex].set(x % subwidth, y % subheight, val.unwrap());
         }
-        dbg!(subgrids);
 
-        todo!()
+        let mut state = State {
+            x: 0,
+            y: 0,
+            g: 0,
+            dx: 1,
+            dy: 0,
+        };
+        let deltas = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+
+        for inst in &input.instructions {
+            let di = deltas
+                .iter()
+                .position(|&d| d == (state.dx, state.dy))
+                .unwrap();
+
+            match inst {
+                Instruction::Move(offset) => {
+                    for _ in 0..*offset {
+                        let next_state = compute_next_pos_part2(&subgrids, &state, subwidth);
+                        if let Cell::Wall = *subgrids[next_state.g].get(next_state.x, next_state.y)
+                        {
+                            break;
+                        }
+                        state = next_state;
+                    }
+                }
+                Instruction::Left => {
+                    let di = wrap_dec(di, deltas.len());
+                    let (dx, dy) = deltas[di];
+                    state.dx = dx;
+                    state.dy = dy;
+                }
+                Instruction::Right => {
+                    let di = (di + 1) % deltas.len();
+                    let (dx, dy) = deltas[di];
+                    state.dx = dx;
+                    state.dy = dy;
+                }
+            }
+        }
+
+        let mut gx = 0;
+        let mut gy = 0;
+        'top: for (y, line) in test_map.into_iter().enumerate() {
+            for (x, g) in line.into_iter().enumerate() {
+                if g - 1 == state.g {
+                    gx = x;
+                    gy = y;
+                    break 'top;
+                }
+            }
+        }
+
+        let di = deltas
+            .iter()
+            .position(|&d| d == (state.dx, state.dy))
+            .unwrap();
+
+        let x = gx * subwidth + state.x;
+        let y = gy * subwidth + state.y;
+
+        (y + 1) * 1000 + (x + 1) * 4 + di
     }
 }
 
@@ -203,5 +265,66 @@ fn wrap_dec(i: usize, max: usize) -> usize {
         max - 1
     } else {
         i - 1
+    }
+}
+
+#[derive(Debug)]
+struct State {
+    x: usize,
+    y: usize,
+    g: usize,
+    dx: isize,
+    dy: isize,
+}
+
+fn compute_next_pos_part2(grids: &[Grid<Cell>], s: &State, width: usize) -> State {
+    let mut dir_map = HashMap::<
+        _,
+        (
+            usize,
+            (isize, isize),
+            Box<dyn Fn(usize, usize) -> (usize, usize)>,
+        ),
+    >::default();
+    dir_map.insert((0, (0, 1)), (3, (0, 1), Box::new(|x, _y| (x, 0))));
+    dir_map.insert(
+        (3, (1, 0)),
+        (5, (0, 1), Box::new(|_x, y| (width - y - 1, 0))),
+    );
+    dir_map.insert((5, (-1, 0)), (4, (-1, 0), Box::new(|_x, y| (width - 1, y))));
+    dir_map.insert(
+        (4, (0, 1)),
+        (1, (0, -1), Box::new(|x, _y| (width - x - 1, width - 1))),
+    );
+    dir_map.insert((1, (1, 0)), (2, (1, 0), Box::new(|_x, y| (0, y))));
+    dir_map.insert((2, (0, -1)), (0, (1, 0), Box::new(|x, _y| (0, x))));
+
+    assert!(s.dx.abs() <= 1);
+    assert!(s.dy.abs() <= 1);
+
+    if (s.x == 0 && s.dx < 0)
+        || (s.y == 0 && s.dy < 0)
+        || (s.x.wrapping_add_signed(s.dx) == grids[s.g].width)
+        || (s.y.wrapping_add_signed(s.dy) == grids[s.g].height)
+    {
+        if let Some((newg, (newdx, newdy), xymapper)) = dir_map.get(&(s.g, (s.dx, s.dy))) {
+            let (x, y) = xymapper(s.x, s.y);
+            State {
+                x,
+                y,
+                g: *newg,
+                dx: *newdx,
+                dy: *newdy,
+            }
+        } else {
+            dbg!(s);
+            unimplemented!()
+        }
+    } else {
+        State {
+            x: s.x.wrapping_add_signed(s.dx),
+            y: s.y.wrapping_add_signed(s.dy),
+            ..*s
+        }
     }
 }
