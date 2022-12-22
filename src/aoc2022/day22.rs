@@ -90,6 +90,9 @@ impl ParseInput<Day22> for Aoc2022 {
                     _ => unreachable!(),
                 }
             }
+            if current != 0 {
+                instructions.push(Instruction::Move(current));
+            }
         }
 
         let grid = Grid {
