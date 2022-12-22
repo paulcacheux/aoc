@@ -145,10 +145,10 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
             continue;
         }
 
-        visited.insert(current);
+        visited.insert(current.key());
 
         for next in current.next_states::<STEPS>(bp) {
-            if !visited.contains(&next) {
+            if !visited.contains(&next.key()) {
                 queue.push(next);
             }
         }
@@ -156,7 +156,7 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
     max
 }
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Default, Debug, Clone, Copy)]
 struct State {
     step: u8,
 
@@ -165,7 +165,23 @@ struct State {
     geode: u16,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct Key {
+    bot: Cost,
+    count: Cost,
+    geode: u16,
+}
+
 impl State {
+    #[inline]
+    fn key(&self) -> Key {
+        Key {
+            bot: self.bot,
+            count: self.count,
+            geode: self.geode,
+        }
+    }
+
     #[inline]
     fn can_buy(&self, cost: Cost) -> Option<State> {
         if cost.ore > self.count.ore
