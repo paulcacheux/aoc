@@ -31,7 +31,7 @@ impl ParseInput<Day23> for Aoc2022 {
 
 impl Solution<Day23> for Aoc2022 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Grid<Cell>) -> usize {
         // build first state
@@ -50,8 +50,25 @@ impl Solution<Day23> for Aoc2022 {
         score(&state)
     }
 
-    fn part2(_input: &Grid<Cell>) -> u32 {
-        todo!()
+    fn part2(input: &Grid<Cell>) -> usize {
+        // build first state
+        let mut state = HashSet::default();
+        for (x, y, val) in input.iter() {
+            if *val == Cell::Elf {
+                state.insert((x as isize, y as isize));
+            }
+        }
+
+        // loop over it
+        let mut start_di = 0;
+        loop {
+            let next_state = next_state(&state, start_di);
+            start_di += 1;
+            if state == next_state {
+                return start_di;
+            }
+            state = next_state;
+        }
     }
 }
 
@@ -117,7 +134,17 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
         }
     }
     assert_eq!(next_state.len(), state.len());
-    next_state
+    normalize(next_state)
+}
+
+fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
+    let xmin = state.iter().map(|p| p.0).min().unwrap();
+    let ymin = state.iter().map(|p| p.1).min().unwrap();
+
+    state
+        .into_iter()
+        .map(|(x, y)| (x - xmin, y - ymin))
+        .collect()
 }
 
 enum Status {
