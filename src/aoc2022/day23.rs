@@ -123,8 +123,16 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
 }
 
 fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
-    let xmin = state.iter().map(|p| p.0).min().unwrap();
-    let ymin = state.iter().map(|p| p.1).min().unwrap();
+    let mut xmin = isize::MAX;
+    let mut ymin = isize::MAX;
+    for &(x, y) in state.iter() {
+        if x < xmin {
+            xmin = x;
+        }
+        if y < ymin {
+            ymin = y;
+        }
+    }
 
     state
         .into_iter()
