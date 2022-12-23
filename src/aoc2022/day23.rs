@@ -1,7 +1,9 @@
 use std::ops::RangeInclusive;
 
 use ahash::HashMap;
+use ahash::HashMapExt;
 use ahash::HashSet;
+use ahash::HashSetExt;
 use itertools::Itertools;
 use itertools::MinMaxResult;
 
@@ -70,8 +72,8 @@ const DELTAS: [[(isize, isize); 3]; 4] = [
 ];
 
 fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isize, isize)> {
-    let mut next_state = HashSet::default();
-    let mut status = HashMap::default();
+    let mut next_state = HashSet::with_capacity(state.len());
+    let mut status = HashMap::with_capacity(state.len());
     for &(x, y) in state {
         let mut all_suitable = true;
         let mut final_di = None;
@@ -101,18 +103,15 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
             let (dx, dy) = DELTAS[di][1];
             let next = (x + dx, y + dy);
 
-            match status.get(&next) {
-                Some((ox, oy)) => {
-                    assert!(next_state.get(&next).is_some());
-                    next_state.remove(&next);
-                    next_state.insert((*ox, *oy));
-                    next_state.insert((x, y));
-                }
-                None => {
-                    assert!(next_state.get(&next).is_none());
-                    next_state.insert(next);
-                    status.insert(next, (x, y));
-                }
+            if let Some((ox, oy)) = status.get(&next) {
+                assert!(next_state.get(&next).is_some());
+                next_state.remove(&next);
+                next_state.insert((*ox, *oy));
+                next_state.insert((x, y));
+            } else {
+                assert!(next_state.get(&next).is_none());
+                next_state.insert(next);
+                status.insert(next, (x, y));
             }
         } else {
             next_state.insert((x, y));
