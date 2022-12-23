@@ -1,7 +1,5 @@
 use std::ops::RangeInclusive;
 
-use ahash::HashMap;
-use ahash::HashMapExt;
 use ahash::HashSet;
 use ahash::HashSetExt;
 use itertools::Itertools;
@@ -64,16 +62,15 @@ impl Solution<Day23> for Aoc2022 {
     }
 }
 
-const DELTAS: [[(isize, isize); 3]; 4] = [
+const DELTAS: [[(i32, i32); 3]; 4] = [
     [(-1, -1), (0, -1), (1, -1)], // N
     [(-1, 1), (0, 1), (1, 1)],    // S
     [(-1, -1), (-1, 0), (-1, 1)], // W
     [(1, -1), (1, 0), (1, 1)],    // E
 ];
 
-fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isize, isize)> {
+fn next_state(state: &HashSet<(i32, i32)>, start_di: usize) -> HashSet<(i32, i32)> {
     let mut next_state = HashSet::with_capacity(state.len());
-    let mut status = HashMap::with_capacity(state.len());
     for &(x, y) in state {
         let mut all_suitable = true;
         let mut final_di = None;
@@ -103,15 +100,14 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
             let (dx, dy) = DELTAS[di][1];
             let next = (x + dx, y + dy);
 
-            if let Some((ox, oy)) = status.get(&next) {
-                assert!(next_state.get(&next).is_some());
-                next_state.remove(&next);
-                next_state.insert((*ox, *oy));
+            if next_state.remove(&next) {
+                // this is possible because at most 2 elfs fight for the same spot,
+                // and if they do they always come from opposite directions
+                let (ox, oy) = (x + 2 * dx, y + 2 * dy);
+                next_state.insert((ox, oy));
                 next_state.insert((x, y));
             } else {
-                assert!(next_state.get(&next).is_none());
                 next_state.insert(next);
-                status.insert(next, (x, y));
             }
         } else {
             next_state.insert((x, y));
@@ -121,9 +117,9 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
     normalize(next_state)
 }
 
-fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
-    let mut xmin = isize::MAX;
-    let mut ymin = isize::MAX;
+fn normalize(state: HashSet<(i32, i32)>) -> HashSet<(i32, i32)> {
+    let mut xmin = i32::MAX;
+    let mut ymin = i32::MAX;
     for &(x, y) in state.iter() {
         if x < xmin {
             xmin = x;
@@ -139,8 +135,8 @@ fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
         .collect()
 }
 
-fn score(grid: &HashSet<(isize, isize)>) -> usize {
-    fn len(mm: MinMaxResult<isize>) -> isize {
+fn score(grid: &HashSet<(i32, i32)>) -> usize {
+    fn len(mm: MinMaxResult<i32>) -> i32 {
         match mm {
             itertools::MinMaxResult::NoElements => unreachable!(),
             itertools::MinMaxResult::OneElement(_) => 1,
@@ -157,8 +153,8 @@ fn score(grid: &HashSet<(isize, isize)>) -> usize {
 }
 
 #[allow(dead_code)]
-fn dbg_grid(grid: &HashSet<(isize, isize)>) {
-    fn range(mm: MinMaxResult<isize>) -> RangeInclusive<isize> {
+fn dbg_grid(grid: &HashSet<(i32, i32)>) {
+    fn range(mm: MinMaxResult<i32>) -> RangeInclusive<i32> {
         match mm {
             itertools::MinMaxResult::NoElements => unreachable!(),
             itertools::MinMaxResult::OneElement(x) => x..=x,
@@ -183,11 +179,11 @@ fn dbg_grid(grid: &HashSet<(isize, isize)>) {
     }
 }
 
-fn first_state(grid: &Grid<Cell>) -> HashSet<(isize, isize)> {
+fn first_state(grid: &Grid<Cell>) -> HashSet<(i32, i32)> {
     grid.iter()
         .filter_map(|(x, y, val)| {
             if *val == Cell::Elf {
-                Some((x as isize, y as isize))
+                Some((x as i32, y as i32))
             } else {
                 None
             }
