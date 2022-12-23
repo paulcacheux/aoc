@@ -111,8 +111,8 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
             let (dx, dy) = deltas[di][1];
             let next = (x + dx, y + dy);
 
-            match status.get(&next).clone() {
-                Some(Status::Filled(ox, oy)) => {
+            match status.get(&next) {
+                Some((ox, oy)) => {
                     assert!(next_state.get(&next).is_some());
                     next_state.remove(&next);
                     next_state.insert((*ox, *oy));
@@ -121,7 +121,7 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
                 None => {
                     assert!(next_state.get(&next).is_none());
                     next_state.insert(next);
-                    status.insert(next, Status::Filled(x, y));
+                    status.insert(next, (x, y));
                 }
             }
         } else {
@@ -140,10 +140,6 @@ fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
         .into_iter()
         .map(|(x, y)| (x - xmin, y - ymin))
         .collect()
-}
-
-enum Status {
-    Filled(isize, isize),
 }
 
 fn score(grid: &HashSet<(isize, isize)>) -> usize {
