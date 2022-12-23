@@ -72,23 +72,23 @@ impl Solution<Day23> for Aoc2022 {
     }
 }
 
-fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isize, isize)> {
-    let deltas = [
-        [(-1, -1), (0, -1), (1, -1)], // N
-        [(-1, 1), (0, 1), (1, 1)],    // S
-        [(-1, -1), (-1, 0), (-1, 1)], // W
-        [(1, -1), (1, 0), (1, 1)],    // E
-    ];
+const DELTAS: [[(isize, isize); 3]; 4] = [
+    [(-1, -1), (0, -1), (1, -1)], // N
+    [(-1, 1), (0, 1), (1, 1)],    // S
+    [(-1, -1), (-1, 0), (-1, 1)], // W
+    [(1, -1), (1, 0), (1, 1)],    // E
+];
 
+fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isize, isize)> {
     let mut next_state = HashSet::default();
     let mut status = HashMap::default();
     for &(x, y) in state {
         let mut all_suitable = true;
         let mut final_di = None;
-        for di in 0..deltas.len() {
-            let di = (start_di + di) % deltas.len();
+        for di in 0..DELTAS.len() {
+            let di = (start_di + di) % DELTAS.len();
 
-            let suitable = deltas[di].iter().all(|&(dx, dy)| {
+            let suitable = DELTAS[di].iter().all(|&(dx, dy)| {
                 let next = (x + dx, y + dy);
                 !state.contains(&next)
             });
@@ -108,7 +108,7 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
         }
 
         if let Some(di) = final_di {
-            let (dx, dy) = deltas[di][1];
+            let (dx, dy) = DELTAS[di][1];
             let next = (x + dx, y + dy);
 
             match status.get(&next) {
