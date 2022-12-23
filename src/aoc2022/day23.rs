@@ -71,7 +71,6 @@ const DELTAS: [[(isize, isize); 3]; 4] = [
 
 fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isize, isize)> {
     let mut next_state = HashSet::with_capacity(state.len());
-    let mut status = HashSet::with_capacity(state.len());
     for &(x, y) in state {
         let mut all_suitable = true;
         let mut final_di = None;
@@ -101,7 +100,7 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
             let (dx, dy) = DELTAS[di][1];
             let next = (x + dx, y + dy);
 
-            if status.contains(&next) {
+            if next_state.contains(&next) {
                 // this is possible because at most 2 elfs fight for the same spot,
                 // and if they do they always come from opposite directions
                 let (ox, oy) = (x + 2 * dx, y + 2 * dy);
@@ -112,7 +111,6 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
             } else {
                 assert!(next_state.get(&next).is_none());
                 next_state.insert(next);
-                status.insert(next);
             }
         } else {
             next_state.insert((x, y));
