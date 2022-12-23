@@ -117,11 +117,6 @@ fn next_state(state: &HashSet<(isize, isize)>, start_di: usize) -> HashSet<(isiz
                     next_state.remove(&next);
                     next_state.insert((*ox, *oy));
                     next_state.insert((x, y));
-                    status.insert(next, Status::Cancelled);
-                }
-                Some(Status::Cancelled) => {
-                    assert!(next_state.get(&(x, y)).is_none());
-                    next_state.insert((x, y));
                 }
                 None => {
                     assert!(next_state.get(&next).is_none());
@@ -149,7 +144,6 @@ fn normalize(state: HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
 
 enum Status {
     Filled(isize, isize),
-    Cancelled,
 }
 
 fn score(grid: &HashSet<(isize, isize)>) -> usize {
