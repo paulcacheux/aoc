@@ -35,12 +35,7 @@ impl Solution<Day23> for Aoc2022 {
 
     fn part1(input: &Grid<Cell>) -> usize {
         // build first state
-        let mut state = HashSet::default();
-        for (x, y, val) in input.iter() {
-            if *val == Cell::Elf {
-                state.insert((x as isize, y as isize));
-            }
-        }
+        let mut state = first_state(input);
 
         // loop over it
         for start_di in 0..10 {
@@ -52,12 +47,7 @@ impl Solution<Day23> for Aoc2022 {
 
     fn part2(input: &Grid<Cell>) -> usize {
         // build first state
-        let mut state = HashSet::default();
-        for (x, y, val) in input.iter() {
-            if *val == Cell::Elf {
-                state.insert((x as isize, y as isize));
-            }
-        }
+        let mut state = first_state(input);
 
         // loop over it
         let mut start_di = 0;
@@ -184,4 +174,16 @@ fn dbg_grid(grid: &HashSet<(isize, isize)>) {
         }
         println!()
     }
+}
+
+fn first_state(grid: &Grid<Cell>) -> HashSet<(isize, isize)> {
+    grid.iter()
+        .filter_map(|(x, y, val)| {
+            if *val == Cell::Elf {
+                Some((x as isize, y as isize))
+            } else {
+                None
+            }
+        })
+        .collect()
 }
