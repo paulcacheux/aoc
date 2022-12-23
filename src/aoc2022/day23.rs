@@ -100,16 +100,13 @@ fn next_state(state: &HashSet<(i32, i32)>, start_di: usize) -> HashSet<(i32, i32
             let (dx, dy) = DELTAS[di][1];
             let next = (x + dx, y + dy);
 
-            if next_state.contains(&next) {
+            if next_state.remove(&next) {
                 // this is possible because at most 2 elfs fight for the same spot,
                 // and if they do they always come from opposite directions
                 let (ox, oy) = (x + 2 * dx, y + 2 * dy);
-                assert!(next_state.get(&next).is_some());
-                next_state.remove(&next);
                 next_state.insert((ox, oy));
                 next_state.insert((x, y));
             } else {
-                assert!(next_state.get(&next).is_none());
                 next_state.insert(next);
             }
         } else {
