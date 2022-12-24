@@ -43,6 +43,9 @@ impl Solution<Day24> for Aoc2022 {
         let width = input.width - 2;
         let height = input.height - 2;
 
+        let wrap =
+            |(x, y): (isize, isize)| (x.rem_euclid(width as isize), y.rem_euclid(height as isize));
+
         let mut bliz: Vec<(Cell, HashSet<Coords>)> = Default::default();
         for dir in [Cell::Left, Cell::Right, Cell::Up, Cell::Down] {
             let mut points = HashSet::default();
@@ -63,8 +66,6 @@ impl Solution<Day24> for Aoc2022 {
         let mut time = 0;
 
         while !open_queue.is_empty() {
-            dbg!(open_queue.len());
-
             for (dir, points) in bliz.iter_mut() {
                 let (dx, dy) = match dir {
                     Cell::Left => (-1, 0),
@@ -77,7 +78,7 @@ impl Solution<Day24> for Aoc2022 {
                 *points = points
                     .iter()
                     .copied()
-                    .map(|(x, y)| ((x + dx) % width as isize, (y + dy) % height as isize))
+                    .map(|(x, y)| wrap((x + dx, y + dy)))
                     .collect();
             }
 
@@ -94,8 +95,7 @@ impl Solution<Day24> for Aoc2022 {
                     return time;
                 }
 
-                if !bliz.iter().map(|(_, pts)| pts).flatten().any(|b| *b == p)
-                    && (p.0 % width as isize, p.1 % height as isize) == p
+                if !bliz.iter().map(|(_, pts)| pts).flatten().any(|b| *b == p) && wrap(p) == p
                     || [home, goal].contains(&p)
                 {
                     open_queue.push(p);
