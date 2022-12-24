@@ -5,14 +5,15 @@ use crate::traits::Solution;
 
 use super::grid::Grid;
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
+#[repr(u8)]
 pub enum Cell {
-    Empty,
-    Wall,
     Left,
     Right,
     Up,
     Down,
+    Empty,
+    Wall,
 }
 
 impl ParseInput<Day24> for Aoc2022 {
@@ -47,23 +48,23 @@ impl Solution<Day24> for Aoc2022 {
 }
 
 fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
+    const DELTAS: [(isize, isize); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+
     let width = input.width - 2;
     let height = input.height - 2;
 
     let wrap =
         |(x, y): (isize, isize)| (x.rem_euclid(width as isize), y.rem_euclid(height as isize));
 
-    let mut bliz: Vec<(Cell, Vec<Coords>)> = Default::default();
+    let mut bliz: Vec<(Cell, Coords)> = Default::default();
     for dir in [Cell::Left, Cell::Right, Cell::Up, Cell::Down] {
-        let mut points = Vec::default();
         for y in 0..height {
             for x in 0..width {
                 if *input.get(x + 1, y + 1) == dir {
-                    points.push((x as isize, y as isize));
+                    bliz.push((dir, (x as isize, y as isize)));
                 }
             }
         }
-        bliz.push((dir, points));
     }
 
     let home = (0, -1);
@@ -74,18 +75,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
     let mut trip = 0;
 
     while !open_queue.is_empty() {
-        for (dir, points) in bliz.iter_mut() {
-            let (dx, dy) = match dir {
-                Cell::Left => (-1, 0),
-                Cell::Right => (1, 0),
-                Cell::Up => (0, -1),
-                Cell::Down => (0, 1),
-                _ => unreachable!(),
-            };
-
-            for pt in points.iter_mut() {
-                *pt = wrap((pt.0 + dx, pt.1 + dy));
-            }
+        for (dir, pt) in bliz.iter_mut() {
+            let (dx, dy) = DELTAS[*dir as usize];
+            *pt = wrap((pt.0 + dx, pt.1 + dy));
         }
 
         time += 1;
@@ -119,7 +111,7 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 _ => unreachable!(),
             }
 
-            if !bliz.iter().flat_map(|(_, pts)| pts).any(|b| *b == p) && wrap(p) == p
+            if !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p) && wrap(p) == p
                 || [home, goal].contains(&p)
             {
                 open_queue.push(p);
