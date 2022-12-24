@@ -1,4 +1,5 @@
 use ahash::HashSet;
+use ahash::HashSetExt;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day24;
@@ -55,13 +56,13 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
     let wrap =
         |(x, y): (isize, isize)| (x.rem_euclid(width as isize), y.rem_euclid(height as isize));
 
-    let mut bliz: Vec<(Cell, HashSet<Coords>)> = Default::default();
+    let mut bliz: Vec<(Cell, Vec<Coords>)> = Default::default();
     for dir in [Cell::Left, Cell::Right, Cell::Up, Cell::Down] {
-        let mut points = HashSet::default();
+        let mut points = Vec::default();
         for y in 0..height {
             for x in 0..width {
                 if *input.get(x + 1, y + 1) == dir {
-                    points.insert((x as isize, y as isize));
+                    points.push((x as isize, y as isize));
                 }
             }
         }
@@ -93,7 +94,7 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
         }
 
         time += 1;
-        let mut curr = HashSet::default();
+        let mut curr = HashSet::with_capacity(open_queue.len() * 5);
         for (px, py) in open_queue.drain(..) {
             for (dx, dy) in [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)] {
                 curr.insert((px + dx, py + dy));
