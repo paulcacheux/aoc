@@ -86,11 +86,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 _ => unreachable!(),
             };
 
-            *points = points
-                .iter()
-                .copied()
-                .map(|(x, y)| wrap((x + dx, y + dy)))
-                .collect();
+            for pt in points.iter_mut() {
+                *pt = wrap((pt.0 + dx, pt.1 + dy));
+            }
         }
 
         time += 1;
