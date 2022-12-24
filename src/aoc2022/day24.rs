@@ -95,7 +95,7 @@ impl Solution<Day24> for Aoc2022 {
                     return time;
                 }
 
-                if !bliz.iter().map(|(_, pts)| pts).flatten().any(|b| *b == p) && wrap(p) == p
+                if !bliz.iter().flat_map(|(_, pts)| pts).any(|b| *b == p) && wrap(p) == p
                     || [home, goal].contains(&p)
                 {
                     open_queue.push(p);
@@ -168,7 +168,7 @@ impl Solution<Day24> for Aoc2022 {
                     break;
                 }
 
-                if !bliz.iter().map(|(_, pts)| pts).flatten().any(|b| *b == p) && wrap(p) == p
+                if !bliz.iter().flat_map(|(_, pts)| pts).any(|b| *b == p) && wrap(p) == p
                     || [home, goal].contains(&p)
                 {
                     open_queue.push(p);
