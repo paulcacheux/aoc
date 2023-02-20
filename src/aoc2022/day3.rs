@@ -70,7 +70,6 @@ impl Solution<Day3> for Aoc2022 {
         input
             .iter()
             .array_chunks::<3>()
-            .into_iter()
             .map(|chunks| {
                 let common = chunks
                     .into_iter()
