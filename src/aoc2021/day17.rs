@@ -123,9 +123,7 @@ fn is_valid_vx(vx: i32, target: &RangeInclusive<i32>) -> bool {
 fn compute_vx_range(target: &'_ TargetArea) -> impl Iterator<Item = i32> + '_ {
     let vx_start = (*target.x.start() as f32).sqrt() as i32 - 1;
     let vx_end = *target.x.end() + 1;
-    (vx_start..vx_end)
-        .into_iter()
-        .filter(|vx| is_valid_vx(*vx, &target.x))
+    (vx_start..vx_end).filter(|vx| is_valid_vx(*vx, &target.x))
 }
 
 impl Solution<Day17> for Aoc2021 {

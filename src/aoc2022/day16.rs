@@ -187,7 +187,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
 
     while let Some(current) = queue.pop() {
         let mut found_next = false;
-        for (next, cost) in &costs[(&current.last)] {
+        for (next, cost) in &costs[&current.last] {
             if (current.nodes & (1 << next)) != 0 {
                 continue;
             }
