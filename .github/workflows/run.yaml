@@ -31,6 +31,8 @@ jobs:
       - name: Run cargo build
         run: |
           cargo build --release
+        env:
+          RUSTFLAGS: "-C target-cpu=native"
 
       - name: Fetch inputs
         env:
