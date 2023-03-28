@@ -30,9 +30,7 @@ jobs:
 
       - name: Run cargo build
         run: |
-          cargo build --profile release-lto
-        env:
-          RUSTFLAGS: "-C target-cpu=native"
+          cargo build --release
 
       - name: Fetch inputs
         env:
@@ -43,8 +41,6 @@ jobs:
 
       - name: Run 2022 days
         run: |
-          # preload cache
-          ./target/release-lto/aoc --year 2022 &>/dev/null
           time ./target/release-lto/aoc --year 2022
 
       - name: Run 2021 days
