@@ -152,7 +152,7 @@ impl Solution<Day8> for Aoc2021 {
 
         let mut sum = 0;
         for entry in input {
-            let mut signatures = vec![Signature::default(); 7];
+            let mut signatures = [Signature::default(); 7];
 
             for pattern in &entry.patterns {
                 for c in pattern.bytes() {

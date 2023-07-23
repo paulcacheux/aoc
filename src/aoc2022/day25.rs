@@ -56,7 +56,7 @@ fn encode_snafu(mut value: i64) -> String {
         ret = false;
 
         match rem {
-            0 | 1 | 2 => digits.push(std::char::from_digit(rem as _, 5).unwrap()),
+            0..=2 => digits.push(std::char::from_digit(rem as _, 5).unwrap()),
             3 => {
                 digits.push('=');
                 ret = true;
