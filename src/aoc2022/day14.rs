@@ -124,11 +124,7 @@ struct SandPoint {
     previous: (u32, u32),
 }
 
-fn insert_sand(
-    grid: &Grid<Cell>,
-    source: (u32, u32),
-    fountain: (u32, u32),
-) -> Option<SandPoint> {
+fn insert_sand(grid: &Grid<Cell>, source: (u32, u32), fountain: (u32, u32)) -> Option<SandPoint> {
     let (mut sx, mut sy) = source;
     let (mut px, mut py) = fountain;
 
