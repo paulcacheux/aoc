@@ -59,7 +59,7 @@ impl Solution<Day14> for Aoc2022 {
         // because the path from the foutain to this point is always the same
         // if we can't we default to the fountain
         let mut insertion_point = fountain;
-        while let Some(sp) = insert_sand(&mut grid, insertion_point, fountain) {
+        while let Some(sp) = insert_sand(&grid, insertion_point, fountain) {
             counter += 1;
             grid.set(sp.pos.0 as usize, sp.pos.1 as usize, Cell::Sand);
             insertion_point = sp.previous;
@@ -124,11 +124,7 @@ struct SandPoint {
     previous: (u32, u32),
 }
 
-fn insert_sand(
-    grid: &mut Grid<Cell>,
-    source: (u32, u32),
-    fountain: (u32, u32),
-) -> Option<SandPoint> {
+fn insert_sand(grid: &Grid<Cell>, source: (u32, u32), fountain: (u32, u32)) -> Option<SandPoint> {
     let (mut sx, mut sy) = source;
     let (mut px, mut py) = fountain;
 
