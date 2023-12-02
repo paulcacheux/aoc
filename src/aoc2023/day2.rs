@@ -75,6 +75,23 @@ impl Solution<Day2> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Game>) -> u32 {
-        todo!()
+        let mut res = 0;
+        for game in input {
+            let mut max_rgb = RGB::default();
+            for entry in &game.entries {
+                if entry.red > max_rgb.red {
+                    max_rgb.red = entry.red;
+                }
+                if entry.green > max_rgb.green {
+                    max_rgb.green = entry.green;
+                }
+                if entry.blue > max_rgb.blue {
+                    max_rgb.blue = entry.blue;
+                }
+            }
+            let power = max_rgb.red as u32 * max_rgb.green as u32 * max_rgb.blue as u32;
+            res += power;
+        }
+        res
     }
 }
