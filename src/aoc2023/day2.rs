@@ -4,7 +4,7 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 #[derive(Debug, Default)]
-struct RGB {
+struct Rgb {
     red: u8,
     green: u8,
     blue: u8,
@@ -13,42 +13,45 @@ struct RGB {
 #[derive(Debug)]
 pub struct Game {
     id: u32,
-    entries: Vec<RGB>,
+    entries: Vec<Rgb>,
 }
 
 impl ParseInput<Day2> for Aoc2023 {
     type Parsed = Vec<Game>;
 
     fn parse_input(input: &str) -> Self::Parsed {
-        input.lines().map(|line| {
-            let line = line.strip_prefix("Game ").unwrap();
+        input
+            .lines()
+            .map(|line| {
+                let line = line.strip_prefix("Game ").unwrap();
 
-            let double_dot = line.find(": ").unwrap();
-            let (before, after) = line.split_at(double_dot);
-            let after = &after[2..];
+                let double_dot = line.find(": ").unwrap();
+                let (before, after) = line.split_at(double_dot);
+                let after = &after[2..];
 
-            let id = before.parse().unwrap();
+                let id = before.parse().unwrap();
 
-            let entries = after.split("; ").map(|round| {
-                let mut rgb = RGB::default();
-                for color in round.split(", ") {
-                    let (count, color_name) = color.split_at(color.find(' ').unwrap());
-                    let count = count.parse().unwrap();
-                    match &color_name[1..] {
-                        "red" => rgb.red = count,
-                        "green" => rgb.green = count,
-                        "blue" => rgb.blue = count,
-                        _ => unreachable!()
-                    }
-                }
-                rgb
-            }).collect();
+                let entries = after
+                    .split("; ")
+                    .map(|round| {
+                        let mut rgb = Rgb::default();
+                        for color in round.split(", ") {
+                            let (count, color_name) = color.split_at(color.find(' ').unwrap());
+                            let count = count.parse().unwrap();
+                            match &color_name[1..] {
+                                "red" => rgb.red = count,
+                                "green" => rgb.green = count,
+                                "blue" => rgb.blue = count,
+                                _ => unreachable!(),
+                            }
+                        }
+                        rgb
+                    })
+                    .collect();
 
-            Game{
-                id,
-                entries
-            }
-        }).collect()
+                Game { id, entries }
+            })
+            .collect()
     }
 }
 
@@ -77,7 +80,7 @@ impl Solution<Day2> for Aoc2023 {
     fn part2(input: &Vec<Game>) -> u32 {
         let mut res = 0;
         for game in input {
-            let mut max_rgb = RGB::default();
+            let mut max_rgb = Rgb::default();
             for entry in &game.entries {
                 if entry.red > max_rgb.red {
                     max_rgb.red = entry.red;
