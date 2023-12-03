@@ -27,7 +27,7 @@ impl Entry {
         let x = self.x as i32;
         let y = self.y as i32;
         let len = self.len as i32;
-        let mut res = Vec::new();
+        let mut res = Vec::with_capacity(6 + 2 * self.len);
         res.extend_from_slice(&[(x - 1, y - 1), (x - 1, y), (x - 1, y + 1)]);
         for dx in 0..len {
             res.extend_from_slice(&[(x + dx, y - 1), (x + dx, y + 1)]);
@@ -46,37 +46,39 @@ impl Entry {
     }
 }
 
-fn get_entries(input: &Grid<u8>) -> Vec<Entry> {
-    let mut entries = Vec::new();
-    let mut current = None;
+fn get_entries(input: &Grid<u8>) -> impl Iterator<Item = Entry> + '_ {
+    std::iter::from_generator(move || {
+        let mut current = None;
+        for y in 0..input.height {
+            for x in 0..input.width {
+                let c = *input.get(x, y);
+                if c.is_ascii_digit() {
+                    let digit = (c - b'0') as u32;
 
-    for y in 0..input.height {
-        for x in 0..input.width {
-            let c = *input.get(x, y);
-            if c.is_ascii_digit() {
-                let digit = (c - b'0') as u32;
-
-                current = match current {
-                    Some(Entry { x, y, len, value }) => Some(Entry {
-                        x,
-                        y,
-                        len: len + 1,
-                        value: value * 10 + digit,
-                    }),
-                    None => Some(Entry {
-                        x,
-                        y,
-                        len: 1,
-                        value: digit,
-                    }),
+                    current = match current {
+                        Some(Entry { x, y, len, value }) => Some(Entry {
+                            x,
+                            y,
+                            len: len + 1,
+                            value: value * 10 + digit,
+                        }),
+                        None => Some(Entry {
+                            x,
+                            y,
+                            len: 1,
+                            value: digit,
+                        }),
+                    }
+                } else if let Some(entry) = current.take() {
+                    yield entry;
                 }
-            } else if let Some(entry) = current.take() {
-                entries.push(entry)
             }
         }
-    }
-    entries.extend(current);
-    entries
+
+        if let Some(entry) = current {
+            yield entry;
+        }
+    })
 }
 
 impl Solution<Day3> for Aoc2023 {
@@ -84,17 +86,16 @@ impl Solution<Day3> for Aoc2023 {
     type Part2Output = u32;
 
     fn part1(input: &Grid<u8>) -> u32 {
-        let mut valid_entries = Vec::new();
+        let mut res = 0;
         for entry in get_entries(input) {
             for (x, y) in entry.iter_neighbors(input) {
                 if *input.get(x, y) != b'.' {
-                    valid_entries.push(entry);
+                    res += entry.value;
                     break;
                 }
             }
         }
-
-        valid_entries.into_iter().map(|entry| entry.value).sum()
+        res
     }
 
     fn part2(input: &Grid<u8>) -> u32 {
@@ -108,12 +109,10 @@ impl Solution<Day3> for Aoc2023 {
             }
         }
 
-        let mut res = 0;
-        for entries in gears.values() {
-            if entries.len() == 2 {
-                res += entries[0].value * entries[1].value;
-            }
-        }
-        res
+        gears
+            .values()
+            .filter(|entries| entries.len() == 2)
+            .map(|entries| entries.iter().map(|entry| entry.value).product::<u32>())
+            .sum()
     }
 }
