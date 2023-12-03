@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day3;
@@ -12,7 +14,7 @@ impl ParseInput<Day3> for Aoc2023 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Entry {
     x: usize,
     y: usize,
@@ -44,43 +46,46 @@ impl Entry {
     }
 }
 
+fn get_entries(input: &Grid<u8>) -> Vec<Entry> {
+    let mut entries = Vec::new();
+    let mut current = None;
+
+    for y in 0..input.height {
+        for x in 0..input.width {
+            let c = *input.get(x, y);
+            if c.is_ascii_digit() {
+                let digit = (c - b'0') as u32;
+
+                current = match current {
+                    Some(Entry { x, y, len, value }) => Some(Entry {
+                        x,
+                        y,
+                        len: len + 1,
+                        value: value * 10 + digit,
+                    }),
+                    None => Some(Entry {
+                        x,
+                        y,
+                        len: 1,
+                        value: digit,
+                    }),
+                }
+            } else if let Some(entry) = current.take() {
+                entries.push(entry)
+            }
+        }
+    }
+    entries.extend(current);
+    entries
+}
+
 impl Solution<Day3> for Aoc2023 {
     type Part1Output = u32;
     type Part2Output = u32;
 
     fn part1(input: &Grid<u8>) -> u32 {
-        let mut entries = Vec::new();
-        let mut current = None;
-
-        for y in 0..input.height {
-            for x in 0..input.width {
-                let c = *input.get(x, y);
-                if b'0' <= c && c <= b'9' {
-                    let digit = (c - b'0') as u32;
-
-                    current = match current {
-                        Some(Entry { x, y, len, value }) => Some(Entry {
-                            x,
-                            y,
-                            len: len + 1,
-                            value: value * 10 + digit,
-                        }),
-                        None => Some(Entry {
-                            x,
-                            y,
-                            len: 1,
-                            value: digit,
-                        }),
-                    }
-                } else if let Some(entry) = current.take() {
-                    entries.push(entry)
-                }
-            }
-        }
-        entries.extend(current.into_iter());
-
         let mut valid_entries = Vec::new();
-        for entry in entries {
+        for entry in get_entries(input) {
             for (x, y) in entry.iter_neighbors(input) {
                 if *input.get(x, y) != b'.' {
                     valid_entries.push(entry);
@@ -92,7 +97,23 @@ impl Solution<Day3> for Aoc2023 {
         valid_entries.into_iter().map(|entry| entry.value).sum()
     }
 
-    fn part2(_input: &Grid<u8>) -> u32 {
-        todo!()
+    fn part2(input: &Grid<u8>) -> u32 {
+        let mut gears: HashMap<(usize, usize), Vec<Entry>> = HashMap::new();
+
+        for entry in get_entries(input) {
+            for (x, y) in entry.iter_neighbors(input) {
+                if *input.get(x, y) == b'*' {
+                    gears.entry((x, y)).or_default().push(entry);
+                }
+            }
+        }
+
+        let mut res = 0;
+        for entries in gears.values() {
+            if entries.len() == 2 {
+                res += entries[0].value * entries[1].value;
+            }
+        }
+        res
     }
 }
