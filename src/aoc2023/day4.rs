@@ -13,6 +13,14 @@ pub struct Card {
     got: Vec<u32>,
 }
 
+impl Card {
+    fn inter_count(&self) -> usize {
+        let winning: HashSet<_> = self.winning.iter().copied().collect();
+        let got: HashSet<_> = self.got.iter().copied().collect();
+        winning.intersection(&got).count()
+    }
+}
+
 impl ParseInput<Day4> for Aoc2023 {
     type Parsed = Vec<Card>;
 
@@ -49,10 +57,7 @@ impl Solution<Day4> for Aoc2023 {
     fn part1(input: &Vec<Card>) -> u32 {
         let mut res = 0;
         for card in input {
-            let winning: HashSet<_> = card.winning.iter().copied().collect();
-            let got: HashSet<_> = card.got.iter().copied().collect();
-
-            let inter = winning.intersection(&got).count();
+            let inter = card.inter_count();
             let points = if inter > 0 { 1 << (inter - 1) } else { 0 };
             res += points;
         }
@@ -61,13 +66,8 @@ impl Solution<Day4> for Aoc2023 {
 
     fn part2(input: &Vec<Card>) -> u32 {
         let mut counts = HashMap::new();
-
         for card in input {
-            let winning: HashSet<_> = card.winning.iter().copied().collect();
-            let got: HashSet<_> = card.got.iter().copied().collect();
-
-            let inter = winning.intersection(&got).count();
-
+            let inter = card.inter_count();
             let current_count = *counts.entry(card.id).or_insert(1);
             for i in 1..=inter {
                 let id = card.id + i as u32;
