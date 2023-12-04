@@ -1,4 +1,5 @@
-use ahash::HashSet;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day4;
@@ -59,6 +60,21 @@ impl Solution<Day4> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Card>) -> u32 {
-        todo!()
+        let mut counts = HashMap::new();
+
+        for card in input {
+            let winning: HashSet<_> = card.winning.iter().copied().collect();
+            let got: HashSet<_> = card.got.iter().copied().collect();
+
+            let inter = winning.intersection(&got).count();
+
+            let current_count = *counts.entry(card.id).or_insert(1);
+            for i in 1..=inter {
+                let id = card.id + i as u32;
+                *counts.entry(id).or_insert(1) += current_count;
+            }
+        }
+
+        counts.values().sum()
     }
 }
