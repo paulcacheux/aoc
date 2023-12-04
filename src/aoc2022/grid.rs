@@ -44,6 +44,10 @@ impl<T> Grid<T> {
         &self.data[self.width * y + x]
     }
 
+    pub fn get_mut(&mut self, x: usize, y: usize) -> &mut T {
+        &mut self.data[self.width * y + x]
+    }
+
     pub fn set(&mut self, x: usize, y: usize, value: T) {
         self.data[self.width * y + x] = value;
     }

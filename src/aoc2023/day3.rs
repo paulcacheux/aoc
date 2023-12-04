@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day3;
@@ -99,18 +97,19 @@ impl Solution<Day3> for Aoc2023 {
     }
 
     fn part2(input: &Grid<u8>) -> u32 {
-        let mut gears: HashMap<(usize, usize), Vec<Entry>> = HashMap::new();
+        let mut gears = Grid::new(input.width, input.height, Vec::new());
 
         for entry in get_entries(input) {
             for (x, y) in entry.iter_neighbors(input) {
                 if *input.get(x, y) == b'*' {
-                    gears.entry((x, y)).or_default().push(entry);
+                    gears.get_mut(x, y).push(entry);
                 }
             }
         }
 
         gears
-            .values()
+            .data
+            .into_iter()
             .filter(|entries| entries.len() == 2)
             .map(|entries| entries.iter().map(|entry| entry.value).product::<u32>())
             .sum()
