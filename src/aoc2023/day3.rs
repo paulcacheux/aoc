@@ -20,27 +20,33 @@ struct Entry {
     value: u32,
 }
 
-impl Entry {
-    fn iter_neighbors(&self, grid: &Grid<u8>) -> Vec<(usize, usize)> {
-        let x = self.x as i32;
-        let y = self.y as i32;
-        let len = self.len as i32;
-        let mut res = Vec::with_capacity(6 + 2 * self.len);
-        res.extend_from_slice(&[(x - 1, y - 1), (x - 1, y), (x - 1, y + 1)]);
-        for dx in 0..len {
-            res.extend_from_slice(&[(x + dx, y - 1), (x + dx, y + 1)]);
-        }
-        res.extend_from_slice(&[(x + len, y - 1), (x + len, y), (x + len, y + 1)]);
 
-        res.into_iter()
-            .filter_map(|(x, y)| {
-                if x >= 0 && y >= 0 && x < grid.width as i32 && y < grid.height as i32 {
-                    Some((x as _, y as _))
-                } else {
-                    None
-                }
-            })
-            .collect()
+macro_rules! maybe_yield {
+    ($grid:expr, $x:expr, $y:expr) => {
+        if $x >= 0 && $y >= 0 && $x < $grid.width as i32 && $y < $grid.height as i32 {
+            yield ($x as _, $y as _);
+        }
+    };
+}
+
+impl Entry {
+    fn iter_neighbors<'b, 'a: 'b>(&'a self, grid: &'b Grid<u8>) -> impl Iterator<Item = (usize, usize)> + 'b {
+        std::iter::from_generator(move || {
+            let x = self.x as i32;
+            let y = self.y as i32;
+            let len = self.len as i32;
+
+            maybe_yield!(grid, x - 1, y - 1);
+            maybe_yield!(grid, x - 1, y);
+            maybe_yield!(grid, x - 1, y + 1);
+            for dx in 0..len {
+                maybe_yield!(grid, x + dx, y - 1);
+                maybe_yield!(grid, x + dx, y + 1);
+            }
+            maybe_yield!(grid, x + len, y - 1);
+            maybe_yield!(grid, x + len, y);
+            maybe_yield!(grid, x + len, y + 1);
+        })
     }
 }
 
