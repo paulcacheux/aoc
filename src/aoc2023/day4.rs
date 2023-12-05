@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day4;
@@ -15,9 +14,13 @@ pub struct Card {
 
 impl Card {
     fn inter_count(&self) -> usize {
-        let winning: HashSet<_> = self.winning.iter().copied().collect();
-        let got: HashSet<_> = self.got.iter().copied().collect();
-        winning.intersection(&got).count()
+        let mut count = 0;
+        for g in &self.got {
+            if self.winning.contains(g) {
+                count += 1;
+            }
+        }
+        count
     }
 }
 
