@@ -10,6 +10,13 @@ struct MappingRange {
     len: u64,
 }
 
+#[derive(Debug)]
+struct RangeTransformResult {
+    pre: Option<(u64, u64)>,
+    post: Option<(u64, u64)>,
+    transformed: (u64, u64),
+}
+
 impl MappingRange {
     fn transform(&self, value: u64) -> Option<u64> {
         if self.source <= value && value < self.source + self.len {
@@ -17,6 +24,37 @@ impl MappingRange {
         } else {
             None
         }
+    }
+
+    fn transform_range(&self, start: u64, len: u64) -> Option<RangeTransformResult> {
+        let common_begin = self.source.max(start);
+        let common_end: u64 = (self.source + self.len).min(start + len);
+
+        if common_end <= common_begin + 1 {
+            return None;
+        }
+
+        let common_len = common_end - common_begin;
+
+        let pre = if common_begin > start {
+            Some((start, common_begin - start))
+        } else {
+            None
+        };
+
+        let post = if common_end < start + len {
+            Some((common_end, start + len - common_end))
+        } else {
+            None
+        };
+
+        let transformed = (self.destination + (common_begin - self.source), common_len);
+
+        Some(RangeTransformResult {
+            pre,
+            post,
+            transformed,
+        })
     }
 }
 
@@ -35,6 +73,28 @@ impl Mapping {
             }
         }
         value
+    }
+
+    fn transform_range(&self, start: u64, len: u64) -> Vec<(u64, u64)> {
+        let mut transformed = Vec::new();
+        let mut open_ranges = vec![(start, len)];
+
+        while let Some((curr_start, curr_len)) = open_ranges.pop() {
+            let mut found = false;
+            for range in &self.ranges {
+                if let Some(res) = range.transform_range(curr_start, curr_len) {
+                    open_ranges.extend(res.pre);
+                    open_ranges.extend(res.post);
+                    transformed.push(res.transformed);
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                transformed.push((curr_start, curr_len));
+            }
+        }
+        transformed
     }
 }
 
@@ -112,6 +172,22 @@ impl Solution<Day5> for Aoc2023 {
     }
 
     fn part2(input: &Input) -> u64 {
-        todo!()
+        input
+            .seeds
+            .chunks_exact(2)
+            .map(|seed| (seed[0], seed[1]))
+            .flat_map(|(start, len)| {
+                let mut current = vec![(start, len)];
+                for mapping in &input.mappings {
+                    current = current
+                        .into_iter()
+                        .flat_map(|(s, l)| mapping.transform_range(s, l))
+                        .collect();
+                }
+                current
+            })
+            .map(|(start, _)| start)
+            .min()
+            .unwrap()
     }
 }
