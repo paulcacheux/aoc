@@ -10,6 +10,16 @@ struct MappingRange {
     len: u64,
 }
 
+impl MappingRange {
+    fn transform(&self, value: u64) -> Option<u64> {
+        if self.source <= value && value < self.source + self.len {
+            Some(self.destination + (value - self.source))
+        } else {
+            None
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Mapping {
     from: String,
@@ -20,8 +30,8 @@ pub struct Mapping {
 impl Mapping {
     fn transform(&self, value: u64) -> u64 {
         for range in &self.ranges {
-            if range.source <= value && value < range.source + range.len {
-                return range.destination + (value - range.source);
+            if let Some(res) = range.transform(value) {
+                return res;
             }
         }
         value
