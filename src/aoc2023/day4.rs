@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day4;
 use crate::traits::ParseInput;
@@ -7,7 +5,7 @@ use crate::traits::Solution;
 
 #[derive(Debug)]
 pub struct Card {
-    id: u32,
+    // no need for any id, the index of the card in the deck + 1 is the id
     winning: Vec<u32>,
     got: Vec<u32>,
 }
@@ -31,10 +29,9 @@ impl ParseInput<Day4> for Aoc2023 {
         input
             .lines()
             .map(|line| {
-                let (before, after) = line.split_at(line.find(": ").unwrap());
+                let (_, after) = line.split_at(line.find(": ").unwrap());
                 let after = &after[2..];
 
-                let id = before.strip_prefix("Card").unwrap().trim().parse().unwrap();
                 let (winning, got) = after.split_at(after.find(" | ").unwrap());
                 let got = &got[3..];
 
@@ -47,7 +44,7 @@ impl ParseInput<Day4> for Aoc2023 {
                     .map(|value| value.trim().parse().unwrap())
                     .collect();
 
-                Card { id, winning, got }
+                Card { winning, got }
             })
             .collect()
     }
@@ -68,16 +65,16 @@ impl Solution<Day4> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Card>) -> u32 {
-        let mut counts = HashMap::new();
-        for card in input {
+        let mut counts: Vec<u32> = vec![1; input.len()];
+        for (id, card) in input.iter().enumerate() {
             let inter = card.inter_count();
-            let current_count = *counts.entry(card.id).or_insert(1);
+            let current_count = counts[id];
             for i in 1..=inter {
-                let id = card.id + i as u32;
-                *counts.entry(id).or_insert(1) += current_count;
+                let next_id = id + i;
+                counts[next_id] += current_count;
             }
         }
 
-        counts.values().sum()
+        counts.into_iter().sum()
     }
 }
