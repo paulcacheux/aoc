@@ -39,14 +39,18 @@ impl Entry {
             let len = self.len as i32;
 
             maybe_yield!(grid, x - 1, y - 1);
-            maybe_yield!(grid, x - 1, y);
-            maybe_yield!(grid, x - 1, y + 1);
             for dx in 0..len {
                 maybe_yield!(grid, x + dx, y - 1);
-                maybe_yield!(grid, x + dx, y + 1);
             }
             maybe_yield!(grid, x + len, y - 1);
+
+            maybe_yield!(grid, x - 1, y);
             maybe_yield!(grid, x + len, y);
+
+            maybe_yield!(grid, x - 1, y + 1);
+            for dx in 0..len {
+                maybe_yield!(grid, x + dx, y + 1);
+            }
             maybe_yield!(grid, x + len, y + 1);
         })
     }
