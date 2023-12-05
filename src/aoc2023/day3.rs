@@ -20,7 +20,6 @@ struct Entry {
     value: u32,
 }
 
-
 macro_rules! maybe_yield {
     ($grid:expr, $x:expr, $y:expr) => {
         let x = $x; // silence some clippy warnings
@@ -33,7 +32,10 @@ macro_rules! maybe_yield {
 
 impl Entry {
     #[inline]
-    fn iter_neighbors<'b, 'a: 'b>(&'a self, grid: &'b Grid<u8>) -> impl Iterator<Item = (usize, usize)> + 'b {
+    fn iter_neighbors<'b, 'a: 'b>(
+        &'a self,
+        grid: &'b Grid<u8>,
+    ) -> impl Iterator<Item = (usize, usize)> + 'b {
         std::iter::from_generator(move || {
             let x = self.x as i32;
             let y = self.y as i32;
