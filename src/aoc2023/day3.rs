@@ -23,8 +23,10 @@ struct Entry {
 
 macro_rules! maybe_yield {
     ($grid:expr, $x:expr, $y:expr) => {
-        if $x >= 0 && $y >= 0 && $x < $grid.width as i32 && $y < $grid.height as i32 {
-            yield ($x as _, $y as _);
+        let x = $x; // silence some clippy warnings
+        let y = $y;
+        if x >= 0 && y >= 0 && x < $grid.width as i32 && y < $grid.height as i32 {
+            yield (x as _, y as _);
         }
     };
 }
