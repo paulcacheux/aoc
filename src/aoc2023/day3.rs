@@ -93,6 +93,19 @@ fn get_entries(input: &Grid<u8>) -> impl Iterator<Item = Entry> + '_ {
     })
 }
 
+#[derive(Debug, Clone)]
+struct Part2State {
+    len: usize,
+    product: u32,
+}
+
+impl Part2State {
+    fn push(&mut self, entry: Entry) {
+        self.len += 1;
+        self.product *= entry.value;
+    }
+}
+
 impl Solution<Day3> for Aoc2023 {
     type Part1Output = u32;
     type Part2Output = u32;
@@ -111,7 +124,7 @@ impl Solution<Day3> for Aoc2023 {
     }
 
     fn part2(input: &Grid<u8>) -> u32 {
-        let mut gears = Grid::new(input.width, input.height, Vec::new());
+        let mut gears = Grid::new(input.width, input.height, Part2State { len: 0, product: 1 });
 
         for entry in get_entries(input) {
             for (x, y) in entry.iter_neighbors(input) {
@@ -124,8 +137,8 @@ impl Solution<Day3> for Aoc2023 {
         gears
             .data
             .into_iter()
-            .filter(|entries| entries.len() == 2)
-            .map(|entries| entries.iter().map(|entry| entry.value).product::<u32>())
+            .filter(|state| state.len == 2)
+            .map(|state| state.product)
             .sum()
     }
 }
