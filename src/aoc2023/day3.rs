@@ -32,6 +32,7 @@ macro_rules! maybe_yield {
 }
 
 impl Entry {
+    #[inline]
     fn iter_neighbors<'b, 'a: 'b>(&'a self, grid: &'b Grid<u8>) -> impl Iterator<Item = (usize, usize)> + 'b {
         std::iter::from_generator(move || {
             let x = self.x as i32;
@@ -56,6 +57,7 @@ impl Entry {
     }
 }
 
+#[inline]
 fn get_entries(input: &Grid<u8>) -> impl Iterator<Item = Entry> + '_ {
     std::iter::from_generator(move || {
         let mut current = None;
