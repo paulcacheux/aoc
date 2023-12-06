@@ -13,13 +13,26 @@ pub struct Entry {
 
 impl Entry {
     fn count_ways(&self) -> u64 {
-        let mut count = 0;
-        for prep in 0..=self.time {
-            let distance = (self.time - prep) * prep;
-            if distance > self.distance {
-                count += 1;
-            }
+        let time = self.time as f64;
+        let distance = self.distance as f64;
+
+        let delta_sqrt = (time * time / 4.0 - distance).sqrt();
+        let r1 = time / 2.0 - delta_sqrt;
+        let r2 = time / 2.0 + delta_sqrt;
+
+        let c1 = r1.ceil();
+        let f2 = r2.floor();
+
+        let mut count = f2 as u64 - c1 as u64 + 1;
+
+        // handle cases at the boundary
+        if c1 == r1 {
+            count -= 1;
         }
+        if f2 == r2 {
+            count -= 1;
+        }
+
         count
     }
 }
