@@ -58,7 +58,7 @@ fn set(v: &mut Vec<bool>, index: usize) {
     v[index] = true;
 }
 
-fn get(v: &Vec<bool>, index: usize) -> bool {
+fn get(v: &[bool], index: usize) -> bool {
     if index >= v.len() {
         false
     } else {
