@@ -63,7 +63,7 @@ impl<T> Grid<T> {
     pub fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
         let width = self.width;
         let height = self.height;
-        std::iter::from_generator(move || {
+        std::iter::from_coroutine(move || {
             if x != 0 {
                 yield (x - 1, y);
             }

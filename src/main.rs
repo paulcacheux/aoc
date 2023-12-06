@@ -1,8 +1,8 @@
 #![feature(iter_array_chunks)]
 #![feature(array_windows)]
 #![feature(get_many_mut)]
-#![feature(generators)]
-#![feature(iter_from_generator)]
+#![feature(coroutines)]
+#![feature(iter_from_coroutine)]
 
 use std::time::Duration;
 
