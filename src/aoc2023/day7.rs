@@ -32,7 +32,15 @@ impl Hand {
                 b'Q' => 12,
                 b'J' => 11,
                 b'T' => 10,
-                other => other
+                b'9' => 9,
+                b'8' => 8,
+                b'7' => 7,
+                b'6' => 6,
+                b'5' => 5,
+                b'4' => 4,
+                b'3' => 3,
+                b'2' => 2,
+                _ => unreachable!(),
             };
         }
         zvalues
@@ -86,9 +94,6 @@ impl Solution<Day7> for Aoc2023 {
     fn part1(input: &Vec<Entry>) -> u64 {
         let mut input = input.clone();
         input.sort_by_key(|entry| entry.hand);
-
-        dbg!(&input);
-
         input.into_iter().enumerate().map(|(i, entry)| (i as u64 + 1) * entry.bet).sum()
     }
 
