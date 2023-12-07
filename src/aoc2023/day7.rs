@@ -10,7 +10,7 @@ pub struct Hand {
     cards: [u8; 5],
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct ComputedHand {
     sig: [u8; 5],
     zvalues: [u8; 5],
@@ -87,21 +87,6 @@ impl Hand {
             };
         }
         zvalues
-    }
-}
-
-impl Ord for ComputedHand {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match self.sig.cmp(&other.sig) {
-            std::cmp::Ordering::Equal => self.zvalues.cmp(&other.zvalues),
-            other => other,
-        }
-    }
-}
-
-impl PartialOrd for ComputedHand {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
     }
 }
 
