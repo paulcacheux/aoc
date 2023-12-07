@@ -6,14 +6,14 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Hand<const J: bool> {
+pub struct Hand {
     cards: [u8; 5],
 }
 
-impl Hand<false> {
-    fn into_joker(self) -> Hand<true> {
-        Hand::<true> { cards: self.cards }
-    }
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct ComputedHand {
+    sig: [u8; 5],
+    zvalues: [u8; 5],
 }
 
 #[inline]
@@ -22,18 +22,25 @@ fn shift_signature(sig: &mut [u8]) {
         if sig[i] > 0 {
             sig[i - 1] += 1;
             sig[i] -= 1;
-            return
+            return;
         }
     }
     sig[sig.len() - 1] += 1;
 }
 
-impl<const J: bool> Hand<J> {
-    fn signature(&self) -> [u8; 5] {
+impl Hand {
+    fn compute(&self, joker_mode: bool) -> ComputedHand {
+        ComputedHand {
+            sig: self.signature(joker_mode),
+            zvalues: self.zvalues(joker_mode),
+        }
+    }
+
+    fn signature(&self, joker_mode: bool) -> [u8; 5] {
         let mut values = HashMap::new();
         let mut joker = 0;
         for &card in &self.cards {
-            if J && card == b'J' {
+            if joker_mode && card == b'J' {
                 joker += 1;
             } else {
                 *values.entry(card).or_insert(0) += 1;
@@ -44,7 +51,7 @@ impl<const J: bool> Hand<J> {
             signature[5 - value] += 1;
         }
 
-        if J && joker != 0 {
+        if joker_mode && joker != 0 {
             for _ in 0..joker {
                 shift_signature(&mut signature);
             }
@@ -53,14 +60,20 @@ impl<const J: bool> Hand<J> {
         signature
     }
 
-    fn zvalues(&self) -> [u8; 5] {
+    fn zvalues(&self, joker_mode: bool) -> [u8; 5] {
         let mut zvalues = [0; 5];
         for (v, z) in self.cards.iter().zip(zvalues.iter_mut()) {
             *z = match *v {
                 b'A' => 14,
                 b'K' => 13,
                 b'Q' => 12,
-                b'J' => if J { 1 } else { 11 },
+                b'J' => {
+                    if joker_mode {
+                        1
+                    } else {
+                        11
+                    }
+                }
                 b'T' => 10,
                 b'9' => 9,
                 b'8' => 8,
@@ -77,29 +90,38 @@ impl<const J: bool> Hand<J> {
     }
 }
 
-impl<const J: bool> Ord for Hand<J> {
+impl Ord for ComputedHand {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match self.signature().cmp(&other.signature()) {
-            std::cmp::Ordering::Equal => self.zvalues().cmp(&other.zvalues()),
+        match self.sig.cmp(&other.sig) {
+            std::cmp::Ordering::Equal => self.zvalues.cmp(&other.zvalues),
             other => other,
         }
     }
 }
 
-impl<const J: bool> PartialOrd for Hand<J> {
+impl PartialOrd for ComputedHand {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct Entry<const J: bool> {
-    hand: Hand<J>,
+pub struct Entry<H> {
+    hand: H,
     bet: u64,
 }
 
+impl Entry<Hand> {
+    fn compute(&self, joker_mode: bool) -> Entry<ComputedHand> {
+        Entry {
+            hand: self.hand.compute(joker_mode),
+            bet: self.bet,
+        }
+    }
+}
+
 impl ParseInput<Day7> for Aoc2023 {
-    type Parsed = Vec<Entry<false>>;
+    type Parsed = Vec<Entry<Hand>>;
 
     fn parse_input(input: &str) -> Self::Parsed {
         input
@@ -128,30 +150,24 @@ impl Solution<Day7> for Aoc2023 {
     type Part1Output = u64;
     type Part2Output = u64;
 
-    fn part1(input: &Vec<Entry<false>>) -> u64 {
-        let mut input = input.clone();
-        input.sort_by_key(|entry| entry.hand);
-        input
-            .into_iter()
-            .enumerate()
-            .map(|(i, entry)| (i as u64 + 1) * entry.bet)
-            .sum()
+    fn part1(input: &Vec<Entry<Hand>>) -> u64 {
+        solve(input, false)
     }
 
-    fn part2(input: &Vec<Entry<false>>) -> u64 {
-        let mut input: Vec<_> = input
-            .iter()
-            .cloned()
-            .map(|entry| Entry {
-                hand: entry.hand.into_joker(),
-                bet: entry.bet,
-            })
-            .collect();
-        input.sort_by_key(|entry| entry.hand);
-        input
-            .into_iter()
-            .enumerate()
-            .map(|(i, entry)| (i as u64 + 1) * entry.bet)
-            .sum()
+    fn part2(input: &Vec<Entry<Hand>>) -> u64 {
+        solve(input, true)
     }
+}
+
+fn solve(input: &Vec<Entry<Hand>>, joker_mode: bool) -> u64 {
+    let mut input: Vec<_> = input
+        .iter()
+        .map(|entry| entry.compute(joker_mode))
+        .collect();
+    input.sort_by_key(|entry| entry.hand);
+    input
+        .into_iter()
+        .enumerate()
+        .map(|(i, entry)| (i as u64 + 1) * entry.bet)
+        .sum()
 }
