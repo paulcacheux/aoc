@@ -159,7 +159,7 @@ impl Solution<Day7> for Aoc2023 {
     }
 }
 
-fn solve(input: &Vec<Entry<Hand>>, joker_mode: bool) -> u64 {
+fn solve(input: &[Entry<Hand>], joker_mode: bool) -> u64 {
     let mut input: Vec<_> = input
         .iter()
         .map(|entry| entry.compute(joker_mode))
