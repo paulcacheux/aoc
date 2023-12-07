@@ -6,20 +6,49 @@ use crate::traits::ParseInput;
 use crate::traits::Solution;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Hand {
+pub struct Hand<const J: bool> {
     cards: [u8; 5],
 }
 
-impl Hand {
+impl Hand<false> {
+    fn into_joker(self) -> Hand<true> {
+        Hand::<true> { cards: self.cards }
+    }
+}
+
+#[inline]
+fn shift_signature(input: &mut [u8]) {
+    for i in 1..input.len() {
+        if input[i] > 0 {
+            input[i - 1] += 1;
+            input[i] -= 1;
+            break;
+        }
+    }
+}
+
+impl<const J: bool> Hand<J> {
     fn signature(&self) -> [u8; 5] {
         let mut values = HashMap::new();
+        let mut joker = 0;
         for &card in &self.cards {
-            *values.entry(card).or_insert(0) += 1;
+            if J && card == b'J' {
+                joker += 1;
+            } else {
+                *values.entry(card).or_insert(0) += 1;
+            }
         }
         let mut signature = [0; 5];
         for value in values.values() {
             signature[5 - value] += 1;
         }
+
+        if J && joker != 0 {
+            for _ in 0..joker {
+                shift_signature(&mut signature);
+            }
+        }
+
         signature
     }
 
@@ -47,57 +76,81 @@ impl Hand {
     }
 }
 
-impl Ord for Hand {
+impl<const J: bool> Ord for Hand<J> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match self.signature().cmp(&other.signature()) {
-            std::cmp::Ordering::Equal => {
-                self.zvalues().cmp(&other.zvalues())
-            },
+            std::cmp::Ordering::Equal => self.zvalues().cmp(&other.zvalues()),
             other => other,
         }
     }
 }
 
-impl PartialOrd for Hand {
+impl<const J: bool> PartialOrd for Hand<J> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-
 #[derive(Debug, Clone)]
-pub struct Entry {
-    hand: Hand,
+pub struct Entry<const J: bool> {
+    hand: Hand<J>,
     bet: u64,
 }
 
 impl ParseInput<Day7> for Aoc2023 {
-    type Parsed = Vec<Entry>;
+    type Parsed = Vec<Entry<false>>;
 
     fn parse_input(input: &str) -> Self::Parsed {
-        input.lines().map(|line| {
-            let mut iter = line.split_ascii_whitespace();
-            let hand = iter.next().unwrap().bytes().take(5).collect::<Vec<_>>().try_into().unwrap();
-            let bet = iter.next().unwrap().parse().unwrap();
-            Entry {
-                hand: Hand { cards: hand },
-                bet,
-            }
-        }).collect()
+        input
+            .lines()
+            .map(|line| {
+                let mut iter = line.split_ascii_whitespace();
+                let hand = iter
+                    .next()
+                    .unwrap()
+                    .bytes()
+                    .take(5)
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap();
+                let bet = iter.next().unwrap().parse().unwrap();
+                Entry {
+                    hand: Hand { cards: hand },
+                    bet,
+                }
+            })
+            .collect()
     }
 }
 
 impl Solution<Day7> for Aoc2023 {
     type Part1Output = u64;
-    type Part2Output = u32;
+    type Part2Output = u64;
 
-    fn part1(input: &Vec<Entry>) -> u64 {
+    fn part1(input: &Vec<Entry<false>>) -> u64 {
         let mut input = input.clone();
         input.sort_by_key(|entry| entry.hand);
-        input.into_iter().enumerate().map(|(i, entry)| (i as u64 + 1) * entry.bet).sum()
+        input
+            .into_iter()
+            .enumerate()
+            .map(|(i, entry)| (i as u64 + 1) * entry.bet)
+            .sum()
     }
 
-    fn part2(_input: &Vec<Entry>) -> u32 {
-        todo!()
+    fn part2(input: &Vec<Entry<false>>) -> u64 {
+        let mut input: Vec<_> = input
+            .iter()
+            .cloned()
+            .map(|entry| Entry {
+                hand: entry.hand.into_joker(),
+                bet: entry.bet,
+            })
+            .collect();
+        input.sort_by_key(|entry| entry.hand);
+        input
+            .into_iter()
+            .enumerate()
+            .map(|(i, entry)| (i as u64 + 1) * entry.bet)
+            .sum()
     }
 }
