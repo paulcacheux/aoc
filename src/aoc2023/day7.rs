@@ -37,7 +37,7 @@ impl Hand {
     }
 
     fn signature(&self, joker_mode: bool) -> [u8; 5] {
-        let mut values = HashMap::new();
+        let mut values = HashMap::with_capacity(5);
         let mut joker = 0;
         for &card in &self.cards {
             if joker_mode && card == b'J' {
