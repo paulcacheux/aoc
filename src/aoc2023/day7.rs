@@ -17,14 +17,15 @@ impl Hand<false> {
 }
 
 #[inline]
-fn shift_signature(input: &mut [u8]) {
-    for i in 1..input.len() {
-        if input[i] > 0 {
-            input[i - 1] += 1;
-            input[i] -= 1;
-            break;
+fn shift_signature(sig: &mut [u8]) {
+    for i in 1..sig.len() {
+        if sig[i] > 0 {
+            sig[i - 1] += 1;
+            sig[i] -= 1;
+            return
         }
     }
+    sig[sig.len() - 1] += 1;
 }
 
 impl<const J: bool> Hand<J> {
@@ -59,7 +60,7 @@ impl<const J: bool> Hand<J> {
                 b'A' => 14,
                 b'K' => 13,
                 b'Q' => 12,
-                b'J' => 11,
+                b'J' => if J { 1 } else { 11 },
                 b'T' => 10,
                 b'9' => 9,
                 b'8' => 8,
