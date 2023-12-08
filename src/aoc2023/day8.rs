@@ -80,7 +80,7 @@ impl Solution<Day8> for Aoc2023 {
     fn part2(input: &GameDef) -> usize {
         let mut factors = Vec::new();
         for key in input.edges.keys() {
-            if !key.ends_with("A") {
+            if !key.ends_with('A') {
                 continue;
             }
 
@@ -92,7 +92,7 @@ impl Solution<Day8> for Aoc2023 {
             loop {
                 let (iter_state, next_dir) = inst_stream.next();
                 // iter_state == 0 is a complete hack, but it works
-                if current.ends_with("Z") && iter_state == 0 {
+                if current.ends_with('Z') && iter_state == 0 {
                     if let Some(&previous_step) = states.get(&current) {
                         let delta = step - previous_step;
                         assert_eq!(previous_step, delta);
