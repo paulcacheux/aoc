@@ -146,20 +146,20 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
     }
 }
 
-struct FastEdgeMapper {
-    map: HashMap<String, usize>,
+struct FastEdgeMapper<'d> {
+    map: HashMap<&'d str, usize>,
     edges: Vec<usize>,
     zs: Vec<usize>,
 }
 
-impl FastEdgeMapper {
-    fn new(edges: &HashMap<String, (String, String)>) -> Self {
-        let mut map = HashMap::new();
+impl<'d> FastEdgeMapper<'d> {
+    fn new(edges: &'d HashMap<String, (String, String)>) -> Self {
+        let mut map: HashMap<&'d str, usize> = HashMap::new();
         let mut zs = Vec::new();
 
         let mut counter = 0;
         for from in edges.keys() {
-            map.insert(from.clone(), counter);
+            map.insert(from, counter);
             if from.ends_with('Z') {
                 zs.push(counter);
             }
@@ -169,9 +169,9 @@ impl FastEdgeMapper {
         let mut data = vec![0; counter * 2];
 
         for (from, (left, right)) in edges {
-            let from = *map.get(from).unwrap();
-            let left = *map.get(left).unwrap();
-            let right = *map.get(right).unwrap();
+            let from = *map.get(from.as_str()).unwrap();
+            let left = *map.get(left.as_str()).unwrap();
+            let right = *map.get(right.as_str()).unwrap();
 
             data[2 * from] = left;
             data[2 * from + 1] = right;
