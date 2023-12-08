@@ -158,23 +158,24 @@ impl<'d> FastEdgeMapper<'d> {
         let mut zs = Vec::new();
 
         let mut counter = 0;
-        for from in edges.keys() {
-            map.insert(from, counter);
-            if from.ends_with('Z') {
-                zs.push(counter);
-            }
+        let mut get_id = || {
+            let id = counter;
             counter += 1;
-        }
-
-        let mut data = vec![0; counter * 2];
+            id
+        };
+        let mut data = vec![0; edges.len() * 2];
 
         for (from, (left, right)) in edges {
-            let from = *map.get(from.as_str()).unwrap();
-            let left = *map.get(left.as_str()).unwrap();
-            let right = *map.get(right.as_str()).unwrap();
+            let from_id = *map.entry(from.as_str()).or_insert_with(&mut get_id);
+            let left_id = *map.entry(left.as_str()).or_insert_with(&mut get_id);
+            let right_id = *map.entry(right.as_str()).or_insert_with(&mut get_id);
 
-            data[2 * from] = left;
-            data[2 * from + 1] = right;
+            if from.ends_with('Z') {
+                zs.push(from_id);
+            }
+
+            data[2 * from_id] = left_id;
+            data[2 * from_id + 1] = right_id;
         }
 
         FastEdgeMapper {
