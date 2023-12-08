@@ -90,7 +90,7 @@ impl Solution<Day8> for Aoc2023 {
             loop {
                 let (iter_state, next_dir) = inst_stream.next();
                 // iter_state == 0 is a complete hack, but it works
-                if fast_mapper.ends_with_z(current) && iter_state == 0 {
+                if iter_state == 0 && fast_mapper.id_to_str(current).ends_with('Z') {
                     if let Some(&previous_step) = states.get(&current) {
                         let delta = step - previous_step;
                         assert_eq!(previous_step, delta);
@@ -150,13 +150,11 @@ struct FastEdgeMapper<'d> {
     keys: Vec<&'d str>,
     map: HashMap<&'d str, usize>,
     edges: Vec<usize>,
-    zs: Vec<usize>,
 }
 
 impl<'d> FastEdgeMapper<'d> {
     fn new(edges: &'d HashMap<String, (String, String)>) -> Self {
         let mut map: HashMap<&'d str, usize> = HashMap::new();
-        let mut zs = Vec::new();
         let mut keys = vec![""; edges.len()];
 
         let mut counter = 0;
@@ -174,10 +172,6 @@ impl<'d> FastEdgeMapper<'d> {
 
             keys[from_id] = from.as_str();
 
-            if from.ends_with('Z') {
-                zs.push(from_id);
-            }
-
             data[2 * from_id] = left_id;
             data[2 * from_id + 1] = right_id;
         }
@@ -186,7 +180,6 @@ impl<'d> FastEdgeMapper<'d> {
             keys,
             map,
             edges: data,
-            zs,
         }
     }
 
@@ -194,8 +187,8 @@ impl<'d> FastEdgeMapper<'d> {
         *self.map.get(s).unwrap()
     }
 
-    fn ends_with_z(&self, id: usize) -> bool {
-        self.zs.contains(&id)
+    fn id_to_str(&self, id: usize) -> &str {
+        self.keys[id]
     }
 
     fn iter_keys(&self) -> impl Iterator<Item = (usize, &'d str)> + '_ {
