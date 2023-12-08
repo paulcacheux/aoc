@@ -67,28 +67,30 @@ impl Solution<Day8> for Aoc2023 {
         let mut step = 0;
         while current != zzz {
             step += 1;
-            let (_, dir) =  inst_stream.next();
+            let (_, dir) = inst_stream.next();
             current = fast_mapper.get(current, dir);
         }
         step
     }
 
     fn part2(input: &GameDef) -> usize {
+        let fast_mapper = FastEdgeMapper::new(&input.edges);
+
         let mut factors = Vec::new();
         for key in input.edges.keys() {
             if !key.ends_with('A') {
                 continue;
             }
 
-            let mut current = key;
+            let mut current = fast_mapper.str_to_id(key);
             let mut inst_stream = InstIterator::new(&input.instructions);
-            let mut states = HashMap::new();
+            let mut states: HashMap<usize, usize> = HashMap::new();
             let mut step = 0usize;
 
             loop {
                 let (iter_state, next_dir) = inst_stream.next();
                 // iter_state == 0 is a complete hack, but it works
-                if current.ends_with('Z') && iter_state == 0 {
+                if fast_mapper.ends_with_z(current) && iter_state == 0 {
                     if let Some(&previous_step) = states.get(&current) {
                         let delta = step - previous_step;
                         assert_eq!(previous_step, delta);
@@ -100,15 +102,7 @@ impl Solution<Day8> for Aoc2023 {
                 }
                 step += 1;
 
-                let next = input.edges.get(current).unwrap();
-                match next_dir {
-                    Direction::Left => {
-                        current = &next.0;
-                    }
-                    Direction::Right => {
-                        current = &next.1;
-                    }
-                }
+                current = fast_mapper.get(current, next_dir);
             }
         }
         lcm(&factors)
@@ -155,15 +149,20 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
 struct FastEdgeMapper {
     map: HashMap<String, usize>,
     edges: Vec<usize>,
+    zs: Vec<usize>,
 }
 
 impl FastEdgeMapper {
     fn new(edges: &HashMap<String, (String, String)>) -> Self {
         let mut map = HashMap::new();
+        let mut zs = Vec::new();
 
         let mut counter = 0;
         for from in edges.keys() {
             map.insert(from.clone(), counter);
+            if from.ends_with('Z') {
+                zs.push(counter);
+            }
             counter += 1;
         }
 
@@ -178,11 +177,19 @@ impl FastEdgeMapper {
             data[2 * from + 1] = right;
         }
 
-        FastEdgeMapper { map, edges: data }
+        FastEdgeMapper {
+            map,
+            edges: data,
+            zs,
+        }
     }
 
     fn str_to_id(&self, s: &str) -> usize {
         *self.map.get(s).unwrap()
+    }
+
+    fn ends_with_z(&self, id: usize) -> bool {
+        self.zs.contains(&id)
     }
 
     fn get(&self, from: usize, dir: Direction) -> usize {
