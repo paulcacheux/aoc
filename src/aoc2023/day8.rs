@@ -77,7 +77,35 @@ impl Solution<Day8> for Aoc2023 {
         step
     }
 
-    fn part2(_input: &GameDef) -> u32 {
-        todo!()
+    fn part2(input: &GameDef) -> u32 {
+        let mut current = Vec::new();
+        for key in input.edges.keys() {
+            if key.ends_with("A") {
+                current.push(key);
+            }
+        }
+        let mut inst_stream = input.instructions.iter().copied().cycle();
+
+        let mut step = 0;
+        while !is_over(&current) {
+            step += 1;
+            let next_dir = inst_stream.next().unwrap();
+            for pos in &mut current {
+                let next = input.edges.get(*pos).unwrap();
+                match next_dir {
+                    Direction::Left => {
+                        *pos = &next.0;
+                    }
+                    Direction::Right => {
+                        *pos = &next.1;
+                    }
+                }
+            }
+        }
+        step
     }
+}
+
+fn is_over(positions: &[&String]) -> bool {
+    positions.iter().all(|pos| pos.ends_with("Z"))
 }
