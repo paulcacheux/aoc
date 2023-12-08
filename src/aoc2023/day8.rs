@@ -59,13 +59,13 @@ impl Solution<Day8> for Aoc2023 {
 
     fn part1(input: &GameDef) -> u32 {
         let mut current = "AAA";
-        let mut inst_stream = input.instructions.iter().copied().cycle();
+        let mut inst_stream = InstIterator::new(&input.instructions);
 
         let mut step = 0;
         while current != "ZZZ" {
             step += 1;
             let next = input.edges.get(current).unwrap();
-            match inst_stream.next().unwrap() {
+            match inst_stream.next().1 {
                 Direction::Left => {
                     current = &next.0;
                 }
@@ -84,12 +84,12 @@ impl Solution<Day8> for Aoc2023 {
                 current.push(key);
             }
         }
-        let mut inst_stream = input.instructions.iter().copied().cycle();
+        let mut inst_stream = InstIterator::new(&input.instructions);
 
         let mut step = 0;
         while !is_over(&current) {
             step += 1;
-            let next_dir = inst_stream.next().unwrap();
+            let (_, next_dir) = inst_stream.next();
             for pos in &mut current {
                 let next = input.edges.get(*pos).unwrap();
                 match next_dir {
@@ -108,4 +108,21 @@ impl Solution<Day8> for Aoc2023 {
 
 fn is_over(positions: &[&String]) -> bool {
     positions.iter().all(|pos| pos.ends_with("Z"))
+}
+
+struct InstIterator<'d> {
+    state: usize,
+    data: &'d [Direction],
+}
+impl<'d> InstIterator<'d> {
+    fn new(data: &'d [Direction]) -> Self {
+        InstIterator { state: 0, data }
+    }
+
+    fn next(&mut self) -> (usize, Direction) {
+        let state = self.state;
+        let value = self.data[state];
+        self.state = (self.state + 1) % self.data.len();
+        (state, value)
+    }
 }
