@@ -1,0 +1,83 @@
+use std::collections::HashMap;
+
+use crate::aoc2023::Aoc2023;
+use crate::traits::days::Day8;
+use crate::traits::ParseInput;
+use crate::traits::Solution;
+
+#[derive(Debug, Clone, Copy)]
+enum Direction {
+    Left,
+    Right,
+}
+
+#[derive(Debug)]
+pub struct GameDef {
+    instructions: Vec<Direction>,
+    edges: HashMap<String, (String, String)>,
+}
+
+impl ParseInput<Day8> for Aoc2023 {
+    type Parsed = GameDef;
+
+    fn parse_input(input: &str) -> Self::Parsed {
+        let mut iter = input.lines();
+
+        let instructions = iter
+            .next()
+            .unwrap()
+            .trim()
+            .bytes()
+            .map(|b| match b {
+                b'L' => Direction::Left,
+                b'R' => Direction::Right,
+                _ => unreachable!(),
+            })
+            .collect();
+
+        iter.next().unwrap(); // skip empty line
+
+        let edges = iter
+            .map(|line| {
+                let src = line[0..3].to_owned();
+                let left = line[7..10].to_owned();
+                let right = line[12..15].to_owned();
+                (src, (left, right))
+            })
+            .collect();
+
+        GameDef {
+            instructions,
+            edges,
+        }
+    }
+}
+
+impl Solution<Day8> for Aoc2023 {
+    type Part1Output = u32;
+    type Part2Output = u32;
+
+    fn part1(input: &GameDef) -> u32 {
+        let mut current = "AAA";
+        let mut inst_stream = input.instructions.iter().copied().cycle();
+
+        let mut step = 0;
+        while current != "ZZZ" {
+            step += 1;
+            let next = input.edges.get(current).unwrap();
+            match inst_stream.next().unwrap() {
+                Direction::Left => {
+                    current = &next.0;
+                }
+                Direction::Right => {
+                    current = &next.1;
+                }
+            }
+        }
+        step
+    }
+
+    fn part2(_input: &GameDef) -> u32 {
+        todo!()
+    }
+}
