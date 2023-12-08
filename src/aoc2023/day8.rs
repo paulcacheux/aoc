@@ -86,21 +86,20 @@ impl Solution<Day8> for Aoc2023 {
 
             let mut current = key;
             let mut inst_stream = InstIterator::new(&input.instructions);
-            let mut states: HashMap<(&String, usize), usize> = HashMap::new();
+            let mut states = HashMap::new();
             let mut step = 0usize;
 
             loop {
                 let (iter_state, next_dir) = inst_stream.next();
                 // iter_state == 0 is a complete hack, but it works
                 if current.ends_with("Z") && iter_state == 0 {
-                    let current_state = (current, iter_state);
-                    if let Some(&previous_step) = states.get(&current_state) {
+                    if let Some(&previous_step) = states.get(&current) {
                         let delta = step - previous_step;
                         assert_eq!(previous_step, delta);
                         factors.push(delta);
                         break;
                     } else {
-                        states.insert(current_state, step);
+                        states.insert(current, step);
                     }
                 }
                 step += 1;
