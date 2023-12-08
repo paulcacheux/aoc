@@ -77,12 +77,12 @@ impl Solution<Day8> for Aoc2023 {
         let fast_mapper = FastEdgeMapper::new(&input.edges);
 
         let mut factors = Vec::new();
-        for key in input.edges.keys() {
+        for (key_id, key) in fast_mapper.iter_keys() {
             if !key.ends_with('A') {
                 continue;
             }
 
-            let mut current = fast_mapper.str_to_id(key);
+            let mut current = key_id;
             let mut inst_stream = InstIterator::new(&input.instructions);
             let mut states: HashMap<usize, usize> = HashMap::new();
             let mut step = 0usize;
@@ -147,6 +147,7 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
 }
 
 struct FastEdgeMapper<'d> {
+    keys: Vec<&'d str>,
     map: HashMap<&'d str, usize>,
     edges: Vec<usize>,
     zs: Vec<usize>,
@@ -156,6 +157,7 @@ impl<'d> FastEdgeMapper<'d> {
     fn new(edges: &'d HashMap<String, (String, String)>) -> Self {
         let mut map: HashMap<&'d str, usize> = HashMap::new();
         let mut zs = Vec::new();
+        let mut keys = vec![""; edges.len()];
 
         let mut counter = 0;
         let mut get_id = || {
@@ -170,6 +172,8 @@ impl<'d> FastEdgeMapper<'d> {
             let left_id = *map.entry(left.as_str()).or_insert_with(&mut get_id);
             let right_id = *map.entry(right.as_str()).or_insert_with(&mut get_id);
 
+            keys[from_id] = from.as_str();
+
             if from.ends_with('Z') {
                 zs.push(from_id);
             }
@@ -179,6 +183,7 @@ impl<'d> FastEdgeMapper<'d> {
         }
 
         FastEdgeMapper {
+            keys,
             map,
             edges: data,
             zs,
@@ -191,6 +196,10 @@ impl<'d> FastEdgeMapper<'d> {
 
     fn ends_with_z(&self, id: usize) -> bool {
         self.zs.contains(&id)
+    }
+
+    fn iter_keys(&self) -> impl Iterator<Item = (usize, &'d str)> + '_ {
+        self.keys.iter().copied().enumerate()
     }
 
     fn get(&self, from: usize, dir: Direction) -> usize {
