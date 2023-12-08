@@ -58,41 +58,39 @@ impl Solution<Day8> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &GameDef) -> u32 {
-        let mut current = "AAA";
+        let fast_mapper = FastEdgeMapper::new(&input.edges);
+
+        let mut current = fast_mapper.str_to_id("AAA");
+        let zzz = fast_mapper.str_to_id("ZZZ");
         let mut inst_stream = InstIterator::new(&input.instructions);
 
         let mut step = 0;
-        while current != "ZZZ" {
+        while current != zzz {
             step += 1;
-            let next = input.edges.get(current).unwrap();
-            match inst_stream.next().1 {
-                Direction::Left => {
-                    current = &next.0;
-                }
-                Direction::Right => {
-                    current = &next.1;
-                }
-            }
+            let (_, dir) = inst_stream.next();
+            current = fast_mapper.get(current, dir);
         }
         step
     }
 
     fn part2(input: &GameDef) -> usize {
+        let fast_mapper = FastEdgeMapper::new(&input.edges);
+
         let mut factors = Vec::new();
-        for key in input.edges.keys() {
+        for (key_id, key) in fast_mapper.iter_keys() {
             if !key.ends_with('A') {
                 continue;
             }
 
-            let mut current = key;
+            let mut current = key_id;
             let mut inst_stream = InstIterator::new(&input.instructions);
-            let mut states = HashMap::new();
+            let mut states: HashMap<usize, usize> = HashMap::new();
             let mut step = 0usize;
 
             loop {
                 let (iter_state, next_dir) = inst_stream.next();
                 // iter_state == 0 is a complete hack, but it works
-                if current.ends_with('Z') && iter_state == 0 {
+                if iter_state == 0 && fast_mapper.id_to_str(current).ends_with('Z') {
                     if let Some(&previous_step) = states.get(&current) {
                         let delta = step - previous_step;
                         assert_eq!(previous_step, delta);
@@ -104,15 +102,7 @@ impl Solution<Day8> for Aoc2023 {
                 }
                 step += 1;
 
-                let next = input.edges.get(current).unwrap();
-                match next_dir {
-                    Direction::Left => {
-                        current = &next.0;
-                    }
-                    Direction::Right => {
-                        current = &next.1;
-                    }
-                }
+                current = fast_mapper.get(current, next_dir);
             }
         }
         lcm(&factors)
@@ -153,5 +143,62 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
         }
 
         (a, b) = (b, a % b);
+    }
+}
+
+struct FastEdgeMapper<'d> {
+    keys: Vec<&'d str>,
+    map: HashMap<&'d str, usize>,
+    edges: Vec<usize>,
+}
+
+impl<'d> FastEdgeMapper<'d> {
+    fn new(edges: &'d HashMap<String, (String, String)>) -> Self {
+        let mut map: HashMap<&'d str, usize> = HashMap::new();
+        let mut keys = vec![""; edges.len()];
+
+        let mut counter = 0;
+        let mut get_id = || {
+            let id = counter;
+            counter += 1;
+            id
+        };
+        let mut data = vec![0; edges.len() * 2];
+
+        for (from, (left, right)) in edges {
+            let from_id = *map.entry(from.as_str()).or_insert_with(&mut get_id);
+            let left_id = *map.entry(left.as_str()).or_insert_with(&mut get_id);
+            let right_id = *map.entry(right.as_str()).or_insert_with(&mut get_id);
+
+            keys[from_id] = from.as_str();
+
+            data[2 * from_id] = left_id;
+            data[2 * from_id + 1] = right_id;
+        }
+
+        FastEdgeMapper {
+            keys,
+            map,
+            edges: data,
+        }
+    }
+
+    fn str_to_id(&self, s: &str) -> usize {
+        *self.map.get(s).unwrap()
+    }
+
+    fn id_to_str(&self, id: usize) -> &str {
+        self.keys[id]
+    }
+
+    fn iter_keys(&self) -> impl Iterator<Item = (usize, &'d str)> + '_ {
+        self.keys.iter().copied().enumerate()
+    }
+
+    fn get(&self, from: usize, dir: Direction) -> usize {
+        match dir {
+            Direction::Left => self.edges[2 * from],
+            Direction::Right => self.edges[2 * from + 1],
+        }
     }
 }
