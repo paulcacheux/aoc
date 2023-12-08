@@ -138,12 +138,12 @@ impl<'d> InstIterator<'d> {
 
 pub fn lcm(nums: &[usize]) -> usize {
     assert!(!nums.is_empty());
-    if nums.len() == 1 {
-        return nums[0];
+
+    let mut res = nums[0];
+    for &b in &nums[1..] {
+        res = res * b / gcd(res, b);
     }
-    let a = nums[0];
-    let b = lcm(&nums[1..]);
-    a * b / gcd(a, b)
+    res
 }
 
 fn gcd(mut a: usize, mut b: usize) -> usize {
