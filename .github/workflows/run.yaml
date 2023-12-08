@@ -43,16 +43,16 @@ jobs:
 
       - name: Run 2023 days
         run: |
-          time ./target/release/aoc --year 2023
+          time ./target/release-lto/aoc --year 2023
 
       - name: Run 2022 days
         run: |
-          time ./target/release/aoc --year 2022
+          time ./target/release-lto/aoc --year 2022
 
       - name: Run 2021 days
         run: |
-          time ./target/release/aoc --year 2021
+          time ./target/release-lto/aoc --year 2021
 
       - name: Run 2019 days
         run: |
-          time ./target/release/aoc --year 2019
+          time ./target/release-lto/aoc --year 2019
