@@ -58,21 +58,17 @@ impl Solution<Day8> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &GameDef) -> u32 {
-        let mut current = "AAA";
+        let fast_mapper = FastEdgeMapper::new(&input.edges);
+
+        let mut current = fast_mapper.str_to_id("AAA");
+        let zzz = fast_mapper.str_to_id("ZZZ");
         let mut inst_stream = InstIterator::new(&input.instructions);
 
         let mut step = 0;
-        while current != "ZZZ" {
+        while current != zzz {
             step += 1;
-            let next = input.edges.get(current).unwrap();
-            match inst_stream.next().1 {
-                Direction::Left => {
-                    current = &next.0;
-                }
-                Direction::Right => {
-                    current = &next.1;
-                }
-            }
+            let (_, dir) =  inst_stream.next();
+            current = fast_mapper.get(current, dir);
         }
         step
     }
@@ -153,5 +149,46 @@ fn gcd(mut a: usize, mut b: usize) -> usize {
         }
 
         (a, b) = (b, a % b);
+    }
+}
+
+struct FastEdgeMapper {
+    map: HashMap<String, usize>,
+    edges: Vec<usize>,
+}
+
+impl FastEdgeMapper {
+    fn new(edges: &HashMap<String, (String, String)>) -> Self {
+        let mut map = HashMap::new();
+
+        let mut counter = 0;
+        for from in edges.keys() {
+            map.insert(from.clone(), counter);
+            counter += 1;
+        }
+
+        let mut data = vec![0; counter * 2];
+
+        for (from, (left, right)) in edges {
+            let from = *map.get(from).unwrap();
+            let left = *map.get(left).unwrap();
+            let right = *map.get(right).unwrap();
+
+            data[2 * from] = left;
+            data[2 * from + 1] = right;
+        }
+
+        FastEdgeMapper { map, edges: data }
+    }
+
+    fn str_to_id(&self, s: &str) -> usize {
+        *self.map.get(s).unwrap()
+    }
+
+    fn get(&self, from: usize, dir: Direction) -> usize {
+        match dir {
+            Direction::Left => self.edges[2 * from],
+            Direction::Right => self.edges[2 * from + 1],
+        }
     }
 }
