@@ -55,7 +55,7 @@ impl ParseInput<Day8> for Aoc2023 {
 
 impl Solution<Day8> for Aoc2023 {
     type Part1Output = u32;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &GameDef) -> u32 {
         let mut current = "AAA";
@@ -77,37 +77,47 @@ impl Solution<Day8> for Aoc2023 {
         step
     }
 
-    fn part2(input: &GameDef) -> u32 {
-        let mut current = Vec::new();
+    fn part2(input: &GameDef) -> usize {
+        let mut factors = Vec::new();
         for key in input.edges.keys() {
-            if key.ends_with("A") {
-                current.push(key);
+            if !key.ends_with("A") {
+                continue;
             }
-        }
-        let mut inst_stream = InstIterator::new(&input.instructions);
 
-        let mut step = 0;
-        while !is_over(&current) {
-            step += 1;
-            let (_, next_dir) = inst_stream.next();
-            for pos in &mut current {
-                let next = input.edges.get(*pos).unwrap();
+            let mut current = key;
+            let mut inst_stream = InstIterator::new(&input.instructions);
+            let mut states: HashMap<(&String, usize), usize> = HashMap::new();
+            let mut step = 0usize;
+
+            loop {
+                let (iter_state, next_dir) = inst_stream.next();
+                // iter_state == 0 is a complete hack, but it works
+                if current.ends_with("Z") && iter_state == 0 {
+                    let current_state = (current, iter_state);
+                    if let Some(&previous_step) = states.get(&current_state) {
+                        let delta = step - previous_step;
+                        assert_eq!(previous_step, delta);
+                        factors.push(delta);
+                        break;
+                    } else {
+                        states.insert(current_state, step);
+                    }
+                }
+                step += 1;
+
+                let next = input.edges.get(current).unwrap();
                 match next_dir {
                     Direction::Left => {
-                        *pos = &next.0;
+                        current = &next.0;
                     }
                     Direction::Right => {
-                        *pos = &next.1;
+                        current = &next.1;
                     }
                 }
             }
         }
-        step
+        lcm(&factors)
     }
-}
-
-fn is_over(positions: &[&String]) -> bool {
-    positions.iter().all(|pos| pos.ends_with("Z"))
 }
 
 struct InstIterator<'d> {
@@ -125,4 +135,21 @@ impl<'d> InstIterator<'d> {
         self.state = (self.state + 1) % self.data.len();
         (state, value)
     }
+}
+
+pub fn lcm(nums: &[usize]) -> usize {
+    assert!(!nums.is_empty());
+    if nums.len() == 1 {
+        return nums[0];
+    }
+    let a = nums[0];
+    let b = lcm(&nums[1..]);
+    a * b / gcd(a, b)
+}
+
+fn gcd(a: usize, b: usize) -> usize {
+    if b == 0 {
+        return a;
+    }
+    gcd(b, a % b)
 }
