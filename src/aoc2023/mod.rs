@@ -10,6 +10,7 @@ pub mod day4;
 pub mod day5;
 pub mod day6;
 pub mod day7;
+pub mod day8;
 
 pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> Option<TimingData> {
     let r = results
@@ -24,6 +25,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> 
         5 => run::<Aoc2023, Day5>(input, r),
         6 => run::<Aoc2023, Day6>(input, r),
         7 => run::<Aoc2023, Day7>(input, r),
+        8 => run::<Aoc2023, Day8>(input, r),
         _ => return None,
     };
     Some(elapsed)
