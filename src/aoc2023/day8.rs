@@ -146,9 +146,12 @@ pub fn lcm(nums: &[usize]) -> usize {
     a * b / gcd(a, b)
 }
 
-fn gcd(a: usize, b: usize) -> usize {
-    if b == 0 {
-        return a;
+fn gcd(mut a: usize, mut b: usize) -> usize {
+    loop {
+        if b == 0 {
+            return a;
+        }
+
+        (a, b) = (b, a % b);
     }
-    gcd(b, a % b)
 }
