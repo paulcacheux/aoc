@@ -98,10 +98,11 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                     }
                 }
                 2 => {
-                    if [(0, goal), (1, home), (2, goal)].contains(&(trip, p)) {
-                        if trip == 2 {
-                            return time;
-                        }
+                    if trip == 2 && p == goal {
+                        return time;
+                    }
+
+                    if (trip == 0 && p == goal) || (trip == 1 && p == home) {
                         trip += 1;
                         open_queue.clear();
                         open_queue.push(p);
