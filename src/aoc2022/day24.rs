@@ -72,7 +72,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
     let home = (0, -1);
     let goal = (width as isize - 1, height as isize);
 
-    let mut open_queue = vec![home];
+    let mut current_queue = HashSet::new();
+    let mut open_queue = HashSet::new();
+    open_queue.insert(home);
     let mut time = 0;
     let mut trip = 0;
 
@@ -83,14 +85,10 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
         }
 
         time += 1;
-        let mut curr = HashSet::with_capacity(open_queue.len() * 5);
-        for (px, py) in open_queue.drain(..) {
-            curr.extend(
-                [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)),
-            );
-        }
+        (current_queue, open_queue) = (open_queue, current_queue);
+        open_queue.clear();
 
-        for p in curr {
+        for &p in current_queue.iter() {
             match PART {
                 1 => {
                     if p == goal {
@@ -105,7 +103,7 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                     if (trip == 0 && p == goal) || (trip == 1 && p == home) {
                         trip += 1;
                         open_queue.clear();
-                        open_queue.push(p);
+                        insert_with_delta(&mut open_queue, p);
                         break;
                     }
                 }
@@ -116,9 +114,13 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 || home == p
                 || goal == p
             {
-                open_queue.push(p);
+                insert_with_delta(&mut open_queue, p);
             }
         }
     }
     unreachable!()
+}
+
+fn insert_with_delta(set: &mut HashSet<(isize, isize)>, (px, py): (isize, isize)) {
+    set.extend([(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)));
 }
