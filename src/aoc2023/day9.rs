@@ -29,7 +29,7 @@ impl Solution<Day9> for Aoc2023 {
             let mut current = line.clone();
 
             while !current.iter().all(|&v| v == 0) {
-                history.push(current.clone());
+                history.push(*current.last().unwrap());
                 let mut next_line: Vec<i32> = Vec::with_capacity(current.len() - 1);
                 for [a, b] in current.array_windows() {
                     let delta = b - a;
@@ -40,14 +40,14 @@ impl Solution<Day9> for Aoc2023 {
 
             for i in (0..history.len()).rev() {
                 let under_value = if i + 1 < history.len() {
-                    *history[i + 1].last().unwrap()
+                    history[i + 1]
                 } else {
                     0
                 };
-                let new_value = history[i].last().unwrap() + under_value;
-                history[i].push(new_value);
+                let new_value = history[i] + under_value;
+                history[i] = new_value;
             }
-            sum += history[0].last().unwrap();
+            sum += history[0];
         }
         sum
     }
@@ -59,7 +59,7 @@ impl Solution<Day9> for Aoc2023 {
             let mut current = line.clone();
 
             while !current.iter().all(|&v| v == 0) {
-                history.push(current.clone());
+                history.push(*current.first().unwrap());
                 let mut next_line: Vec<i32> = Vec::with_capacity(current.len() - 1);
                 for [a, b] in current.array_windows() {
                     let delta = b - a;
@@ -70,17 +70,14 @@ impl Solution<Day9> for Aoc2023 {
 
             for i in (0..history.len()).rev() {
                 let under_value = if i + 1 < history.len() {
-                    *history[i + 1].first().unwrap()
+                    history[i + 1]
                 } else {
                     0
                 };
-                let new_value = history[i].first().unwrap() - under_value;
-
-                let mut new_line = vec![new_value];
-                new_line.extend_from_slice(&history[i]);
-                history[i] = new_line;
+                let new_value = history[i] - under_value;
+                history[i] = new_value;
             }
-            sum += history[0].first().unwrap();
+            sum += history[0];
         }
         sum
     }
