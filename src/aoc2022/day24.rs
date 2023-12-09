@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day24;
 use crate::traits::ParseInput;
@@ -81,14 +83,12 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
         }
 
         time += 1;
-        let mut curr = Vec::with_capacity(open_queue.len() * 5);
+        let mut curr = HashSet::with_capacity(open_queue.len() * 5);
         for (px, py) in open_queue.drain(..) {
             curr.extend(
                 [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)),
             );
         }
-        curr.sort();
-        curr.dedup();
 
         for p in curr {
             match PART {
