@@ -55,20 +55,16 @@ fn solve(input: &Vec<Vec<i32>>, part2: bool) -> i32 {
             current = next_line;
         }
 
-        for i in (0..history.len()).rev() {
-            let under_value = if i + 1 < history.len() {
-                history[i + 1]
-            } else {
-                0
-            };
-
-            history[i] = if part2 {
-                history[i] - under_value
-            } else {
-                history[i] + under_value
-            };
-        }
-        sum += history[0];
+        sum += history.into_iter().rev().fold(
+            0,
+            |acc, value| {
+                if part2 {
+                    value - acc
+                } else {
+                    value + acc
+                }
+            },
+        );
     }
     sum
 }
