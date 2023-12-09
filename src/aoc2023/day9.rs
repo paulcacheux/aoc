@@ -23,62 +23,52 @@ impl Solution<Day9> for Aoc2023 {
     type Part2Output = i32;
 
     fn part1(input: &Vec<Vec<i32>>) -> i32 {
-        let mut sum = 0;
-        for line in input {
-            let mut history = Vec::new();
-            let mut current = line.clone();
-
-            while !current.iter().all(|&v| v == 0) {
-                history.push(*current.last().unwrap());
-                let mut next_line: Vec<i32> = Vec::with_capacity(current.len() - 1);
-                for [a, b] in current.array_windows() {
-                    let delta = b - a;
-                    next_line.push(delta);
-                }
-                current = next_line;
-            }
-
-            for i in (0..history.len()).rev() {
-                let under_value = if i + 1 < history.len() {
-                    history[i + 1]
-                } else {
-                    0
-                };
-                let new_value = history[i] + under_value;
-                history[i] = new_value;
-            }
-            sum += history[0];
-        }
-        sum
+        solve(input, false)
     }
 
     fn part2(input: &Vec<Vec<i32>>) -> i32 {
-        let mut sum = 0;
-        for line in input {
-            let mut history = Vec::new();
-            let mut current = line.clone();
-
-            while !current.iter().all(|&v| v == 0) {
-                history.push(*current.first().unwrap());
-                let mut next_line: Vec<i32> = Vec::with_capacity(current.len() - 1);
-                for [a, b] in current.array_windows() {
-                    let delta = b - a;
-                    next_line.push(delta);
-                }
-                current = next_line;
-            }
-
-            for i in (0..history.len()).rev() {
-                let under_value = if i + 1 < history.len() {
-                    history[i + 1]
-                } else {
-                    0
-                };
-                let new_value = history[i] - under_value;
-                history[i] = new_value;
-            }
-            sum += history[0];
-        }
-        sum
+        solve(input, true)
     }
+}
+
+fn solve(input: &Vec<Vec<i32>>, part2: bool) -> i32 {
+    let mut sum = 0;
+    for line in input {
+        let mut history = Vec::new();
+        let mut current = line.clone();
+
+        while !current.iter().all(|&v| v == 0) {
+            history.push(
+                *(if part2 {
+                    current.first()
+                } else {
+                    current.last()
+                })
+                .unwrap(),
+            );
+
+            let mut next_line: Vec<i32> = Vec::with_capacity(current.len() - 1);
+            for [a, b] in current.array_windows() {
+                let delta = b - a;
+                next_line.push(delta);
+            }
+            current = next_line;
+        }
+
+        for i in (0..history.len()).rev() {
+            let under_value = if i + 1 < history.len() {
+                history[i + 1]
+            } else {
+                0
+            };
+
+            history[i] = if part2 {
+                history[i] - under_value
+            } else {
+                history[i] + under_value
+            };
+        }
+        sum += history[0];
+    }
+    sum
 }
