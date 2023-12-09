@@ -112,8 +112,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 _ => unreachable!(),
             }
 
-            if wrap(p) == p && !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p) 
-                || home == p || goal == p
+            if wrap(p) == p && !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p)
+                || home == p
+                || goal == p
             {
                 open_queue.push(p);
             }
