@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day24;
 use crate::traits::ParseInput;
@@ -81,14 +83,12 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
         }
 
         time += 1;
-        let mut curr = Vec::with_capacity(open_queue.len() * 5);
+        let mut curr = HashSet::with_capacity(open_queue.len() * 5);
         for (px, py) in open_queue.drain(..) {
             curr.extend(
                 [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)),
             );
         }
-        curr.sort();
-        curr.dedup();
 
         for p in curr {
             match PART {
@@ -98,10 +98,11 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                     }
                 }
                 2 => {
-                    if [(0, goal), (1, home), (2, goal)].contains(&(trip, p)) {
-                        if trip == 2 {
-                            return time;
-                        }
+                    if trip == 2 && p == goal {
+                        return time;
+                    }
+
+                    if (trip == 0 && p == goal) || (trip == 1 && p == home) {
                         trip += 1;
                         open_queue.clear();
                         open_queue.push(p);
@@ -111,8 +112,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 _ => unreachable!(),
             }
 
-            if !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p) && wrap(p) == p
-                || [home, goal].contains(&p)
+            if wrap(p) == p && !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p)
+                || home == p
+                || goal == p
             {
                 open_queue.push(p);
             }
