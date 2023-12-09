@@ -83,6 +83,7 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
             let (dx, dy) = DELTAS[*dir as usize];
             *pt = wrap((pt.0 + dx, pt.1 + dy));
         }
+        bliz.sort_by_key(|(_, pt)| *pt);
 
         time += 1;
         (current_queue, open_queue) = (open_queue, current_queue);
@@ -110,10 +111,7 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                 _ => unreachable!(),
             }
 
-            if wrap(p) == p && !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p)
-                || home == p
-                || goal == p
-            {
+            if wrap(p) == p && !is_in_bliz(&bliz, p) || home == p || goal == p {
                 insert_with_delta(&mut open_queue, p);
             }
         }
@@ -123,4 +121,8 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
 
 fn insert_with_delta(set: &mut HashSet<(isize, isize)>, (px, py): (isize, isize)) {
     set.extend([(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)));
+}
+
+fn is_in_bliz(bliz: &[(Cell, (isize, isize))], p: (isize, isize)) -> bool {
+    bliz.binary_search_by_key(&p, |(_, pt)| *pt).is_ok()
 }
