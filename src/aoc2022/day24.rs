@@ -72,7 +72,9 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
     let home = (0, -1);
     let goal = (width as isize - 1, height as isize);
 
-    let mut open_queue = vec![home];
+    let mut current_queue = HashSet::new();
+    let mut open_queue = HashSet::new();
+    open_queue.insert(home);
     let mut time = 0;
     let mut trip = 0;
 
@@ -81,16 +83,13 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
             let (dx, dy) = DELTAS[*dir as usize];
             *pt = wrap((pt.0 + dx, pt.1 + dy));
         }
+        bliz.sort_by_key(|(_, pt)| *pt);
 
         time += 1;
-        let mut curr = HashSet::with_capacity(open_queue.len() * 5);
-        for (px, py) in open_queue.drain(..) {
-            curr.extend(
-                [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)),
-            );
-        }
+        (current_queue, open_queue) = (open_queue, current_queue);
+        open_queue.clear();
 
-        for p in curr {
+        for &p in current_queue.iter() {
             match PART {
                 1 => {
                     if p == goal {
@@ -105,20 +104,25 @@ fn solve<const PART: usize>(input: &Grid<Cell>) -> u32 {
                     if (trip == 0 && p == goal) || (trip == 1 && p == home) {
                         trip += 1;
                         open_queue.clear();
-                        open_queue.push(p);
+                        insert_with_delta(&mut open_queue, p);
                         break;
                     }
                 }
                 _ => unreachable!(),
             }
 
-            if wrap(p) == p && !bliz.iter().map(|(_, pts)| pts).any(|b| *b == p)
-                || home == p
-                || goal == p
-            {
-                open_queue.push(p);
+            if wrap(p) == p && !is_in_bliz(&bliz, p) || home == p || goal == p {
+                insert_with_delta(&mut open_queue, p);
             }
         }
     }
     unreachable!()
+}
+
+fn insert_with_delta(set: &mut HashSet<(isize, isize)>, (px, py): (isize, isize)) {
+    set.extend([(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)].map(|(dx, dy)| (px + dx, py + dy)));
+}
+
+fn is_in_bliz(bliz: &[(Cell, (isize, isize))], p: (isize, isize)) -> bool {
+    bliz.binary_search_by_key(&p, |(_, pt)| *pt).is_ok()
 }
