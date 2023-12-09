@@ -40,7 +40,7 @@ impl Solution<Day9> for Aoc2023 {
 
             for i in (0..history.len()).rev() {
                 let under_value = if i + 1 < history.len() {
-                    *history[i+1].last().unwrap()
+                    *history[i + 1].last().unwrap()
                 } else {
                     0
                 };
@@ -70,7 +70,7 @@ impl Solution<Day9> for Aoc2023 {
 
             for i in (0..history.len()).rev() {
                 let under_value = if i + 1 < history.len() {
-                    *history[i+1].first().unwrap()
+                    *history[i + 1].first().unwrap()
                 } else {
                     0
                 };
