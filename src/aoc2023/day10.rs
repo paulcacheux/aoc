@@ -77,6 +77,7 @@ impl Solution<Day10> for Aoc2023 {
                     counter += 1;
                 }
             }
+            wall_stack.clear();
         }
         counter
     }
