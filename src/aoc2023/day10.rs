@@ -73,15 +73,10 @@ impl Solution<Day10> for Aoc2023 {
                         }
                         _ => {}
                     }
-                    print!("X");
                 } else if sign {
                     counter += 1;
-                    print!("I");
-                } else {
-                    print!("O");
                 }
             }
-            println!()
         }
         counter
     }
