@@ -61,11 +61,16 @@ impl<T> Grid<T> {
 
     #[inline]
     pub fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
-        self.get_neighbors_with_direction(x, y).map(|(_, x, y)| (x, y))
+        self.get_neighbors_with_direction(x, y)
+            .map(|(_, x, y)| (x, y))
     }
 
     #[inline]
-    pub fn get_neighbors_with_direction(&self, x: usize, y: usize) -> impl Iterator<Item = (Direction, usize, usize)> {
+    pub fn get_neighbors_with_direction(
+        &self,
+        x: usize,
+        y: usize,
+    ) -> impl Iterator<Item = (Direction, usize, usize)> {
         let width = self.width;
         let height = self.height;
         std::iter::from_coroutine(move || {

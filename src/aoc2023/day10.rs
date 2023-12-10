@@ -62,13 +62,13 @@ impl Solution<Day10> for Aoc2023 {
                         '|' => sign = !sign,
                         wall @ ('L' | 'F') => {
                             wall_stack.push(wall);
-                        },
+                        }
                         unwall @ ('J' | '7') => {
                             let wall = wall_stack.pop().unwrap();
                             match (wall, unwall) {
-                                ('L', '7') | ('F' , 'J') => sign = !sign,
-                                ('L', 'J') | ('F', '7') => {},
-                                _ => unreachable!()
+                                ('L', '7') | ('F', 'J') => sign = !sign,
+                                ('L', 'J') | ('F', '7') => {}
+                                _ => unreachable!(),
                             }
                         }
                         _ => {}
