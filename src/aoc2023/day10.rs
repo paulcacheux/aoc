@@ -24,6 +24,28 @@ impl Solution<Day10> for Aoc2023 {
     fn part2(input: &Grid<char>) -> u32 {
         let (colored_grid, _) = find_longest(input);
 
+        let mut first_value = (0, 0);
+        let mut last_value = (0, 0);
+        let mut last_value_index = 0;
+        for (x, y, value) in colored_grid.iter() {
+            if let Some(value) = value {
+                if *value == 1 {
+                    first_value = (x as i32, y as i32);
+                }
+                if *value > last_value_index {
+                    last_value = (x as i32, y as i32);
+                    last_value_index = *value;
+                }
+            }
+        }
+
+        let delta = (last_value.0 - first_value.0, last_value.1 - first_value.1);
+
+        let svalue = match delta {
+            (1, -1) => 'F',
+            _ => todo!(), // could implement those, but not used in test or actual input.. so let's keep it like that for now
+        };
+
         let mut counter = 0;
         let mut sign = false;
         let mut wall_stack = Vec::new();
@@ -33,7 +55,7 @@ impl Solution<Day10> for Aoc2023 {
                 if colored_grid.get(x, y).is_some() {
                     let mut cell_value = *input.get(x, y);
                     if cell_value == 'S' {
-                        cell_value = 'F';
+                        cell_value = svalue;
                     }
 
                     match cell_value {
