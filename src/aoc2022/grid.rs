@@ -61,21 +61,39 @@ impl<T> Grid<T> {
 
     #[inline]
     pub fn get_neighbors(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+        self.get_neighbors_with_direction(x, y)
+            .map(|(_, x, y)| (x, y))
+    }
+
+    #[inline]
+    pub fn get_neighbors_with_direction(
+        &self,
+        x: usize,
+        y: usize,
+    ) -> impl Iterator<Item = (Direction, usize, usize)> {
         let width = self.width;
         let height = self.height;
         std::iter::from_coroutine(move || {
             if x != 0 {
-                yield (x - 1, y);
+                yield (Direction::West, x - 1, y);
             }
             if y != 0 {
-                yield (x, y - 1);
+                yield (Direction::North, x, y - 1);
             }
             if x != width - 1 {
-                yield (x + 1, y);
+                yield (Direction::East, x + 1, y);
             }
             if y != height - 1 {
-                yield (x, y + 1);
+                yield (Direction::South, x, y + 1);
             }
         })
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Direction {
+    North,
+    South,
+    West,
+    East,
 }
