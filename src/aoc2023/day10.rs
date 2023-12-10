@@ -17,40 +17,51 @@ impl Solution<Day10> for Aoc2023 {
     type Part2Output = u32;
 
     fn part1(input: &Grid<char>) -> u32 {
-        let (start_x, start_y, _) = input.iter().find(|(_, _, &val)| val == 'S').unwrap();
-
-        let mut starting_points = Vec::new();
-        for (dir, x, y) in input.get_neighbors_with_direction(start_x, start_y) {
-            let in_dir = match dir {
-                Direction::North => Direction::South,
-                Direction::South => Direction::North,
-                Direction::East => Direction::West,
-                Direction::West => Direction::East,
-            };
-
-            if next_cell(input, in_dir, x, y).is_some() {
-                starting_points.push((in_dir, x, y));
-            }
-        }
-
-        starting_points.into_iter().filter_map(|(mut dir, mut x, mut y)| {
-            let mut steps = 1;
-            while *input.get(x, y) != 'S' {
-                if let Some((new_dir, (new_x, new_y))) = next_cell(input, dir, x, y) {
-                    steps += 1;
-                    dir = new_dir;
-                    x = new_x;
-                    y = new_y;
-                } else {
-                    return None
-                }
-            }
-            Some(steps / 2)
-        }).max().unwrap()
+        let (_, distance) = find_longest(input);
+        distance
     }
 
-    fn part2(_input: &Grid<char>) -> u32 {
-        todo!()
+    fn part2(input: &Grid<char>) -> u32 {
+        let (colored_grid, _) = find_longest(input);
+
+        let mut counter = 0;
+        let mut sign = false;
+        let mut wall_stack = Vec::new();
+
+        for y in 0..colored_grid.height {
+            for x in 0..colored_grid.width {
+                if colored_grid.get(x, y).is_some() {
+                    let mut cell_value = *input.get(x, y);
+                    if cell_value == 'S' {
+                        cell_value = 'F';
+                    }
+
+                    match cell_value {
+                        '|' => sign = !sign,
+                        wall @ ('L' | 'F') => {
+                            wall_stack.push(wall);
+                        },
+                        unwall @ ('J' | '7') => {
+                            let wall = wall_stack.pop().unwrap();
+                            match (wall, unwall) {
+                                ('L', '7') | ('F' , 'J') => sign = !sign,
+                                ('L', 'J') | ('F', '7') => {},
+                                _ => unreachable!()
+                            }
+                        }
+                        _ => {}
+                    }
+                    print!("X");
+                } else if sign {
+                    counter += 1;
+                    print!("I");
+                } else {
+                    print!("O");
+                }
+            }
+            println!()
+        }
+        counter
     }
 }
 
@@ -97,4 +108,45 @@ fn next_cell(
     let y = (y as isize + dy) as usize;
 
     Some((dir, (x, y)))
+}
+
+fn find_longest(input: &Grid<char>) -> (Grid<Option<u32>>, u32) {
+    let (start_x, start_y, _) = input.iter().find(|(_, _, &val)| val == 'S').unwrap();
+
+    let mut starting_points = Vec::new();
+    for (dir, x, y) in input.get_neighbors_with_direction(start_x, start_y) {
+        let in_dir = match dir {
+            Direction::North => Direction::South,
+            Direction::South => Direction::North,
+            Direction::East => Direction::West,
+            Direction::West => Direction::East,
+        };
+
+        if next_cell(input, in_dir, x, y).is_some() {
+            starting_points.push((in_dir, x, y));
+        }
+    }
+
+    starting_points
+        .into_iter()
+        .filter_map(|(mut dir, mut x, mut y)| {
+            let mut colored_grid = Grid::new(input.width, input.height, None);
+            colored_grid.set(start_x, start_y, Some(0));
+
+            let mut steps = 1;
+            while *input.get(x, y) != 'S' {
+                colored_grid.set(x, y, Some(steps));
+                if let Some((new_dir, (new_x, new_y))) = next_cell(input, dir, x, y) {
+                    steps += 1;
+                    dir = new_dir;
+                    x = new_x;
+                    y = new_y;
+                } else {
+                    return None;
+                }
+            }
+            Some((colored_grid, steps / 2))
+        })
+        .max_by_key(|(_, distance)| *distance)
+        .unwrap()
 }
