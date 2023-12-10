@@ -33,8 +33,7 @@ impl Solution<Day10> for Aoc2023 {
             }
         }
 
-        let mut farthest = 0;
-        'sp: for (mut dir, mut x, mut y) in starting_points {
+        starting_points.into_iter().filter_map(|(mut dir, mut x, mut y)| {
             let mut steps = 1;
             while *input.get(x, y) != 'S' {
                 if let Some((new_dir, (new_x, new_y))) = next_cell(input, dir, x, y) {
@@ -43,16 +42,11 @@ impl Solution<Day10> for Aoc2023 {
                     x = new_x;
                     y = new_y;
                 } else {
-                    continue 'sp;
+                    return None
                 }
             }
-
-            if steps > farthest {
-                farthest = steps;
-            }
-        }
-
-        farthest / 2
+            Some(steps / 2)
+        }).max().unwrap()
     }
 
     fn part2(_input: &Grid<char>) -> u32 {
