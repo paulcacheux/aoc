@@ -1,4 +1,5 @@
-use ahash::HashSet;
+use std::collections::HashSet;
+
 use regex::Regex;
 
 use crate::aoc2022::Aoc2022;
@@ -130,7 +131,7 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
 
     let mut queue = Vec::with_capacity(64);
     queue.push(init_state);
-    let mut visited = HashSet::default();
+    let mut visited: HashSet<u64> = HashSet::default();
 
     let mut max = 0;
     while let Some(current) = queue.pop() {
