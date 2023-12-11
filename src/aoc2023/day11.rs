@@ -74,9 +74,12 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
             let (ax, ay) = galaxies[i];
             let (bx, by) = galaxies[j];
 
+            let (leftx, rightx) = minmax(ax, bx);
+            // no need to do it for y, since galaxies are sorted in a way that guarantees ay <= by
+
             let mut dx = ax.abs_diff(bx);
             for &col in &empty_columns {
-                if (ax < col && col < bx) || (bx < col && col < ax) {
+                if leftx < col && col < rightx {
                     dx += expansion - 1;
                 } else if ax < col && bx < col {
                     break;
@@ -85,7 +88,7 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
             let mut dy = ay.abs_diff(by);
             for &row in &empty_rows {
-                if (ay < row && row < by) || (by < row && row < ay) {
+                if ay < row && row < by {
                     dy += expansion - 1;
                 } else if ay < row && by < row {
                     break;
@@ -97,4 +100,12 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
         }
     }
     total
+}
+
+pub fn minmax<T: Ord>(v1: T, v2: T) -> (T, T) {
+    if v1 <= v2 {
+        (v1, v2)
+    } else {
+        (v2, v1)
+    }
 }
