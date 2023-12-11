@@ -57,48 +57,38 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
     let galaxies: Vec<_> = input
         .iter()
-        .filter_map(
-            |(x, y, &is_galaxy)| {
-                if is_galaxy {
-                    Some((x, y))
-                } else {
-                    None
+        .filter_map(|(x, y, &is_galaxy)| {
+            if is_galaxy {
+                let mut deltax = 0;
+                let mut deltay = 0;
+
+                for &col in &empty_columns {
+                    if col < x {
+                        deltax += 1;
+                    }
                 }
-            },
-        )
+
+                for &row in &empty_rows {
+                    if row < y {
+                        deltay += 1;
+                    }
+                }
+
+                let x = x + deltax * (expansion - 1);
+                let y = y + deltay * (expansion - 1);
+
+                Some((x, y))
+            } else {
+                None
+            }
+        })
         .collect();
 
     let mut total = 0;
     for (i, &(ax, ay)) in galaxies.iter().enumerate() {
-        for &(bx, by) in &galaxies[(i+1)..] {
-            let (leftx, rightx) = minmax(ax, bx);
-            // no need to do it for y, since galaxies are sorted in a way that guarantees ay <= by
-
-            let mut dx = ax.abs_diff(bx);
-            for &col in &empty_columns {
-                if leftx < col && col < rightx {
-                    dx += expansion - 1;
-                }
-            }
-
-            let mut dy = ay.abs_diff(by);
-            for &row in &empty_rows {
-                if ay < row && row < by {
-                    dy += expansion - 1;
-                }
-            }
-
-            let distance = dx + dy;
-            total += distance;
+        for &(bx, by) in &galaxies[(i + 1)..] {
+            total += ax.abs_diff(bx) + ay.abs_diff(by);
         }
     }
     total
-}
-
-pub fn minmax<T: Ord>(v1: T, v2: T) -> (T, T) {
-    if v1 <= v2 {
-        (v1, v2)
-    } else {
-        (v2, v1)
-    }
 }
