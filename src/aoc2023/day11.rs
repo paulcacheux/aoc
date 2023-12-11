@@ -43,6 +43,7 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
         empty_columns.push(x);
     }
+    assert!(empty_columns.is_sorted());
 
     // look for empty rows
     'row: for y in 0..input.height {
@@ -54,58 +55,46 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
         empty_rows.push(y);
     }
+    assert!(empty_rows.is_sorted());
 
     let galaxies: Vec<_> = input
         .iter()
-        .filter_map(
-            |(x, y, &is_galaxy)| {
-                if is_galaxy {
-                    Some((x, y))
+        .filter_map(|(x, y, &is_galaxy)| {
+            if !is_galaxy {
+                return None;
+            }
+
+            let mut deltax = 0;
+            let mut deltay = 0;
+
+            for &col in &empty_columns {
+                if col < x {
+                    deltax += 1;
                 } else {
-                    None
+                    break;
                 }
-            },
-        )
+            }
+
+            for &row in &empty_rows {
+                if row < y {
+                    deltay += 1;
+                } else {
+                    break;
+                }
+            }
+
+            let x = x + deltax * (expansion - 1);
+            let y = y + deltay * (expansion - 1);
+
+            Some((x, y))
+        })
         .collect();
 
     let mut total = 0;
-    for i in 0..galaxies.len() {
-        for j in (i + 1)..galaxies.len() {
-            let (ax, ay) = galaxies[i];
-            let (bx, by) = galaxies[j];
-
-            let (leftx, rightx) = minmax(ax, bx);
-            // no need to do it for y, since galaxies are sorted in a way that guarantees ay <= by
-
-            let mut dx = ax.abs_diff(bx);
-            for &col in &empty_columns {
-                if leftx < col && col < rightx {
-                    dx += expansion - 1;
-                } else if ax < col && bx < col {
-                    break;
-                }
-            }
-
-            let mut dy = ay.abs_diff(by);
-            for &row in &empty_rows {
-                if ay < row && row < by {
-                    dy += expansion - 1;
-                } else if ay < row && by < row {
-                    break;
-                }
-            }
-
-            let distance = dx + dy;
-            total += distance;
+    for (i, &(ax, ay)) in galaxies.iter().enumerate() {
+        for &(bx, by) in &galaxies[(i + 1)..] {
+            total += ax.abs_diff(bx) + ay.abs_diff(by);
         }
     }
     total
-}
-
-pub fn minmax<T: Ord>(v1: T, v2: T) -> (T, T) {
-    if v1 <= v2 {
-        (v1, v2)
-    } else {
-        (v2, v1)
-    }
 }
