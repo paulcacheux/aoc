@@ -81,8 +81,6 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
             for &col in &empty_columns {
                 if leftx < col && col < rightx {
                     dx += expansion - 1;
-                } else if ax < col && bx < col {
-                    break;
                 }
             }
 
@@ -90,8 +88,6 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
             for &row in &empty_rows {
                 if ay < row && row < by {
                     dy += expansion - 1;
-                } else if ay < row && by < row {
-                    break;
                 }
             }
 
