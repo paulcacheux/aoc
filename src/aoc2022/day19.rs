@@ -1,6 +1,4 @@
 use ahash::HashSet;
-use rayon::prelude::IntoParallelRefIterator;
-use rayon::prelude::ParallelIterator;
 use regex::Regex;
 
 use crate::aoc2022::Aoc2022;
@@ -109,12 +107,12 @@ impl Solution<Day19> for Aoc2022 {
     type Part2Output = u16;
 
     fn part1(input: &Vec<Blueprint>) -> u16 {
-        input.par_iter().map(|bp| solve::<24>(bp) * bp.id).sum()
+        input.iter().map(|bp| solve::<24>(bp) * bp.id).sum()
     }
 
     fn part2(input: &Vec<Blueprint>) -> u16 {
         let end_index = std::cmp::min(3, input.len());
-        input[..end_index].par_iter().map(solve::<32>).product()
+        input[..end_index].iter().map(solve::<32>).product()
     }
 }
 
