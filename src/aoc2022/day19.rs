@@ -147,12 +147,11 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
         }
 
         visited.insert(current.key_u64());
-
-        for next in current.next_states::<STEPS>(bp) {
-            if !visited.contains(&next.key_u64()) {
-                queue.push(next);
-            }
-        }
+        queue.extend(
+            current
+                .next_states::<STEPS>(bp)
+                .filter(|next| !visited.contains(&next.key_u64())),
+        );
     }
     max
 }
@@ -160,7 +159,6 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
 #[derive(Default, Debug, Clone, Copy)]
 struct State {
     step: u8,
-
     key: Key,
 }
 
