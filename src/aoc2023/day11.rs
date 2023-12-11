@@ -43,6 +43,7 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
         empty_columns.push(x);
     }
+    assert!(empty_columns.is_sorted());
 
     // look for empty rows
     'row: for y in 0..input.height {
@@ -54,33 +55,38 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
 
         empty_rows.push(y);
     }
+    assert!(empty_rows.is_sorted());
 
     let galaxies: Vec<_> = input
         .iter()
         .filter_map(|(x, y, &is_galaxy)| {
-            if is_galaxy {
-                let mut deltax = 0;
-                let mut deltay = 0;
-
-                for &col in &empty_columns {
-                    if col < x {
-                        deltax += 1;
-                    }
-                }
-
-                for &row in &empty_rows {
-                    if row < y {
-                        deltay += 1;
-                    }
-                }
-
-                let x = x + deltax * (expansion - 1);
-                let y = y + deltay * (expansion - 1);
-
-                Some((x, y))
-            } else {
-                None
+            if !is_galaxy {
+                return None;
             }
+
+            let mut deltax = 0;
+            let mut deltay = 0;
+
+            for &col in &empty_columns {
+                if col < x {
+                    deltax += 1;
+                } else {
+                    break;
+                }
+            }
+
+            for &row in &empty_rows {
+                if row < y {
+                    deltay += 1;
+                } else {
+                    break;
+                }
+            }
+
+            let x = x + deltax * (expansion - 1);
+            let y = y + deltay * (expansion - 1);
+
+            Some((x, y))
         })
         .collect();
 
