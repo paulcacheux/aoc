@@ -69,11 +69,8 @@ fn solve(input: &Grid<bool>, expansion: usize) -> usize {
         .collect();
 
     let mut total = 0;
-    for i in 0..galaxies.len() {
-        for j in (i + 1)..galaxies.len() {
-            let (ax, ay) = galaxies[i];
-            let (bx, by) = galaxies[j];
-
+    for (i, &(ax, ay)) in galaxies.iter().enumerate() {
+        for &(bx, by) in &galaxies[(i+1)..] {
             let (leftx, rightx) = minmax(ax, bx);
             // no need to do it for y, since galaxies are sorted in a way that guarantees ay <= by
 
