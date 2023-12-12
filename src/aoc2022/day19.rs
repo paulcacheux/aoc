@@ -1,6 +1,5 @@
-use ahash::HashSet;
-use rayon::prelude::IntoParallelRefIterator;
-use rayon::prelude::ParallelIterator;
+use std::collections::HashSet;
+
 use regex::Regex;
 
 use crate::aoc2022::Aoc2022;
@@ -109,12 +108,12 @@ impl Solution<Day19> for Aoc2022 {
     type Part2Output = u16;
 
     fn part1(input: &Vec<Blueprint>) -> u16 {
-        input.par_iter().map(|bp| solve::<24>(bp) * bp.id).sum()
+        input.iter().map(|bp| solve::<24>(bp) * bp.id).sum()
     }
 
     fn part2(input: &Vec<Blueprint>) -> u16 {
         let end_index = std::cmp::min(3, input.len());
-        input[..end_index].par_iter().map(solve::<32>).product()
+        input[..end_index].iter().map(solve::<32>).product()
     }
 }
 
@@ -132,7 +131,7 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
 
     let mut queue = Vec::with_capacity(64);
     queue.push(init_state);
-    let mut visited = HashSet::default();
+    let mut visited: HashSet<u64> = HashSet::default();
 
     let mut max = 0;
     while let Some(current) = queue.pop() {
@@ -148,12 +147,11 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
         }
 
         visited.insert(current.key_u64());
-
-        for next in current.next_states::<STEPS>(bp) {
-            if !visited.contains(&next.key_u64()) {
-                queue.push(next);
-            }
-        }
+        queue.extend(
+            current
+                .next_states::<STEPS>(bp)
+                .filter(|next| !visited.contains(&next.key_u64())),
+        );
     }
     max
 }
@@ -161,7 +159,6 @@ fn solve<const STEPS: u8>(bp: &Blueprint) -> u16 {
 #[derive(Default, Debug, Clone, Copy)]
 struct State {
     step: u8,
-
     key: Key,
 }
 
