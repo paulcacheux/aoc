@@ -100,35 +100,34 @@ impl<'e> Solver<'e> {
             return 0;
         }
 
+        let span_end = i + self.entry.counts[j];
+
         // if we go over the springs, we return early
-        if self.entry.springs.len() - i < self.entry.counts[j] {
+        if self.entry.springs.len() < span_end {
             return 0;
         }
 
-        if self.entry.springs[i..i + self.entry.counts[j]]
+        if self.entry.springs[i..span_end]
             .iter()
             .any(|&spring| spring == Spring::Empty)
         {
             return 0;
         }
 
-        if self.entry.springs.len() - i == self.entry.counts[j] {
-            return self.compute_combinations(self.entry.springs.len(), j + 1);
+        if self.entry.springs.len() == span_end {
+            return self.compute_combinations(span_end, j + 1);
         }
 
-        if self.entry.springs[i + self.entry.counts[j]] == Spring::Damaged {
+        if self.entry.springs[span_end] == Spring::Damaged {
             return 0;
         }
 
-        self.compute_combinations(i + self.entry.counts[j] + 1, j + 1)
+        self.compute_combinations(span_end + 1, j + 1)
     }
 
     fn compute_combinations_inner(&mut self, i: usize, j: usize) -> usize {
         if i >= self.entry.springs.len() {
-            if j >= self.entry.counts.len() {
-                return 1;
-            }
-            return 0;
+            return if j >= self.entry.counts.len() { 1 } else { 0 };
         }
 
         match self.entry.springs[i] {
