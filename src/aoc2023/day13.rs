@@ -23,7 +23,7 @@ impl ParseInput<Day13> for Aoc2023 {
 
 impl Solution<Day13> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<Grid<bool>>) -> usize {
         let mut score = 0;
@@ -65,7 +65,51 @@ impl Solution<Day13> for Aoc2023 {
         score
     }
 
-    fn part2(_input: &Vec<Grid<bool>>) -> u32 {
-        todo!()
+    fn part2(input: &Vec<Grid<bool>>) -> usize {
+        let mut score = 0;
+        for entry in input {
+            // look for x-axis mirror
+            for mx in 1..entry.width {
+                let mut errors = 0;
+                for x in 0..mx {
+                    let opposite_x: usize = mx + (mx - x - 1);
+                    if opposite_x >= entry.width {
+                        continue;
+                    }
+
+                    for y in 0..entry.height {
+                        if entry.get(x, y) != entry.get(opposite_x, y) {
+                            errors += 1;
+                        }
+                    }
+                }
+
+                if errors == 1 {
+                    score += mx;
+                }
+            }
+
+            // look for y-axis mirror
+            for my in 1..entry.height {
+                let mut errors = 0;
+                for y in 0..my {
+                    let opposite_y: usize = my + (my - y - 1);
+                    if opposite_y >= entry.height {
+                        continue;
+                    }
+
+                    for x in 0..entry.width {
+                        if entry.get(x, y) != entry.get(x, opposite_y) {
+                            errors += 1;
+                        }
+                    }
+                }
+
+                if errors == 1 {
+                    score += 100 * my
+                }
+            }
+        }
+        score
     }
 }
