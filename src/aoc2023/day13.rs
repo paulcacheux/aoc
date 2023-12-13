@@ -48,10 +48,10 @@ fn solve(input: &[Grid<bool>], expected_errors: usize) -> usize {
 
                 for y in 0..entry.height {
                     if entry.get(x, y) != entry.get(opposite_x, y) {
-                        if expected_errors == 0 {
+                        errors += 1;
+                        if errors > expected_errors {
                             continue 'search;
                         }
-                        errors += 1;
                     }
                 }
             }
@@ -71,10 +71,10 @@ fn solve(input: &[Grid<bool>], expected_errors: usize) -> usize {
 
                 for x in 0..entry.width {
                     if entry.get(x, y) != entry.get(x, opposite_y) {
-                        if expected_errors == 0 {
+                        errors += 1;
+                        if errors > expected_errors {
                             continue 'search;
                         }
-                        errors += 1;
                     }
                 }
             }
