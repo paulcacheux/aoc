@@ -40,7 +40,13 @@ fn solve(input: &[Grid<bool>], expected_errors: usize) -> usize {
         // look for x-axis mirror
         'search: for mx in 1..entry.width {
             let mut errors = 0;
-            for x in 0..mx {
+            let min = if 2 * mx >= entry.width {
+                2 * mx - entry.width
+            } else {
+                0
+            };
+
+            for x in min..mx {
                 let opposite_x: usize = mx + (mx - x - 1);
                 if opposite_x >= entry.width {
                     continue;
@@ -63,7 +69,13 @@ fn solve(input: &[Grid<bool>], expected_errors: usize) -> usize {
         // look for y-axis mirror
         'search: for my in 1..entry.height {
             let mut errors = 0;
-            for y in 0..my {
+            let min = if 2 * my >= entry.height {
+                2 * my - entry.height
+            } else {
+                0
+            };
+
+            for y in min..my {
                 let opposite_y: usize = my + (my - y - 1);
                 if opposite_y >= entry.height {
                     continue;
