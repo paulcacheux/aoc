@@ -26,43 +26,138 @@ impl ParseInput<Day14> for Aoc2023 {
 
 impl Solution<Day14> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Grid<Cell>) -> usize {
         let mut grid = input.clone();
         slide_north(&mut grid);
 
-        grid.iter()
+        compute_load(&grid)
+    }
+
+    fn part2(input: &Grid<Cell>) -> usize {
+        let mut grid = input.clone();
+        for _ in 0..1000000000 {
+            cycle(&mut grid);
+        }
+        
+        compute_load(&grid)
+    }
+}
+
+fn compute_load(grid: &Grid<Cell>) -> usize {
+    grid.iter()
             .filter_map(|(_, y, cell)| match cell {
                 Cell::Round => Some(grid.height - y),
                 _ => None,
             })
             .sum()
-    }
-
-    fn part2(_input: &Grid<Cell>) -> u32 {
-        todo!()
-    }
 }
 
-fn slide_north(grid: &mut Grid<Cell>) {
-    for x in 0..grid.width {
-        for y in 0..grid.height {
+fn slide<R1, R2, PM, NM>(
+    grid: &mut Grid<Cell>,
+    first_range: R1,
+    second_range: R2,
+    pos_mapper: PM,
+    next_mapper: NM,
+) where
+    R1: Iterator<Item = usize>,
+    R2: Iterator<Item = usize> + Clone,
+    PM: Fn(usize, usize) -> (usize, usize),
+    NM: Fn(usize, usize) -> Option<(usize, usize)>,
+{
+    for r1 in first_range {
+        for r2 in second_range.clone() {
+            let (x, y) = pos_mapper(r1, r2);
             if *grid.get(x, y) == Cell::Round {
-                let mut ny = y;
-                while ny > 0 {
-                    if *grid.get(x, ny - 1) == Cell::Empty {
-                        ny -= 1;
+                let (mut nx, mut ny) = (x, y);
+
+                while let Some((cx, cy)) = next_mapper(nx, ny) {
+                    if *grid.get(cx, cy) == Cell::Empty {
+                        (nx, ny) = (cx, cy);
                     } else {
                         break;
                     }
                 }
 
-                if ny != y {
+                if (nx, ny) != (x, y) {
                     grid.set(x, y, Cell::Empty);
-                    grid.set(x, ny, Cell::Round);
+                    grid.set(nx, ny, Cell::Round);
                 }
             }
         }
     }
+}
+
+fn cycle(grid: &mut Grid<Cell>) {
+    slide_north(grid);
+    slide_west(grid);
+    slide_south(grid);
+    slide_east(grid);
+}
+
+fn slide_north(grid: &mut Grid<Cell>) {
+    slide(
+        grid,
+        0..grid.width,
+        0..grid.height,
+        |r1, r2| (r1, r2),
+        |x, y| {
+            if y > 0 {
+                Some((x, y - 1))
+            } else {
+                None
+            }
+        },
+    )
+}
+
+fn slide_west(grid: &mut Grid<Cell>) {
+    slide(
+        grid,
+        0..grid.height,
+        0..grid.width,
+        |r1, r2| (r2, r1),
+        |x, y| {
+            if x > 0 {
+                Some((x - 1, y))
+            } else {
+                None
+            }
+        },
+    )
+}
+
+fn slide_south(grid: &mut Grid<Cell>) {
+    let height = grid.height;
+    slide(
+        grid,
+        0..grid.width,
+        (0..grid.height).rev(),
+        |r1, r2| (r1, r2),
+        |x, y| {
+            if y < (height - 1) {
+                Some((x, y + 1))
+            } else {
+                None
+            }
+        },
+    )
+}
+
+fn slide_east(grid: &mut Grid<Cell>) {
+    let width = grid.width;
+    slide(
+        grid,
+        0..grid.height,
+        (0..grid.width).rev(),
+        |r1, r2| (r2, r1),
+        |x, y| {
+            if x < width - 1 {
+                Some((x + 1, y))
+            } else {
+                None
+            }
+        },
+    )
 }
