@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day14;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Cell {
     Cube,
     Round,
@@ -37,21 +39,46 @@ impl Solution<Day14> for Aoc2023 {
 
     fn part2(input: &Grid<Cell>) -> usize {
         let mut grid = input.clone();
-        for _ in 0..1000000000 {
-            cycle(&mut grid);
+        let mut cache: HashMap<Grid<Cell>, usize> = HashMap::new();
+
+        let target = 1000000000;
+
+        let mut step = 0;
+        let mut shortcut_done = false;
+        while step < target {
+            if !shortcut_done {
+                if let Some(old_step) = cache.get(&grid) {
+                    let delta = step - old_step;
+                    let offset: usize = (target - step) / delta * delta;
+                    step += offset;
+                    assert!(step < target);
+                    shortcut_done = true;
+                }
+            }
+
+            let start = grid.clone();
+            slide_north(&mut grid);
+            slide_west(&mut grid);
+            slide_south(&mut grid);
+            slide_east(&mut grid);
+
+            if !shortcut_done {
+                cache.insert(start, step);
+            }
+            step += 1;
         }
-        
+
         compute_load(&grid)
     }
 }
 
 fn compute_load(grid: &Grid<Cell>) -> usize {
     grid.iter()
-            .filter_map(|(_, y, cell)| match cell {
-                Cell::Round => Some(grid.height - y),
-                _ => None,
-            })
-            .sum()
+        .filter_map(|(_, y, cell)| match cell {
+            Cell::Round => Some(grid.height - y),
+            _ => None,
+        })
+        .sum()
 }
 
 fn slide<R1, R2, PM, NM>(
@@ -87,13 +114,6 @@ fn slide<R1, R2, PM, NM>(
             }
         }
     }
-}
-
-fn cycle(grid: &mut Grid<Cell>) {
-    slide_north(grid);
-    slide_west(grid);
-    slide_south(grid);
-    slide_east(grid);
 }
 
 fn slide_north(grid: &mut Grid<Cell>) {
