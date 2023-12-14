@@ -30,46 +30,39 @@ impl Solution<Day14> for Aoc2023 {
 
     fn part1(input: &Grid<Cell>) -> usize {
         let mut grid = input.clone();
-        let mut load = 0;
+        slide_north(&mut grid);
 
-        for x in 0..grid.width {
-            for y in 0..grid.height {
-                if *grid.get(x, y) == Cell::Round {
-                    let mut ny = y;
-                    while ny > 0 {
-                        if *grid.get(x, ny - 1) == Cell::Empty {
-                            ny -= 1;
-                        } else {
-                            break;
-                        }
-                    }
-
-                    if ny != y {
-                        grid.set(x, y, Cell::Empty);
-                        grid.set(x, ny, Cell::Round);
-                    }
-                    load += grid.height - ny;
-                }
-            }
-        }
-
-        /*
-        for y in 0..grid.height {
-            for x in 0..grid.width {
-                match grid.get(x, y) {
-                    Cell::Empty => print!("."),
-                    Cell::Round => print!("O"),
-                    Cell::Cube => print!("#"),
-                }
-            }
-            println!();
-        }
-        */
-
-        load
+        grid.iter()
+            .filter_map(|(_, y, cell)| match cell {
+                Cell::Round => Some(grid.height - y),
+                _ => None,
+            })
+            .sum()
     }
 
     fn part2(_input: &Grid<Cell>) -> u32 {
         todo!()
+    }
+}
+
+fn slide_north(grid: &mut Grid<Cell>) {
+    for x in 0..grid.width {
+        for y in 0..grid.height {
+            if *grid.get(x, y) == Cell::Round {
+                let mut ny = y;
+                while ny > 0 {
+                    if *grid.get(x, ny - 1) == Cell::Empty {
+                        ny -= 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                if ny != y {
+                    grid.set(x, y, Cell::Empty);
+                    grid.set(x, ny, Cell::Round);
+                }
+            }
+        }
     }
 }
