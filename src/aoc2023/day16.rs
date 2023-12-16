@@ -109,27 +109,15 @@ fn compute_energy(grid: &Grid<Cell>, startx: usize, starty: usize, dir: Directio
             (Cell::Dash, dir @ (Direction::East | Direction::West)) => Ok(dir),
         };
 
-        let next_dir = match next {
-            Ok(dir) => vec![dir],
-            Err((dir1, dir2)) => vec![dir1, dir2],
+        match next {
+            Ok(dir) => {
+                maybe_append(grid, &mut open_queue, x, y, dir);
+            }
+            Err((dir1, dir2)) => {
+                maybe_append(grid, &mut open_queue, x, y, dir1);
+                maybe_append(grid, &mut open_queue, x, y, dir2);
+            }
         };
-
-        for dir in next_dir {
-            let (dx, dy) = dir_to_delta(dir);
-            let nx = x as isize + dx;
-            let ny = y as isize + dy;
-
-            if nx < 0 || ny < 0 {
-                continue;
-            }
-
-            let (nx, ny) = (nx as usize, ny as usize);
-            if nx >= grid.width || ny >= grid.height {
-                continue;
-            }
-
-            open_queue.push((nx, ny, dir));
-        }
     }
     positions.len()
 }
@@ -141,4 +129,28 @@ fn dir_to_delta(dir: Direction) -> (isize, isize) {
         Direction::North => (0, -1),
         Direction::South => (0, 1),
     }
+}
+
+#[inline]
+fn maybe_append(
+    grid: &Grid<Cell>,
+    queue: &mut Vec<(usize, usize, Direction)>,
+    x: usize,
+    y: usize,
+    dir: Direction,
+) {
+    let (dx, dy) = dir_to_delta(dir);
+    let nx = x as isize + dx;
+    let ny = y as isize + dy;
+
+    if nx < 0 || ny < 0 {
+        return;
+    }
+
+    let (nx, ny) = (nx as usize, ny as usize);
+    if nx >= grid.width || ny >= grid.height {
+        return;
+    }
+
+    queue.push((nx, ny, dir));
 }
