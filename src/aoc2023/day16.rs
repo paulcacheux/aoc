@@ -33,14 +33,40 @@ impl ParseInput<Day16> for Aoc2023 {
 
 impl Solution<Day16> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Grid<Cell>) -> usize {
         compute_energy(input, 0, 0, Direction::East)
     }
 
-    fn part2(_input: &Grid<Cell>) -> u32 {
-        todo!()
+    fn part2(input: &Grid<Cell>) -> usize {
+        let mut best_energy = 0;
+
+        for x in 0..input.width {
+            let new = compute_energy(input, x, 0, Direction::South);
+            if new > best_energy {
+                best_energy = new;
+            }
+
+            let new = compute_energy(input, x, input.height - 1, Direction::North);
+            if new > best_energy {
+                best_energy = new;
+            }
+        }
+
+        for y in 0..input.height {
+            let new = compute_energy(input, 0, y, Direction::East);
+            if new > best_energy {
+                best_energy = new;
+            }
+
+            let new = compute_energy(input, input.width - 1, y, Direction::West);
+            if new > best_energy {
+                best_energy = new;
+            }
+        }
+
+        best_energy
     }
 }
 
