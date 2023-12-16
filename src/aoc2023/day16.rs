@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::aoc2022::grid::Direction;
 use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
@@ -72,14 +70,12 @@ impl Solution<Day16> for Aoc2023 {
 
 fn compute_energy(grid: &Grid<Cell>, startx: usize, starty: usize, dir: Direction) -> usize {
     let mut open_queue = vec![(startx, starty, dir)];
-    let mut visited = HashSet::new();
-    let mut positions = Grid::new(grid.width, grid.height, false);
+    let mut visited = Grid::new(grid.width, grid.height, VisitState::default());
 
     while let Some((x, y, direction)) = open_queue.pop() {
-        if !visited.insert((x, y, direction)) {
+        if visited.get_mut(x, y).visit(direction) {
             continue;
         }
-        positions.set(x, y, true);
 
         let cell: Cell = *grid.get(x, y);
         let next = match (cell, direction) {
@@ -120,7 +116,11 @@ fn compute_energy(grid: &Grid<Cell>, startx: usize, starty: usize, dir: Directio
         };
     }
 
-    positions.data.into_iter().filter(|&cell| cell).count()
+    visited
+        .data
+        .into_iter()
+        .filter(VisitState::is_visited)
+        .count()
 }
 
 fn dir_to_delta(dir: Direction) -> (isize, isize) {
@@ -154,4 +154,24 @@ fn maybe_append(
     }
 
     queue.push((nx, ny, dir));
+}
+
+#[derive(Debug, Default, Clone)]
+struct VisitState {
+    // 4 lower bits, indicating the visited state according to each direction
+    visited: u8,
+}
+
+impl VisitState {
+    fn is_visited(&self) -> bool {
+        self.visited != 0
+    }
+
+    // will return true if the state was already visited along this direction
+    fn visit(&mut self, dir: Direction) -> bool {
+        let dir = dir as u8;
+        let res = ((self.visited >> dir) & 0b1) != 0;
+        self.visited |= 0b1 << dir;
+        res
+    }
 }
