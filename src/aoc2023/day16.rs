@@ -73,13 +73,13 @@ impl Solution<Day16> for Aoc2023 {
 fn compute_energy(grid: &Grid<Cell>, startx: usize, starty: usize, dir: Direction) -> usize {
     let mut open_queue = vec![(startx, starty, dir)];
     let mut visited = HashSet::new();
-    let mut positions = HashSet::new();
+    let mut positions = Grid::new(grid.width, grid.height, false);
 
     while let Some((x, y, direction)) = open_queue.pop() {
         if !visited.insert((x, y, direction)) {
             continue;
         }
-        positions.insert((x, y));
+        positions.set(x, y, true);
 
         let cell: Cell = *grid.get(x, y);
         let next = match (cell, direction) {
@@ -119,7 +119,8 @@ fn compute_energy(grid: &Grid<Cell>, startx: usize, starty: usize, dir: Directio
             }
         };
     }
-    positions.len()
+
+    positions.data.into_iter().filter(|&cell| cell).count()
 }
 
 fn dir_to_delta(dir: Direction) -> (isize, isize) {
