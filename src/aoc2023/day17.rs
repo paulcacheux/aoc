@@ -21,15 +21,15 @@ impl Solution<Day17> for Aoc2023 {
     type Part2Output = u32;
 
     fn part1(input: &Grid<u32>) -> u32 {
-        bfs(input)
+        solve(input, 0, 3)
     }
 
-    fn part2(_input: &Grid<u32>) -> u32 {
-        todo!()
+    fn part2(input: &Grid<u32>) -> u32 {
+        solve(input, 4, 10)
     }
 }
 
-fn bfs(grid: &Grid<u32>) -> u32 {
+fn solve(grid: &Grid<u32>, min_straight: usize, max_straight: usize) -> u32 {
     let start = (0, 0);
     let mut best_costs = Grid::new(grid.width, grid.height, CostState::default());
 
@@ -53,8 +53,12 @@ fn bfs(grid: &Grid<u32>) -> u32 {
                 continue;
             }
 
+            if current_dir != dir && dir_count < min_straight {
+                continue;
+            }
+
             let next_dir_count = if current_dir == dir { dir_count + 1 } else { 1 };
-            if next_dir_count > 3 {
+            if next_dir_count > max_straight {
                 continue;
             }
 
