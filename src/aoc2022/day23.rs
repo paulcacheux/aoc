@@ -5,8 +5,8 @@ use ahash::HashSetExt;
 use itertools::Itertools;
 use itertools::MinMaxResult;
 
-use super::grid::Grid;
 use crate::aoc2022::Aoc2022;
+use crate::grid::Grid;
 use crate::traits::days::Day23;
 use crate::traits::ParseInput;
 use crate::traits::Solution;

@@ -1,11 +1,10 @@
 use std::collections::HashSet;
 
 use crate::aoc2022::Aoc2022;
+use crate::grid::Grid;
 use crate::traits::days::Day24;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-
-use super::grid::Grid;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 #[repr(u8)]

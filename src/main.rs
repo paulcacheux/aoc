@@ -13,6 +13,7 @@ mod aoc2019;
 mod aoc2021;
 mod aoc2022;
 mod aoc2023;
+mod grid;
 mod helpers;
 mod traits;
 

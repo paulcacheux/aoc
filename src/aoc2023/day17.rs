@@ -1,8 +1,8 @@
 use std::collections::BinaryHeap;
 
-use crate::aoc2022::grid::Direction;
-use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
+use crate::grid::Direction;
+use crate::grid::Grid;
 use crate::traits::days::Day17;
 use crate::traits::ParseInput;
 use crate::traits::Solution;

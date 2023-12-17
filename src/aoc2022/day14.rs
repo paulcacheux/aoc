@@ -2,8 +2,8 @@ use std::ops::RangeInclusive;
 
 use itertools::Itertools;
 
-use crate::aoc2022::grid::Grid;
 use crate::aoc2022::Aoc2022;
+use crate::grid::Grid;
 use crate::traits::days::Day14;
 use crate::traits::ParseInput;
 use crate::traits::Solution;

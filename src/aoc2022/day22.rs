@@ -1,11 +1,10 @@
 use ahash::HashMap;
 
 use crate::aoc2022::Aoc2022;
+use crate::grid::Grid;
 use crate::traits::days::Day22;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-
-use super::grid::Grid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cell {
