@@ -97,3 +97,26 @@ pub enum Direction {
     West,
     East,
 }
+
+impl Direction {
+    pub fn are_opposite(left: Direction, right: Direction) -> bool {
+        match (left, right) {
+            (Direction::North, Direction::North) => false,
+            (Direction::North, Direction::South) => true,
+            (Direction::North, Direction::West) => false,
+            (Direction::North, Direction::East) => false,
+            (Direction::South, Direction::North) => true,
+            (Direction::South, Direction::South) => false,
+            (Direction::South, Direction::West) => false,
+            (Direction::South, Direction::East) => false,
+            (Direction::West, Direction::North) => false,
+            (Direction::West, Direction::South) => false,
+            (Direction::West, Direction::West) => false,
+            (Direction::West, Direction::East) => true,
+            (Direction::East, Direction::North) => false,
+            (Direction::East, Direction::South) => false,
+            (Direction::East, Direction::West) => true,
+            (Direction::East, Direction::East) => false,
+        }
+    }
+}
