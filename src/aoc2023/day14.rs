@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::aoc2022::grid::Grid;
 use crate::aoc2023::Aoc2023;
+use crate::grid::Grid;
 use crate::traits::days::Day14;
 use crate::traits::ParseInput;
 use crate::traits::Solution;

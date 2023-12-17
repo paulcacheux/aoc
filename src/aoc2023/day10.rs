@@ -1,5 +1,5 @@
-use crate::aoc2022::grid::{Direction, Grid};
 use crate::aoc2023::Aoc2023;
+use crate::grid::{Direction, Grid};
 use crate::traits::days::Day10;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
