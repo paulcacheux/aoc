@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::collections::VecDeque;
 
 use crate::aoc2022::grid::Direction;
@@ -21,17 +20,17 @@ impl Solution<Day17> for Aoc2023 {
     type Part2Output = u32;
 
     fn part1(input: &Grid<u32>) -> u32 {
-        solve(input, 0, 3)
+        solve::<0, 3>(input)
     }
 
     fn part2(input: &Grid<u32>) -> u32 {
-        solve(input, 4, 10)
+        solve::<4, 10>(input)
     }
 }
 
-fn solve(grid: &Grid<u32>, min_straight: usize, max_straight: usize) -> u32 {
+fn solve<const MIN: usize, const MAX: usize>(grid: &Grid<u32>) -> u32 {
     let start = (0, 0);
-    let mut best_costs = Grid::new(grid.width, grid.height, CostState::default());
+    let mut best_costs: Grid<CostState<MAX>> = Grid::new(grid.width, grid.height, CostState::new());
 
     let mut open_queue = VecDeque::new();
     open_queue.push_back(CellState {
@@ -53,12 +52,12 @@ fn solve(grid: &Grid<u32>, min_straight: usize, max_straight: usize) -> u32 {
                 continue;
             }
 
-            if current_dir != dir && dir_count < min_straight {
+            if current_dir != dir && dir_count < MIN {
                 continue;
             }
 
             let next_dir_count = if current_dir == dir { dir_count + 1 } else { 1 };
-            if next_dir_count > max_straight {
+            if next_dir_count > MAX {
                 continue;
             }
 
@@ -93,24 +92,35 @@ struct CellState {
     dir_count: usize,
 }
 
-#[derive(Debug, Clone, Default)]
-struct CostState {
-    costs: HashMap<(Direction, usize), u32>,
+#[derive(Debug, Clone)]
+struct CostState<const MAX: usize> {
+    costs: [[u32; MAX]; 4],
 }
 
-impl CostState {
+impl<const MAX: usize> CostState<MAX> {
+    fn new() -> Self {
+        Self {
+            costs: [[u32::MAX; MAX]; 4],
+        }
+    }
+
     fn get_cost(&self, dir: Direction, dir_count: usize) -> u32 {
-        self.costs
-            .get(&(dir, dir_count))
-            .copied()
-            .unwrap_or(u32::MAX)
+        self.costs[dir as usize][dir_count - 1]
     }
 
     fn get_min_cost(&self) -> u32 {
-        self.costs.values().copied().min().unwrap()
+        let mut min = u32::MAX;
+        for c in &self.costs {
+            for &val in c {
+                if val < min {
+                    min = val;
+                }
+            }
+        }
+        min
     }
 
     fn set_cost(&mut self, dir: Direction, dir_count: usize, cost: u32) {
-        self.costs.insert((dir, dir_count), cost);
+        self.costs[dir as usize][dir_count - 1] = cost;
     }
 }
