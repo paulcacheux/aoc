@@ -62,10 +62,9 @@ impl Solution<Day18> for Aoc2023 {
 }
 
 fn solve<I: Iterator<Item = (Direction, usize)>>(instructions: I) -> usize {
-    let mut positions = vec![(0, 0)];
     let (mut x, mut y) = (0isize, 0isize);
 
-    let mut perimeter = 0;
+    let mut area = 0;
 
     for (dir, count) in instructions {
         let (dx, dy) = match dir {
@@ -77,19 +76,13 @@ fn solve<I: Iterator<Item = (Direction, usize)>>(instructions: I) -> usize {
 
         let count = count as isize;
         let (dx, dy) = (dx * count, dy * count);
+        let (nx, ny) = (x + dx, y + dy);
 
-        perimeter += dx.abs();
-        perimeter += dy.abs();
+        area += dx.abs() + dy.abs() + x * ny - nx * y;
 
-        (x, y) = (x + dx, y + dy);
-        positions.push((x, y));
+        (x, y) = (nx, ny);
     }
 
-    let mut area = perimeter;
-    for &[(ax, ay), (bx, by)] in positions.array_windows::<2>() {
-        area += ax * by;
-        area -= bx * ay;
-    }
     let area = area / 2 + 1;
     area.unsigned_abs()
 }
