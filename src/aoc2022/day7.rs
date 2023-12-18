@@ -2,7 +2,7 @@ use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day7;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-use ahash::HashMap;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 impl ParseInput<Day7> for Aoc2022 {

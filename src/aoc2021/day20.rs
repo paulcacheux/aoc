@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use std::collections::HashMap;
 use std::fmt;
 use std::ops::RangeInclusive;
 
@@ -12,7 +12,7 @@ use itertools::MinMaxResult;
 #[derive(Debug)]
 pub struct PuzzleInput {
     replacement_rules: Vec<bool>,
-    grid: AHashMap<(i32, i32), bool>,
+    grid: HashMap<(i32, i32), bool>,
 }
 
 impl ParseInput<Day20> for Aoc2021 {
@@ -21,7 +21,7 @@ impl ParseInput<Day20> for Aoc2021 {
     fn parse_input(input: &str) -> PuzzleInput {
         let mut replacement_line = String::new();
         let mut in_replacement = true;
-        let mut grid = AHashMap::new();
+        let mut grid = HashMap::new();
 
         let mut line_counter = 0;
         for line in input.lines() {
@@ -66,12 +66,12 @@ impl ParseInput<Day20> for Aoc2021 {
 
 #[derive(Debug)]
 struct Grid {
-    inner: AHashMap<(i32, i32), bool>,
+    inner: HashMap<(i32, i32), bool>,
     background: bool,
 }
 
 impl Grid {
-    fn new(inner: AHashMap<(i32, i32), bool>) -> Self {
+    fn new(inner: HashMap<(i32, i32), bool>) -> Self {
         Grid {
             inner,
             background: false,
@@ -101,7 +101,7 @@ impl Grid {
 
     fn next_grid(&self, rules: &[bool]) -> Grid {
         let (xbounds, ybounds) = self.bounds();
-        let mut new_inner = AHashMap::new();
+        let mut new_inner = HashMap::new();
 
         for y in ybounds {
             for x in xbounds.clone() {

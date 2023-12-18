@@ -1,4 +1,4 @@
-use ahash::HashMap;
+use std::collections::HashMap;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day17;
@@ -109,7 +109,7 @@ fn solve(input: &[i32], steps: usize) -> usize {
     let mut wind = Repeater::new(input);
     let mut current_state = vec![Vec::new(); 7];
 
-    let mut state_cache = HashMap::default();
+    let mut state_cache: HashMap<CacheKey, (usize, usize)> = HashMap::default();
 
     let mut b = 0;
     let mut add_h = 0;

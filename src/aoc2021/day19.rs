@@ -1,5 +1,5 @@
-use ahash::AHashMap;
-use ahash::AHashSet;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::aoc2021::day19_rotations;
 use crate::aoc2021::Aoc2021;
@@ -73,7 +73,7 @@ struct ScannerSuiteEntry {
 }
 
 fn evaluate_similarity(base: &[Vec3], entry: &ScannerSuiteEntry) -> Option<(Vec3, usize)> {
-    let mut counter = AHashMap::new();
+    let mut counter = HashMap::new();
     for a in base {
         for b in &entry.points {
             let diff = *b - a;
@@ -169,7 +169,7 @@ impl Solution<Day19> for Aoc2021 {
 
     fn part1(input: &PuzzleInput) -> usize {
         let (beacons, _) = decode_scanners(input);
-        let beacons: AHashSet<_> = beacons.into_iter().collect();
+        let beacons: HashSet<_> = beacons.into_iter().collect();
         beacons.len()
     }
 
