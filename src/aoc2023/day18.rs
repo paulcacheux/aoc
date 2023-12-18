@@ -30,7 +30,7 @@ impl ParseInput<Day18> for Aoc2023 {
                 let count = words.next().unwrap().parse().unwrap();
 
                 let color = words.next().unwrap();
-                let color = color[1..color.len() - 1].to_owned();
+                let color = color[2..color.len() - 1].to_owned();
 
                 InputLine { dir, count, color }
             })
@@ -43,39 +43,43 @@ impl Solution<Day18> for Aoc2023 {
     type Part2Output = u32;
 
     fn part1(input: &Vec<InputLine>) -> usize {
-        let mut positions = vec![(0, 0)];
-        let (mut x, mut y) = (0isize, 0isize);
-
-        let mut perimeter = 0;
-
-        for instruction in input {
-            let (dx, dy) = match instruction.dir {
-                Direction::North => (0, -1),
-                Direction::South => (0, 1),
-                Direction::West => (-1, 0),
-                Direction::East => (1, 0),
-            };
-
-            let count = instruction.count as isize;
-            let (dx, dy) = (dx * count, dy * count);
-
-            perimeter += dx.abs();
-            perimeter += dy.abs();
-
-            (x, y) = (x + dx, y + dy);
-            positions.push((x, y));
-        }
-
-        let mut area = perimeter;
-        for &[(ax, ay), (bx, by)] in positions.array_windows::<2>() {
-            area += ax * by;
-            area -= bx * ay;
-        }
-        let area = area / 2 + 1;
-        area.unsigned_abs()
+        solve(input.iter().map(|line| (line.dir, line.count)))
     }
 
     fn part2(_input: &Vec<InputLine>) -> u32 {
         todo!()
     }
+}
+
+fn solve<I: Iterator<Item = (Direction, usize)>>(instructions: I) -> usize {
+    let mut positions = vec![(0, 0)];
+    let (mut x, mut y) = (0isize, 0isize);
+
+    let mut perimeter = 0;
+
+    for (dir, count) in instructions {
+        let (dx, dy) = match dir {
+            Direction::North => (0, -1),
+            Direction::South => (0, 1),
+            Direction::West => (-1, 0),
+            Direction::East => (1, 0),
+        };
+
+        let count = count as isize;
+        let (dx, dy) = (dx * count, dy * count);
+
+        perimeter += dx.abs();
+        perimeter += dy.abs();
+
+        (x, y) = (x + dx, y + dy);
+        positions.push((x, y));
+    }
+
+    let mut area = perimeter;
+    for &[(ax, ay), (bx, by)] in positions.array_windows::<2>() {
+        area += ax * by;
+        area -= bx * ay;
+    }
+    let area = area / 2 + 1;
+    area.unsigned_abs()
 }
