@@ -40,14 +40,24 @@ impl ParseInput<Day18> for Aoc2023 {
 
 impl Solution<Day18> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<InputLine>) -> usize {
         solve(input.iter().map(|line| (line.dir, line.count)))
     }
 
-    fn part2(_input: &Vec<InputLine>) -> u32 {
-        todo!()
+    fn part2(input: &Vec<InputLine>) -> usize {
+        solve(input.iter().map(|line| {
+            let count = usize::from_str_radix(&line.color[..5], 16).unwrap();
+            let dir = match &line.color[5..] {
+                "0" => Direction::East,
+                "1" => Direction::South,
+                "2" => Direction::West,
+                "3" => Direction::North,
+                _ => unreachable!(),
+            };
+            (dir, count)
+        }))
     }
 }
 
