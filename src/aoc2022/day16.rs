@@ -1,11 +1,10 @@
+use std::collections::HashMap;
 use std::collections::VecDeque;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day16;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-
-use ahash::HashMap;
 
 type StringSymbol = u8;
 
@@ -164,7 +163,7 @@ fn solve_part1(input: &[Valve], steps: u32, aa_symbol: StringSymbol) -> Vec<Path
         .collect();
 
     // bfs from all interesting points (and "AA") to other interesting points
-    let mut costs = HashMap::default();
+    let mut costs: HashMap<u8, Vec<(u8, u32)>> = HashMap::default();
     for name in interesting_valve_names {
         costs.insert(
             name,

@@ -1,4 +1,4 @@
-use ahash::HashMap;
+use std::collections::HashMap;
 
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day21;

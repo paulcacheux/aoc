@@ -1,7 +1,6 @@
+use std::collections::HashSet;
 use std::ops::RangeInclusive;
 
-use ahash::HashSet;
-use ahash::HashSetExt;
 use itertools::Itertools;
 use itertools::MinMaxResult;
 

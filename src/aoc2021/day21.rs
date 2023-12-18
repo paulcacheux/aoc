@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use std::collections::HashMap;
 
 use crate::aoc2021::Aoc2021;
 use crate::traits::days::Day21;
@@ -101,7 +101,7 @@ impl Part1State {
 
 struct Part2StateCache {
     counts: Vec<u64>,
-    cache: AHashMap<Part2State, (u64, u64)>,
+    cache: HashMap<Part2State, (u64, u64)>,
 }
 
 impl Part2StateCache {
@@ -119,7 +119,7 @@ impl Part2StateCache {
 
         Part2StateCache {
             counts,
-            cache: AHashMap::default(),
+            cache: HashMap::default(),
         }
     }
 

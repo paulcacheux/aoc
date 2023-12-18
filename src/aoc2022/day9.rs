@@ -1,9 +1,9 @@
+use std::collections::HashSet;
+
 use crate::aoc2022::Aoc2022;
 use crate::traits::days::Day9;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
-
-use ahash::HashSet;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
@@ -87,7 +87,7 @@ impl<const S: usize> State<S> {
 
 fn solve<const S: usize>(input: &[Order]) -> usize {
     let mut state = State::<S>::new();
-    let mut visited = HashSet::default();
+    let mut visited: HashSet<(i32, i32)> = Default::default();
     visited.insert((0, 0));
 
     for order in input {
