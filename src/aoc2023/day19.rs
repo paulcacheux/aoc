@@ -26,7 +26,7 @@ enum Rule {
     },
     Direct {
         target: String,
-    }
+    },
 }
 
 impl ParseInput<Day19> for Aoc2023 {
@@ -126,7 +126,12 @@ impl Solution<Day19> for Aoc2023 {
                             current = target;
                             continue 'wf;
                         }
-                        Rule::Filtering { field, operator, value, target } => {
+                        Rule::Filtering {
+                            field,
+                            operator,
+                            value,
+                            target,
+                        } => {
                             if rating.values[*field].cmp(value) == *operator {
                                 current = target;
                                 continue 'wf;
@@ -139,7 +144,99 @@ impl Solution<Day19> for Aoc2023 {
         score
     }
 
-    fn part2(_input: &Input) -> u64 {
-        todo!()
+    fn part2(input: &Input) -> u64 {
+        let mut open_queue = vec![("in", RatingRange::root())];
+        let mut score = 0;
+
+        while let Some((workload_id, mut range)) = open_queue.pop() {
+            if workload_id == "A" {
+                score += range.count();
+                continue;
+            } else if workload_id == "R" {
+                continue;
+            }
+
+            let workflow = input.workflows.get(workload_id).unwrap();
+
+            for rule in workflow {
+                match rule {
+                    Rule::Direct { target } => {
+                        open_queue.push((target, range));
+                    }
+                    Rule::Filtering {
+                        field,
+                        operator,
+                        value,
+                        target,
+                    } => {
+                        let (valid, rest) = range.split(*field, *operator, *value);
+                        if let Some(valid) = valid {
+                            open_queue.push((target, valid));
+                        }
+                        if let Some(rest) = rest {
+                            range = rest;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        score
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct RatingRange {
+    values: [(u64, u64); 4],
+}
+
+impl RatingRange {
+    fn root() -> Self {
+        Self {
+            values: [(1, 4000); 4],
+        }
+    }
+
+    fn count(&self) -> u64 {
+        self.values.iter().map(|(min, max)| max + 1 - min).product()
+    }
+
+    // (valid, rest)
+    fn split(self, field: usize, operator: Ordering, value: u64) -> (Option<Self>, Option<Self>) {
+        let values = self.values[field];
+
+        let mut valid = values;
+        let mut rest = values;
+
+        match operator {
+            Ordering::Greater => {
+                valid.0 = valid.0.max(value + 1);
+                rest.1 = rest.1.min(value);
+            }
+            Ordering::Less => {
+                valid.1 = valid.1.min(value - 1);
+                rest.0 = rest.0.max(value);
+            }
+            _ => unimplemented!(),
+        }
+
+        let valid = if valid.0 <= valid.1 {
+            let mut sub = self;
+            sub.values[field] = valid;
+            Some(sub)
+        } else {
+            None
+        };
+
+        let rest = if rest.0 <= rest.1 {
+            let mut sub = self;
+            sub.values[field] = rest;
+            Some(sub)
+        } else {
+            None
+        };
+
+        (valid, rest)
     }
 }
