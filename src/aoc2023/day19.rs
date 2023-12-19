@@ -13,27 +13,20 @@ pub struct Input {
 
 #[derive(Debug, Default)]
 struct Rating {
-    x: u64,
-    m: u64,
-    a: u64,
-    s: u64,
+    values: [u64; 4],
 }
 
 #[derive(Debug)]
-enum RuleField {
-    None,
-    X,
-    M,
-    A,
-    S,
-}
-
-#[derive(Debug)]
-struct Rule {
-    field: RuleField,
-    operator: std::cmp::Ordering,
-    value: u64,
-    target: String,
+enum Rule {
+    Filtering {
+        field: usize,
+        operator: std::cmp::Ordering,
+        value: u64,
+        target: String,
+    },
+    Direct {
+        target: String,
+    }
 }
 
 impl ParseInput<Day19> for Aoc2023 {
@@ -56,13 +49,14 @@ impl ParseInput<Day19> for Aoc2023 {
                 for group in line.split(',') {
                     let (field, value) = group.split_once('=').unwrap();
                     let value = value.parse().unwrap();
-                    match field {
-                        "x" => rating.x = value,
-                        "m" => rating.m = value,
-                        "a" => rating.a = value,
-                        "s" => rating.s = value,
+                    let index = match field {
+                        "x" => 0,
+                        "m" => 1,
+                        "a" => 2,
+                        "s" => 3,
                         _ => unreachable!(),
                     };
+                    rating.values[index] = value;
                 }
                 ratings.push(rating);
             } else {
@@ -76,10 +70,10 @@ impl ParseInput<Day19> for Aoc2023 {
                     if let Some((eval, target)) = rule.split_once(':') {
                         let mut chars = eval.chars();
                         let field = match chars.next().unwrap() {
-                            'x' => RuleField::X,
-                            'm' => RuleField::M,
-                            'a' => RuleField::A,
-                            's' => RuleField::S,
+                            'x' => 0,
+                            'm' => 1,
+                            'a' => 2,
+                            's' => 3,
                             _ => unreachable!(),
                         };
                         let operator = match chars.next().unwrap() {
@@ -88,17 +82,14 @@ impl ParseInput<Day19> for Aoc2023 {
                             _ => unreachable!(),
                         };
                         let value = eval[2..].parse().unwrap();
-                        parsed_rules.push(Rule {
+                        parsed_rules.push(Rule::Filtering {
                             field,
                             operator,
                             value,
                             target: target.to_owned(),
                         });
                     } else {
-                        parsed_rules.push(Rule {
-                            field: RuleField::None,
-                            operator: Ordering::Equal,
-                            value: 0,
+                        parsed_rules.push(Rule::Direct {
                             target: rule.to_owned(),
                         });
                     }
@@ -122,7 +113,7 @@ impl Solution<Day19> for Aoc2023 {
 
             'wf: loop {
                 if current == "A" {
-                    score += rating.x + rating.m + rating.a + rating.s;
+                    score += rating.values.iter().sum::<u64>();
                     break;
                 } else if current == "R" {
                     break;
@@ -130,20 +121,17 @@ impl Solution<Day19> for Aoc2023 {
 
                 let workflow = input.workflows.get(current).unwrap();
                 for rule in workflow {
-                    let rating_value = match rule.field {
-                        RuleField::None => {
-                            current = &rule.target;
+                    match rule {
+                        Rule::Direct { target } => {
+                            current = target;
                             continue 'wf;
                         }
-                        RuleField::X => rating.x,
-                        RuleField::M => rating.m,
-                        RuleField::A => rating.a,
-                        RuleField::S => rating.s,
-                    };
-
-                    if rating_value.cmp(&rule.value) == rule.operator {
-                        current = &rule.target;
-                        continue 'wf;
+                        Rule::Filtering { field, operator, value, target } => {
+                            if rating.values[*field].cmp(value) == *operator {
+                                current = target;
+                                continue 'wf;
+                            }
+                        }
                     }
                 }
             }
