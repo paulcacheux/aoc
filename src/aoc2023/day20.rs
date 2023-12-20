@@ -79,9 +79,10 @@ impl Solution<Day20> for Aoc2023 {
         let rx_grand_parents = parents.get(&rx_parent).unwrap().clone();
 
         let mut factors = Vec::new();
+        let mut graph = Graph::new(input);
 
         for gp in rx_grand_parents {
-            let mut graph = Graph::new(input);
+            graph.reset();
 
             let mut counter = 0;
             let mut found = false;
@@ -116,6 +117,15 @@ enum Module {
 }
 
 impl Module {
+    fn reset(&mut self) {
+        match self {
+            Module::BroadCaster => {}
+            Module::FlipFlop(state) => *state = false,
+            Module::Inverter => {}
+            Module::Conjunction { memory, .. } => memory.clear(),
+        }
+    }
+
     fn bip(&mut self, from: &str, signal: Signal) -> Option<Signal> {
         match (self, signal) {
             (Module::BroadCaster, signal) => Some(signal),
@@ -220,6 +230,12 @@ impl Graph {
                     }
                 }
             }
+        }
+    }
+
+    fn reset(&mut self) {
+        for mg in self.state.values_mut() {
+            mg.module.reset();
         }
     }
 }
