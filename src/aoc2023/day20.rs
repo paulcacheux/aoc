@@ -74,15 +74,15 @@ impl Solution<Day20> for Aoc2023 {
             }
         }
 
-        let rx_parent = parents.get("rx").unwrap()[0].clone();
-        let rx_grand_parents: Vec<String> = parents.get(&rx_parent).unwrap().clone();
+        let rx_parent = &parents.get("rx").unwrap()[0];
+        let rx_grand_parents_count = parents.get(rx_parent).unwrap().len();
 
         let mut factors = HashMap::new();
         let mut graph = Graph::new(input);
 
         let mut counter = 0;
 
-        while factors.len() != rx_grand_parents.len() {
+        while factors.len() != rx_grand_parents_count {
             counter += 1;
             graph.click(|from, target, signal| {
                 if target == rx_parent && signal == Signal::High && !factors.contains_key(from) {
