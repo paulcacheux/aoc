@@ -42,7 +42,7 @@ impl ParseInput<Day20> for Aoc2023 {
 
 impl Solution<Day20> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<Piping>) -> usize {
         let mut graph = Graph::new(input);
@@ -63,8 +63,23 @@ impl Solution<Day20> for Aoc2023 {
         low_counter * high_counter
     }
 
-    fn part2(_input: &Vec<Piping>) -> u32 {
-        todo!()
+    fn part2(input: &Vec<Piping>) -> usize {
+        let mut graph = Graph::new(input);
+
+        let mut counter = 0;
+        let mut found = false;
+        while !found {
+            counter += 1;
+            graph.click(|target: &str, signal| {
+                if target == "rx" && signal == Signal::Low {
+                    found = true;
+                    true
+                } else {
+                    false
+                }
+            });
+        }
+        counter
     }
 }
 
