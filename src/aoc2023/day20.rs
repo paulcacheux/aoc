@@ -58,10 +58,17 @@ impl Solution<Day20> for Aoc2023 {
         for pipe in input {
             let module = match (pipe.sigil, pipe.from.as_str()) {
                 (Some('%'), _) => Module::FlipFlop(false),
-                (Some('&'), name) => Module::Conjunction {
-                    memory: HashMap::new(),
-                    source_count: directed_to.get(name).copied().unwrap_or(0),
-                },
+                (Some('&'), name) => {
+                    let source_count = directed_to.get(name).copied().unwrap_or(0);
+                    if source_count == 1 {
+                        Module::Inverter
+                    } else {
+                        Module::Conjunction {
+                            memory: HashMap::new(),
+                            source_count,
+                        }
+                    }
+                }
                 (None, "broadcaster") => Module::BroadCaster,
                 _ => unreachable!(),
             };
@@ -109,6 +116,7 @@ impl Solution<Day20> for Aoc2023 {
 enum Module {
     BroadCaster,
     FlipFlop(bool),
+    Inverter,
     Conjunction {
         memory: HashMap<String, Signal>,
         source_count: usize,
@@ -125,6 +133,10 @@ impl Module {
                     *state = !*state;
                     Some(if *state { Signal::High } else { Signal::Low })
                 }
+            },
+            Module::Inverter => match signal {
+                Signal::High => Some(Signal::Low),
+                Signal::Low => Some(Signal::High),
             },
             Module::Conjunction {
                 memory,
