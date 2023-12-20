@@ -96,23 +96,22 @@ enum Module {
 
 impl Module {
     fn bip(&mut self, from: &str, signal: Signal) -> Option<Signal> {
-        match self {
-            Module::BroadCaster => Some(signal),
-            Module::FlipFlop(state) => match signal {
-                Signal::High => None,
-                Signal::Low => {
-                    *state = !*state;
-                    Some(if *state { Signal::High } else { Signal::Low })
-                }
-            },
-            Module::Inverter => match signal {
-                Signal::High => Some(Signal::Low),
-                Signal::Low => Some(Signal::High),
-            },
-            Module::Conjunction {
-                memory,
-                source_count,
-            } => {
+        match (self, signal) {
+            (Module::BroadCaster, signal) => Some(signal),
+            (Module::FlipFlop(_), Signal::High) => None,
+            (Module::FlipFlop(state), Signal::Low) => {
+                *state = !*state;
+                Some(if *state { Signal::High } else { Signal::Low })
+            }
+            (Module::Inverter, Signal::High) => Some(Signal::Low),
+            (Module::Inverter, Signal::Low) => Some(Signal::High),
+            (
+                Module::Conjunction {
+                    memory,
+                    source_count,
+                },
+                signal,
+            ) => {
                 memory.insert(from.to_owned(), signal);
                 if memory.values().filter(|&&sig| sig == Signal::High).count() == *source_count {
                     Some(Signal::Low)
