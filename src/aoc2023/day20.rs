@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use crate::aoc2023::day8::lcm;
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day20;
 use crate::traits::ParseInput;
@@ -51,7 +52,7 @@ impl Solution<Day20> for Aoc2023 {
         let mut high_counter = 0;
 
         for _ in 0..1000 {
-            graph.click(|_, signal| {
+            graph.click(|_, _, signal| {
                 match signal {
                     Signal::High => high_counter += 1,
                     Signal::Low => low_counter += 1,
@@ -64,22 +65,42 @@ impl Solution<Day20> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Piping>) -> usize {
-        let mut graph = Graph::new(input);
-
-        let mut counter = 0;
-        let mut found = false;
-        while !found {
-            counter += 1;
-            graph.click(|target: &str, signal| {
-                if target == "rx" && signal == Signal::Low {
-                    found = true;
-                    true
-                } else {
-                    false
-                }
-            });
+        let mut parents: HashMap<String, Vec<String>> = HashMap::new();
+        for pipe in input {
+            for target in &pipe.to {
+                parents
+                    .entry(target.clone())
+                    .or_default()
+                    .push(pipe.from.clone());
+            }
         }
-        counter
+
+        let rx_parent = parents.get("rx").unwrap()[0].clone();
+        let rx_grand_parents = parents.get(&rx_parent).unwrap().clone();
+
+        let mut factors = Vec::new();
+
+        for gp in rx_grand_parents {
+            let mut graph = Graph::new(input);
+
+            let mut counter = 0;
+            let mut found = false;
+            while !found {
+                counter += 1;
+                graph.click(|from, target, signal| {
+                    if from == gp && target == rx_parent && signal == Signal::High {
+                        found = true;
+                        true
+                    } else {
+                        false
+                    }
+                });
+            }
+
+            factors.push(counter);
+        }
+
+        lcm(&factors)
     }
 }
 
@@ -182,13 +203,13 @@ impl Graph {
 
     fn click<F>(&mut self, mut cb: F)
     where
-        F: FnMut(&str, Signal) -> bool,
+        F: FnMut(&str, &str, Signal) -> bool,
     {
         let mut signal_queue = VecDeque::new();
         signal_queue.push_back(("button".to_owned(), "broadcaster".to_owned(), Signal::Low));
 
         while let Some((from, target, signal)) = signal_queue.pop_front() {
-            if cb(&target, signal) {
+            if cb(&from, &target, signal) {
                 return;
             }
 
