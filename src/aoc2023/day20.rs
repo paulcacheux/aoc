@@ -57,7 +57,6 @@ impl Solution<Day20> for Aoc2023 {
                     Signal::High => high_counter += 1,
                     Signal::Low => low_counter += 1,
                 };
-                false
             });
         }
 
@@ -76,30 +75,23 @@ impl Solution<Day20> for Aoc2023 {
         }
 
         let rx_parent = parents.get("rx").unwrap()[0].clone();
-        let rx_grand_parents = parents.get(&rx_parent).unwrap().clone();
+        let rx_grand_parents: Vec<String> = parents.get(&rx_parent).unwrap().clone();
 
-        let mut factors = Vec::new();
+        let mut factors = HashMap::new();
         let mut graph = Graph::new(input);
 
-        for gp in rx_grand_parents {
-            graph.reset();
+        let mut counter = 0;
 
-            let mut counter = 0;
-            let mut found = false;
-            while !found {
-                counter += 1;
-                graph.click(|from, target, signal| {
-                    if from == gp && target == rx_parent && signal == Signal::High {
-                        found = true;
-                        true
-                    } else {
-                        false
-                    }
-                });
-            }
-
-            factors.push(counter);
+        while factors.len() != rx_grand_parents.len() {
+            counter += 1;
+            graph.click(|from, target, signal| {
+                if target == rx_parent && signal == Signal::High && !factors.contains_key(from) {
+                    factors.insert(from.to_owned(), counter);
+                }
+            });
         }
+
+        let factors: Vec<_> = factors.values().copied().collect();
 
         lcm(&factors)
     }
@@ -117,15 +109,6 @@ enum Module {
 }
 
 impl Module {
-    fn reset(&mut self) {
-        match self {
-            Module::BroadCaster => {}
-            Module::FlipFlop(state) => *state = false,
-            Module::Inverter => {}
-            Module::Conjunction { memory, .. } => memory.clear(),
-        }
-    }
-
     fn bip(&mut self, from: &str, signal: Signal) -> Option<Signal> {
         match (self, signal) {
             (Module::BroadCaster, signal) => Some(signal),
@@ -213,15 +196,13 @@ impl Graph {
 
     fn click<F>(&mut self, mut cb: F)
     where
-        F: FnMut(&str, &str, Signal) -> bool,
+        F: FnMut(&str, &str, Signal),
     {
         let mut signal_queue = VecDeque::new();
         signal_queue.push_back(("button".to_owned(), "broadcaster".to_owned(), Signal::Low));
 
         while let Some((from, target, signal)) = signal_queue.pop_front() {
-            if cb(&from, &target, signal) {
-                return;
-            }
+            cb(&from, &target, signal);
 
             if let Some(mg) = self.state.get_mut(&target) {
                 if let Some(next_sig) = mg.module.bip(&from, signal) {
@@ -230,12 +211,6 @@ impl Graph {
                     }
                 }
             }
-        }
-    }
-
-    fn reset(&mut self) {
-        for mg in self.state.values_mut() {
-            mg.module.reset();
         }
     }
 }
