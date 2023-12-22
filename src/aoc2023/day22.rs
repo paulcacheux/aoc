@@ -108,8 +108,11 @@ impl Solution<Day22> for Aoc2023 {
             .collect();
 
         let mut counter = 0;
+        let mut destroyed = Vec::with_capacity(input.len());
+
         for root in roots {
-            let mut destroyed = vec![root];
+            destroyed.clear();
+            destroyed.push(root);
 
             for i in (root + 1)..bricks.len() {
                 if bricks[i].start.z == 0 {
