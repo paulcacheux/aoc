@@ -79,7 +79,7 @@ impl Solution<Day22> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<Brick>) -> usize {
-        let (_, support) = compute_support_chain(input);
+        let support = compute_support_chain(input);
         let mut potential_supports = vec![true; input.len()];
 
         for js in support.values() {
@@ -92,7 +92,7 @@ impl Solution<Day22> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Brick>) -> usize {
-        let (bricks, support) = compute_support_chain(input);
+        let support = compute_support_chain(input);
 
         // compute roots
         let mut potential_supports = vec![true; input.len()];
@@ -107,46 +107,59 @@ impl Solution<Day22> for Aoc2023 {
             .filter_map(|(i, v)| if !v { Some(i) } else { None })
             .collect();
 
-        let mut counter = 0;
-        let mut destroyed = Vec::with_capacity(input.len());
-
-        for root in roots {
-            destroyed.clear();
-            destroyed.push(root);
-
-            for i in (root + 1)..bricks.len() {
-                if bricks[i].start.z == 0 {
-                    continue;
-                }
-
-                let mut new_brick = bricks[i];
-                new_brick.start.z -= 1;
-                new_brick.end.z -= 1;
-
-                let mut valid = true;
-                for (j, under) in bricks[..i].iter().enumerate().rev() {
-                    if destroyed.binary_search(&j).is_ok() {
-                        continue;
-                    }
-
-                    if Brick::collide(&new_brick, under) {
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if valid {
-                    counter += 1;
-                    destroyed.push(i);
-                }
+        let mut reverse_support: HashMap<usize, Vec<usize>> = HashMap::new();
+        for (&brick, unders) in &support {
+            for &under in unders {
+                reverse_support.entry(under).or_default().push(brick);
             }
         }
 
+        let mut counter = 0;
+        for root in roots {
+            let mut touched = vec![false; input.len()];
+            let mut open_queue = vec![root];
+
+            while let Some(brick) = open_queue.pop() {
+                if touched[brick] {
+                    continue;
+                }
+                touched[brick] = true;
+
+                if let Some(unders) = support.get(&brick) {
+                    if unders.iter().all(|&under| touched[under]) {
+                        touched[brick] = true;
+                    }
+                }
+
+                if let Some(dependents) = reverse_support.get(&brick) {
+                    for &dependent in dependents {
+                        open_queue.push(dependent);
+                    }
+                }
+            }
+
+            let mut subcounter = 0;
+            for i in 0..touched.len() {
+                if !touched[i] || i == root {
+                    continue;
+                }
+
+                if let Some(unders) = support.get(&i) {
+                    if unders.iter().all(|&under| touched[under]) {
+                        subcounter += 1;
+                    } else {
+                        touched[i] = false;
+                    }
+                }
+            }
+
+            counter += subcounter;
+        }
         counter
     }
 }
 
-fn compute_support_chain(bricks: &[Brick]) -> (Vec<Brick>, HashMap<usize, Vec<usize>>) {
+fn compute_support_chain(bricks: &[Brick]) -> HashMap<usize, Vec<usize>> {
     let mut bricks = bricks.to_vec();
     bricks.sort_by_key(|b| (b.start.z, b.end.z));
 
@@ -178,5 +191,5 @@ fn compute_support_chain(bricks: &[Brick]) -> (Vec<Brick>, HashMap<usize, Vec<us
         }
     }
 
-    (bricks, support)
+    support
 }
