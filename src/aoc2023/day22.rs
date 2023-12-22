@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use itertools::Itertools;
 
@@ -75,41 +76,11 @@ impl ParseInput<Day22> for Aoc2023 {
 
 impl Solution<Day22> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<Brick>) -> usize {
-        let mut bricks = input.clone();
-        bricks.sort_by_key(|b| (b.start.z, b.end.z));
-
-        let mut support: HashMap<usize, Vec<usize>> = HashMap::new();
-
-        for i in 0..bricks.len() {
-            loop {
-                if bricks[i].start.z == 0 {
-                    break;
-                }
-
-                let mut new_brick = bricks[i];
-                new_brick.start.z -= 1;
-                new_brick.end.z -= 1;
-
-                let mut valid = true;
-                for (j, under) in bricks[..i].iter().enumerate() {
-                    if Brick::collide(&new_brick, under) {
-                        support.entry(i).or_default().push(j);
-                        valid = false;
-                    }
-                }
-
-                if !valid {
-                    break;
-                }
-
-                bricks[i] = new_brick;
-            }
-        }
-
-        let mut potential_supports = vec![true; bricks.len()];
+        let support = compute_support_chain(input);
+        let mut potential_supports = vec![true; input.len()];
 
         for js in support.values() {
             if js.len() == 1 {
@@ -120,7 +91,48 @@ impl Solution<Day22> for Aoc2023 {
         potential_supports.into_iter().filter(|&v| v).count()
     }
 
-    fn part2(_input: &Vec<Brick>) -> u32 {
+    fn part2(input: &Vec<Brick>) -> usize {
+        let support = compute_support_chain(input);
+
+        for (main, unders) in &support {
+            
+        }
+
         todo!()
     }
+}
+
+fn compute_support_chain(bricks: &Vec<Brick>) -> HashMap<usize, Vec<usize>> {
+    let mut bricks = bricks.clone();
+    bricks.sort_by_key(|b| (b.start.z, b.end.z));
+
+    let mut support: HashMap<usize, Vec<usize>> = HashMap::new();
+
+    for i in 0..bricks.len() {
+        loop {
+            if bricks[i].start.z == 0 {
+                break;
+            }
+
+            let mut new_brick = bricks[i];
+            new_brick.start.z -= 1;
+            new_brick.end.z -= 1;
+
+            let mut valid = true;
+            for (j, under) in bricks[..i].iter().enumerate() {
+                if Brick::collide(&new_brick, under) {
+                    support.entry(i).or_default().push(j);
+                    valid = false;
+                }
+            }
+
+            if !valid {
+                break;
+            }
+
+            bricks[i] = new_brick;
+        }
+    }
+
+    support
 }
