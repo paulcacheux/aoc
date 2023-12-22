@@ -106,7 +106,7 @@ impl Solution<Day22> for Aoc2023 {
             .enumerate()
             .filter_map(|(i, v)| if !v { Some(i) } else { None })
             .collect();
-
+        
         let mut leafs: HashMap<usize, HashSet<usize>> = HashMap::new();
 
         let mut open_queue = Vec::new();
@@ -120,7 +120,7 @@ impl Solution<Day22> for Aoc2023 {
             let unders = support.get(&brick);
 
             if roots.contains(&brick) {
-                leafs.entry(brick).or_default().insert(main);
+                leafs.entry(main).or_default().insert(brick);
             }
 
             if let Some(unders) = unders {
@@ -132,9 +132,28 @@ impl Solution<Day22> for Aoc2023 {
             }
         }
 
-        dbg!(leafs);
+        let mut counter = 0;
 
-        leafs.values().map(|supporting| supporting.len()).sum()
+        for roots in leafs.values() {
+            let mut meta_roots = HashSet::new();
+
+            let mut open_roots: Vec<_> = roots.iter().copied().collect();
+            for root in roots {
+                if let Some(subroot) = leafs.get(root) {
+                    open_roots.extend(subroot.iter().copied());
+                } else {
+                    meta_roots.insert(*root);
+                }
+            }
+
+            if meta_roots.len() == 1 {
+                counter += roots.len()
+            } else {
+                dbg!(roots, meta_roots);
+            }
+        }
+
+        counter
     }
 }
 
