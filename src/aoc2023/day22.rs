@@ -94,11 +94,47 @@ impl Solution<Day22> for Aoc2023 {
     fn part2(input: &Vec<Brick>) -> usize {
         let support = compute_support_chain(input);
 
-        for (main, unders) in &support {
-            
+        // compute roots
+        let mut potential_supports = vec![true; input.len()];
+        for js in support.values() {
+            if js.len() == 1 {
+                potential_supports[js[0]] = false;
+            }
+        }
+        let roots: Vec<_> = potential_supports
+            .into_iter()
+            .enumerate()
+            .filter_map(|(i, v)| if !v { Some(i) } else { None })
+            .collect();
+
+        let mut leafs: HashMap<usize, HashSet<usize>> = HashMap::new();
+
+        let mut open_queue = Vec::new();
+        for (&main, unders) in &support {
+            for &under in unders {
+                open_queue.push((main, under));
+            }
         }
 
-        todo!()
+        while let Some((main, brick)) = open_queue.pop() {
+            let unders = support.get(&brick);
+
+            if roots.contains(&brick) {
+                leafs.entry(brick).or_default().insert(main);
+            }
+
+            if let Some(unders) = unders {
+                assert!(!unders.is_empty());
+
+                for &under in unders {
+                    open_queue.push((main, under));
+                }
+            }
+        }
+
+        dbg!(leafs);
+
+        leafs.values().map(|supporting| supporting.len()).sum()
     }
 }
 
