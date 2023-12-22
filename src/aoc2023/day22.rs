@@ -14,6 +14,7 @@ pub struct Brick {
 }
 
 impl Brick {
+    #[inline]
     fn collide(a: &Self, b: &Self) -> bool {
         let xstart = a.start.x.max(b.start.x);
         let xend = a.end.x.min(b.end.x);
@@ -121,7 +122,7 @@ impl Solution<Day22> for Aoc2023 {
 
                 let mut valid = true;
                 for (j, under) in bricks[..i].iter().enumerate().rev() {
-                    if destroyed.contains(&j) {
+                    if destroyed.binary_search(&j).is_ok() {
                         continue;
                     }
 
