@@ -120,7 +120,7 @@ impl Solution<Day22> for Aoc2023 {
                 new_brick.end.z -= 1;
 
                 let mut valid = true;
-                for (j, under) in bricks[..i].iter().enumerate() {
+                for (j, under) in bricks[..i].iter().enumerate().rev() {
                     if destroyed.contains(&j) {
                         continue;
                     }
