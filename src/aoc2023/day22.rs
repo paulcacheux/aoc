@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 use itertools::Itertools;
 
@@ -79,7 +78,7 @@ impl Solution<Day22> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<Brick>) -> usize {
-        let support = compute_support_chain(input);
+        let (_, support) = compute_support_chain(input);
         let mut potential_supports = vec![true; input.len()];
 
         for js in support.values() {
@@ -92,7 +91,7 @@ impl Solution<Day22> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Brick>) -> usize {
-        let support = compute_support_chain(input);
+        let (bricks, support) = compute_support_chain(input);
 
         // compute roots
         let mut potential_supports = vec![true; input.len()];
@@ -106,50 +105,36 @@ impl Solution<Day22> for Aoc2023 {
             .enumerate()
             .filter_map(|(i, v)| if !v { Some(i) } else { None })
             .collect();
-        
-        let mut leafs: HashMap<usize, HashSet<usize>> = HashMap::new();
-
-        let mut open_queue = Vec::new();
-        for (&main, unders) in &support {
-            for &under in unders {
-                open_queue.push((main, under));
-            }
-        }
-
-        while let Some((main, brick)) = open_queue.pop() {
-            let unders = support.get(&brick);
-
-            if roots.contains(&brick) {
-                leafs.entry(main).or_default().insert(brick);
-            }
-
-            if let Some(unders) = unders {
-                assert!(!unders.is_empty());
-
-                for &under in unders {
-                    open_queue.push((main, under));
-                }
-            }
-        }
 
         let mut counter = 0;
+        for root in roots {
+            let mut destroyed = vec![root];
 
-        for roots in leafs.values() {
-            let mut meta_roots = HashSet::new();
-
-            let mut open_roots: Vec<_> = roots.iter().copied().collect();
-            for root in roots {
-                if let Some(subroot) = leafs.get(root) {
-                    open_roots.extend(subroot.iter().copied());
-                } else {
-                    meta_roots.insert(*root);
+            for i in (root + 1)..bricks.len() {
+                if bricks[i].start.z == 0 {
+                    continue;
                 }
-            }
 
-            if meta_roots.len() == 1 {
-                counter += roots.len()
-            } else {
-                dbg!(roots, meta_roots);
+                let mut new_brick = bricks[i];
+                new_brick.start.z -= 1;
+                new_brick.end.z -= 1;
+
+                let mut valid = true;
+                for (j, under) in bricks[..i].iter().enumerate() {
+                    if destroyed.contains(&j) {
+                        continue;
+                    }
+
+                    if Brick::collide(&new_brick, under) {
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if valid {
+                    counter += 1;
+                    destroyed.push(i);
+                }
             }
         }
 
@@ -157,8 +142,8 @@ impl Solution<Day22> for Aoc2023 {
     }
 }
 
-fn compute_support_chain(bricks: &Vec<Brick>) -> HashMap<usize, Vec<usize>> {
-    let mut bricks = bricks.clone();
+fn compute_support_chain(bricks: &[Brick]) -> (Vec<Brick>, HashMap<usize, Vec<usize>>) {
+    let mut bricks = bricks.to_vec();
     bricks.sort_by_key(|b| (b.start.z, b.end.z));
 
     let mut support: HashMap<usize, Vec<usize>> = HashMap::new();
@@ -189,5 +174,5 @@ fn compute_support_chain(bricks: &Vec<Brick>) -> HashMap<usize, Vec<usize>> {
         }
     }
 
-    support
+    (bricks, support)
 }
