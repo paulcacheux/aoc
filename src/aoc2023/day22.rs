@@ -79,10 +79,10 @@ impl Solution<Day22> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &Vec<Brick>) -> usize {
-        let support = compute_support_chain(input);
+        let (supports, _) = compute_support_chain(input);
         let mut potential_supports = vec![true; input.len()];
 
-        for js in support.values() {
+        for js in supports.values() {
             if js.len() == 1 {
                 potential_supports[js[0]] = false;
             }
@@ -92,11 +92,11 @@ impl Solution<Day22> for Aoc2023 {
     }
 
     fn part2(input: &Vec<Brick>) -> usize {
-        let support = compute_support_chain(input);
+        let (supports, supported_by) = compute_support_chain(input);
 
         // compute roots
         let mut potential_supports = vec![true; input.len()];
-        for js in support.values() {
+        for js in supports.values() {
             if js.len() == 1 {
                 potential_supports[js[0]] = false;
             }
@@ -106,13 +106,6 @@ impl Solution<Day22> for Aoc2023 {
             .enumerate()
             .filter_map(|(i, v)| if !v { Some(i) } else { None })
             .collect();
-
-        let mut reverse_support: HashMap<usize, Vec<usize>> = HashMap::new();
-        for (&brick, unders) in &support {
-            for &under in unders {
-                reverse_support.entry(under).or_default().push(brick);
-            }
-        }
 
         let mut counter = 0;
         for root in roots {
@@ -125,13 +118,13 @@ impl Solution<Day22> for Aoc2023 {
                 }
                 touched[brick] = true;
 
-                if let Some(unders) = support.get(&brick) {
+                if let Some(unders) = supports.get(&brick) {
                     if unders.iter().all(|&under| touched[under]) {
                         touched[brick] = true;
                     }
                 }
 
-                if let Some(dependents) = reverse_support.get(&brick) {
+                if let Some(dependents) = supported_by.get(&brick) {
                     for &dependent in dependents {
                         open_queue.push(dependent);
                     }
@@ -144,7 +137,7 @@ impl Solution<Day22> for Aoc2023 {
                     continue;
                 }
 
-                if let Some(unders) = support.get(&i) {
+                if let Some(unders) = supports.get(&i) {
                     if unders.iter().all(|&under| touched[under]) {
                         subcounter += 1;
                     } else {
@@ -159,18 +152,27 @@ impl Solution<Day22> for Aoc2023 {
     }
 }
 
-fn compute_support_chain(bricks: &[Brick]) -> HashMap<usize, Vec<usize>> {
+fn compute_support_chain(
+    bricks: &[Brick],
+) -> (HashMap<usize, Vec<usize>>, HashMap<usize, Vec<usize>>) {
     let mut bricks = bricks.to_vec();
     bricks.sort_by_key(|b| (b.start.z, b.end.z));
 
-    let mut support: HashMap<usize, Vec<usize>> = HashMap::new();
+    let mut supports: HashMap<usize, Vec<usize>> = HashMap::new();
+    let mut supported_by: HashMap<usize, Vec<usize>> = HashMap::new();
+
+    let mut lastz = 0;
 
     for i in 0..bricks.len() {
-        loop {
-            if bricks[i].start.z == 0 {
-                break;
-            }
+        let mut new_brick = bricks[i];
+        if new_brick.start.z > lastz {
+            let delta = new_brick.start.z - lastz - 1;
+            new_brick.start.z -= delta;
+            new_brick.end.z -= delta;
+            bricks[i] = new_brick;
+        }
 
+        while bricks[i].start.z != 0 {
             let mut new_brick = bricks[i];
             new_brick.start.z -= 1;
             new_brick.end.z -= 1;
@@ -178,7 +180,8 @@ fn compute_support_chain(bricks: &[Brick]) -> HashMap<usize, Vec<usize>> {
             let mut valid = true;
             for (j, under) in bricks[..i].iter().enumerate() {
                 if Brick::collide(&new_brick, under) {
-                    support.entry(i).or_default().push(j);
+                    supports.entry(i).or_default().push(j);
+                    supported_by.entry(j).or_default().push(i);
                     valid = false;
                 }
             }
@@ -189,7 +192,12 @@ fn compute_support_chain(bricks: &[Brick]) -> HashMap<usize, Vec<usize>> {
 
             bricks[i] = new_brick;
         }
+
+        let newz = bricks[i].end.z;
+        if newz > lastz {
+            lastz = newz;
+        }
     }
 
-    support
+    (supports, supported_by)
 }
