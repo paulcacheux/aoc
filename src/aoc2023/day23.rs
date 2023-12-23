@@ -48,10 +48,11 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
 
         let visited = visited.append(curr);
 
-        if let Some(edges) = edges.get(&curr) {
+        let curr_edges = &edges[curr as usize];
+        if !curr_edges.is_empty() {
             let mut skip_next = false;
             // if edge is directly reachable we must go to it, otherwise we block the exit path
-            for edge in edges {
+            for edge in curr_edges {
                 if edge.to == end {
                     open_queue.push((distance + edge.distance, edge.to, visited));
                     skip_next = true;
@@ -60,7 +61,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             }
 
             if !skip_next {
-                for edge in edges {
+                for edge in curr_edges {
                     if !visited.contains(edge.to) {
                         open_queue.push((distance + edge.distance, edge.to, visited));
                     }
@@ -72,7 +73,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     longest
 }
 
-fn build_simplified_graph(input: &Grid<char>, with_slopes: bool) -> HashMap<u8, Vec<Edge>> {
+fn build_simplified_graph(input: &Grid<char>, with_slopes: bool) -> Vec<Vec<Edge>> {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
@@ -161,6 +162,8 @@ fn build_simplified_graph(input: &Grid<char>, with_slopes: bool) -> HashMap<u8, 
                     to: parent,
                     distance,
                 });
+            } else {
+                graph.entry(to).or_default();
             }
         }
 
@@ -179,10 +182,11 @@ fn build_simplified_graph(input: &Grid<char>, with_slopes: bool) -> HashMap<u8, 
         }
     }
 
-    graph
-        .into_iter()
-        .map(|(k, v)| (k, v.into_iter().collect()))
-        .collect()
+    let mut vec_graph = vec![Vec::new(); graph.len()];
+    for (k, v) in graph {
+        vec_graph[k as usize] = v.into_iter().collect();
+    }
+    vec_graph
 }
 
 struct PathPart {
