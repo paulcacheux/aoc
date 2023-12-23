@@ -36,6 +36,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
 
     let mut open_queue = vec![(0, start, HashSet::new())];
     let mut longest = 0;
+    let mut new_cells = Vec::with_capacity(4);
 
     while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
         if (x, y) == end {
@@ -46,12 +47,18 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             visited.insert((x, y));
         }
 
-        let force_direction = match *input.get(x, y) {
-            '>' => Some(Direction::East),
-            '<' => Some(Direction::West),
-            'v' => Some(Direction::South),
-            _ => None,
+        let force_direction = if with_slopes {
+            match *input.get(x, y) {
+                '>' => Some(Direction::East),
+                '<' => Some(Direction::West),
+                'v' => Some(Direction::South),
+                _ => None,
+            }
+        } else {
+            None
         };
+
+        new_cells.clear();
 
         for (direction, nx, ny) in input.get_neighbors_with_direction(x, y) {
             if with_slopes {
@@ -73,8 +80,12 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             }
 
             if !visited.contains(&(nx, ny)) {
-                open_queue.push((distance + 1, (nx, ny), visited.clone()));
+                new_cells.push((nx, ny));
             }
+        }
+
+        for &cell in &new_cells {
+            open_queue.push((distance + 1, cell, visited.clone()));
         }
     }
     longest
