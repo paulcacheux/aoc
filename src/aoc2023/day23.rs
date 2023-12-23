@@ -33,23 +33,23 @@ impl Solution<Day23> for Aoc2023 {
 fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     let edges = build_simplified_graph(input, with_slopes);
 
-    let start = (1, 0);
-    let end = (input.width - 2, input.height - 1);
+    let start = 0;
+    let end = 1;
 
     let mut open_queue = vec![(0, start, Rc::new(VisitedNode::Empty))];
     let mut longest = 0;
 
-    while let Some((distance, (x, y), visited)) = open_queue.pop() {
-        if (x, y) == end {
+    while let Some((distance, curr, visited)) = open_queue.pop() {
+        if curr == end {
             if distance > longest {
                 longest = distance;
             }
             continue;
         }
 
-        let visited = visited.append(get_pos_id(input, (x, y)));
+        let visited = visited.append(curr);
 
-        if let Some(edges) = edges.get(&(x, y)) {
+        if let Some(edges) = edges.get(&curr) {
             let mut skip_next = false;
             // if edge is directly reachable we must go to it, otherwise we block the exit path
             for edge in edges {
@@ -62,7 +62,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
 
             if !skip_next {
                 for edge in edges {
-                    if !visited.contains(get_pos_id(input, edge.to)) {
+                    if !visited.contains(edge.to) {
                         open_queue.push((distance + edge.distance, edge.to, visited.clone()));
                     }
                 }
@@ -73,10 +73,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     longest
 }
 
-fn build_simplified_graph(
-    input: &Grid<char>,
-    with_slopes: bool,
-) -> HashMap<(usize, usize), Vec<Edge>> {
+fn build_simplified_graph(input: &Grid<char>, with_slopes: bool) -> HashMap<u8, Vec<Edge>> {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
@@ -87,7 +84,11 @@ fn build_simplified_graph(
     }];
     let mut new_cells = Vec::with_capacity(4);
 
-    let mut graph: HashMap<(usize, usize), HashSet<Edge>> = HashMap::new();
+    let mut node_mapper = NodeMapper::default();
+    node_mapper.get_id(start); // 0
+    node_mapper.get_id(end); // 1
+
+    let mut graph: HashMap<u8, HashSet<Edge>> = HashMap::new();
     let mut visited = HashSet::new();
 
     while let Some(PathPart {
@@ -148,13 +149,16 @@ fn build_simplified_graph(
         }
 
         if (neighbors_count > 2 || (x, y) == end) && parent != (x, y) {
-            graph.entry(parent).or_default().insert(Edge {
-                to: (x, y),
-                distance,
-            });
+            let parent = node_mapper.get_id(parent);
+            let to = node_mapper.get_id((x, y));
+
+            graph
+                .entry(parent)
+                .or_default()
+                .insert(Edge { to, distance });
 
             if !with_slopes {
-                graph.entry((x, y)).or_default().insert(Edge {
+                graph.entry(to).or_default().insert(Edge {
                     to: parent,
                     distance,
                 });
@@ -190,26 +194,22 @@ struct PathPart {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Edge {
-    to: (usize, usize),
+    to: u8,
     distance: usize,
-}
-
-fn get_pos_id(grid: &Grid<char>, pos: (usize, usize)) -> u16 {
-    (pos.1 * grid.width + pos.0) as u16
 }
 
 #[derive(Debug, Clone)]
 enum VisitedNode {
     Empty,
-    Parent(Rc<VisitedNode>, u16),
+    Parent(Rc<VisitedNode>, u8),
 }
 
 impl VisitedNode {
-    fn append(self: Rc<Self>, value: u16) -> Rc<Self> {
+    fn append(self: Rc<Self>, value: u8) -> Rc<Self> {
         Rc::new(VisitedNode::Parent(self.clone(), value))
     }
 
-    fn contains(&self, search: u16) -> bool {
+    fn contains(&self, search: u8) -> bool {
         let mut current = self;
         loop {
             match current {
@@ -222,5 +222,21 @@ impl VisitedNode {
                 }
             }
         }
+    }
+}
+
+#[derive(Debug, Default)]
+struct NodeMapper {
+    node_counter: u8,
+    node_mapper: HashMap<(usize, usize), u8>,
+}
+
+impl NodeMapper {
+    fn get_id(&mut self, key: (usize, usize)) -> u8 {
+        *self.node_mapper.entry(key).or_insert_with(|| {
+            let id = self.node_counter;
+            self.node_counter += 1;
+            id
+        })
     }
 }
