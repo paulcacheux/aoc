@@ -21,16 +21,16 @@ impl Solution<Day23> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &Grid<char>) -> usize {
-        find_longest_path(input)
+        find_longest_path(input, true)
     }
 
-    fn part2(_input: &Grid<char>) -> usize {
-        todo!()
+    fn part2(input: &Grid<char>) -> usize {
+        find_longest_path(input, false)
     }
 }
 
-fn find_longest_path(input: &Grid<char>) -> usize {
-    let edges = build_simplified_graph(input);
+fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
+    let edges = build_simplified_graph(input, with_slopes);
 
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
@@ -59,7 +59,10 @@ fn find_longest_path(input: &Grid<char>) -> usize {
     longest
 }
 
-fn build_simplified_graph(input: &Grid<char>) -> HashMap<(usize, usize), HashSet<Edge>> {
+fn build_simplified_graph(
+    input: &Grid<char>,
+    with_slopes: bool,
+) -> HashMap<(usize, usize), HashSet<Edge>> {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
@@ -82,28 +85,36 @@ fn build_simplified_graph(input: &Grid<char>) -> HashMap<(usize, usize), HashSet
     {
         visited.insert((x, y));
 
-        let force_direction = match *input.get(x, y) {
-            '>' => Some(Direction::East),
-            '<' => Some(Direction::West),
-            'v' => Some(Direction::South),
-            _ => None,
+        let force_direction = if with_slopes {
+            match *input.get(x, y) {
+                '>' => Some(Direction::East),
+                '<' => Some(Direction::West),
+                'v' => Some(Direction::South),
+                _ => None,
+            }
+        } else {
+            None
         };
 
         new_cells.clear();
 
         for (direction, nx, ny) in input.get_neighbors_with_direction(x, y) {
-            if let Some(fdir) = force_direction {
-                if fdir != direction {
-                    continue;
+            if with_slopes {
+                if let Some(fdir) = force_direction {
+                    if fdir != direction {
+                        continue;
+                    }
                 }
-            }
 
-            match *input.get(nx, ny) {
-                '#' => continue,
-                '>' if direction != Direction::East => continue,
-                '<' if direction != Direction::West => continue,
-                'v' if direction != Direction::South => continue,
-                _ => {}
+                match *input.get(nx, ny) {
+                    '#' => continue,
+                    '>' if direction != Direction::East => continue,
+                    '<' if direction != Direction::West => continue,
+                    'v' if direction != Direction::South => continue,
+                    _ => {}
+                }
+            } else if *input.get(nx, ny) == '#' {
+                continue;
             }
 
             if !visited.contains(&(nx, ny)) {
