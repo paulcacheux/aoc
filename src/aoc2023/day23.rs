@@ -17,34 +17,44 @@ impl ParseInput<Day23> for Aoc2023 {
 
 impl Solution<Day23> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Grid<char>) -> usize {
-        let start = (1, 0);
-        let end = (input.width - 2, input.height - 1);
-        assert_eq!(*input.get(start.0, start.1), '.');
-        assert_eq!(*input.get(end.0, end.1), '.');
+        find_longest_path(input, true)
+    }
 
-        let mut open_queue = vec![(0, start, HashSet::new())];
-        let mut longest = 0;
+    fn part2(input: &Grid<char>) -> usize {
+        find_longest_path(input, false)
+    }
+}
 
-        while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
-            if (x, y) == end {
-                if distance > longest {
-                    longest = distance;
-                }
-            } else {
-                visited.insert((x, y));
+fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
+    let start = (1, 0);
+    let end = (input.width - 2, input.height - 1);
+    assert_eq!(*input.get(start.0, start.1), '.');
+    assert_eq!(*input.get(end.0, end.1), '.');
+
+    let mut open_queue = vec![(0, start, HashSet::new())];
+    let mut longest = 0;
+
+    while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
+        if (x, y) == end {
+            if distance > longest {
+                longest = distance;
             }
+        } else {
+            visited.insert((x, y));
+        }
 
-            let force_direction = match *input.get(x, y) {
-                '>' => Some(Direction::East),
-                '<' => Some(Direction::West),
-                'v' => Some(Direction::South),
-                _ => None,
-            };
+        let force_direction = match *input.get(x, y) {
+            '>' => Some(Direction::East),
+            '<' => Some(Direction::West),
+            'v' => Some(Direction::South),
+            _ => None,
+        };
 
-            for (direction, nx, ny) in input.get_neighbors_with_direction(x, y) {
+        for (direction, nx, ny) in input.get_neighbors_with_direction(x, y) {
+            if with_slopes {
                 if let Some(fdir) = force_direction {
                     if fdir != direction {
                         continue;
@@ -58,17 +68,14 @@ impl Solution<Day23> for Aoc2023 {
                     'v' if direction != Direction::South => continue,
                     _ => {}
                 }
+            } else if *input.get(nx, ny) == '#' {
+                continue;
+            }
 
-                if !visited.contains(&(nx, ny)) {
-                    open_queue.push((distance + 1, (nx, ny), visited.clone()));
-                }
+            if !visited.contains(&(nx, ny)) {
+                open_queue.push((distance + 1, (nx, ny), visited.clone()));
             }
         }
-
-        longest
     }
-
-    fn part2(_input: &Grid<char>) -> u32 {
-        todo!()
-    }
+    longest
 }
