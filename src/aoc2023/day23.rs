@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::rc::Rc;
 
 use crate::aoc2023::Aoc2023;
 use crate::grid::Direction;
@@ -36,7 +35,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     let start = 0;
     let end = 1;
 
-    let mut open_queue = vec![(0, start, Rc::new(VisitedNode::Empty))];
+    let mut open_queue = vec![(0, start, VisitedNode::default())];
     let mut longest = 0;
 
     while let Some((distance, curr, visited)) = open_queue.pop() {
@@ -54,7 +53,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             // if edge is directly reachable we must go to it, otherwise we block the exit path
             for edge in edges {
                 if edge.to == end {
-                    open_queue.push((distance + edge.distance, edge.to, visited.clone()));
+                    open_queue.push((distance + edge.distance, edge.to, visited));
                     skip_next = true;
                     break;
                 }
@@ -63,7 +62,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             if !skip_next {
                 for edge in edges {
                     if !visited.contains(edge.to) {
-                        open_queue.push((distance + edge.distance, edge.to, visited.clone()));
+                        open_queue.push((distance + edge.distance, edge.to, visited));
                     }
                 }
             }
@@ -198,30 +197,21 @@ struct Edge {
     distance: usize,
 }
 
-#[derive(Debug, Clone)]
-enum VisitedNode {
-    Empty,
-    Parent(Rc<VisitedNode>, u8),
+#[derive(Debug, Clone, Copy, Default)]
+struct VisitedNode {
+    value: u64,
 }
 
 impl VisitedNode {
-    fn append(self: Rc<Self>, value: u8) -> Rc<Self> {
-        Rc::new(VisitedNode::Parent(self.clone(), value))
+    fn append(mut self, value: u8) -> Self {
+        assert!(value < 64);
+        self.value |= 0b1 << value;
+        self
     }
 
     fn contains(&self, search: u8) -> bool {
-        let mut current = self;
-        loop {
-            match current {
-                VisitedNode::Empty => return false,
-                VisitedNode::Parent(parent, value) => {
-                    if *value == search {
-                        return true;
-                    }
-                    current = parent;
-                }
-            }
-        }
+        assert!(search < 64);
+        ((self.value >> search) & 0b1) != 0
     }
 }
 
