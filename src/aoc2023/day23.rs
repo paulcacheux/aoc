@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::rc::Rc;
 
 use crate::aoc2023::Aoc2023;
 use crate::grid::Direction;
@@ -35,18 +36,18 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
-    let mut open_queue = vec![(0, start, Vec::new())];
+    let mut open_queue = vec![(0, start, Rc::new(VisitedNode::Empty))];
     let mut longest = 0;
 
-    while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
+    while let Some((distance, (x, y), visited)) = open_queue.pop() {
         if (x, y) == end {
             if distance > longest {
                 longest = distance;
             }
             continue;
-        } else {
-            visited.push(get_pos_id(input, (x, y)));
         }
+
+        let visited = visited.append(get_pos_id(input, (x, y)));
 
         if let Some(edges) = edges.get(&(x, y)) {
             let mut skip_next = false;
@@ -61,7 +62,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
 
             if !skip_next {
                 for edge in edges {
-                    if !visited.contains(&get_pos_id(input, edge.to)) {
+                    if !visited.contains(get_pos_id(input, edge.to)) {
                         open_queue.push((distance + edge.distance, edge.to, visited.clone()));
                     }
                 }
@@ -191,4 +192,31 @@ struct Edge {
 
 fn get_pos_id(grid: &Grid<char>, pos: (usize, usize)) -> u16 {
     (pos.1 * grid.width + pos.0) as u16
+}
+
+#[derive(Debug, Clone)]
+enum VisitedNode {
+    Empty,
+    Parent(Rc<VisitedNode>, u16),
+}
+
+impl VisitedNode {
+    fn append(self: Rc<Self>, value: u16) -> Rc<Self> {
+        Rc::new(VisitedNode::Parent(self.clone(), value))
+    }
+
+    fn contains(&self, search: u16) -> bool {
+        let mut current = self;
+        loop {
+            match current {
+                VisitedNode::Empty => return false,
+                VisitedNode::Parent(parent, value) => {
+                    if *value == search {
+                        return true;
+                    }
+                    current = parent;
+                }
+            }
+        }
+    }
 }
