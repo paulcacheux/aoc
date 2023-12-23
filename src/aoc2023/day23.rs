@@ -39,7 +39,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
-    let mut open_queue = vec![(0, start, HashSet::new())];
+    let mut open_queue = vec![(0, start, Vec::new())];
     let mut longest = 0;
 
     while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
@@ -49,7 +49,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             }
             continue;
         } else {
-            visited.insert((x, y));
+            visited.push((x, y));
         }
 
         if let Some(edges) = edges.get(&(x, y)) {
