@@ -45,12 +45,12 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             }
             continue;
         } else {
-            visited.push((x, y));
+            visited.push(get_pos_id(input, (x, y)));
         }
 
         if let Some(edges) = edges.get(&(x, y)) {
             for edge in edges {
-                if !visited.contains(&edge.to) {
+                if !visited.contains(&get_pos_id(input, edge.to)) {
                     open_queue.push((distance + edge.distance, edge.to, visited.clone()));
                 }
             }
@@ -175,4 +175,8 @@ struct PathPart {
 struct Edge {
     to: (usize, usize),
     distance: usize,
+}
+
+fn get_pos_id(grid: &Grid<char>, pos: (usize, usize)) -> u16 {
+    (pos.1 * grid.width + pos.0) as u16
 }
