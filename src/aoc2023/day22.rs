@@ -172,11 +172,7 @@ fn compute_support_chain(
             bricks[i] = new_brick;
         }
 
-        loop {
-            if bricks[i].start.z == 0 {
-                break;
-            }
-
+        while bricks[i].start.z != 0 {
             let mut new_brick = bricks[i];
             new_brick.start.z -= 1;
             new_brick.end.z -= 1;
