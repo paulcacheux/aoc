@@ -84,8 +84,12 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             }
         }
 
-        for &cell in &new_cells {
-            open_queue.push((distance + 1, cell, visited.clone()));
+        if new_cells.len() == 1 {
+                open_queue.push((distance + 1, new_cells[0], visited));
+        } else {
+            for &cell in &new_cells {
+                open_queue.push((distance + 1, cell, visited.clone()));
+            }
         }
     }
     longest
