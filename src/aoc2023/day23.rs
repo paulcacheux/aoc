@@ -21,38 +21,42 @@ impl Solution<Day23> for Aoc2023 {
     type Part2Output = usize;
 
     fn part1(input: &Grid<char>) -> usize {
-        let edges = build_simplified_graph(input);
-
-        let start = (1, 0);
-        let end = (input.width - 2, input.height - 1);
-
-        let mut open_queue = vec![(0, start, HashSet::new())];
-        let mut longest = 0;
-
-        while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
-            if (x, y) == end {
-                if distance > longest {
-                    longest = distance;
-                }
-            } else {
-                visited.insert((x, y));
-            }
-
-            if let Some(edges) = edges.get(&(x, y)) {
-                for edge in edges {
-                    if !visited.contains(&edge.to) {
-                        open_queue.push((distance + edge.distance, edge.to, visited.clone()));
-                    }
-                }
-            }
-        }
-
-        longest
+        find_longest_path(input)
     }
 
     fn part2(_input: &Grid<char>) -> usize {
         todo!()
     }
+}
+
+fn find_longest_path(input: &Grid<char>) -> usize {
+    let edges = build_simplified_graph(input);
+
+    let start = (1, 0);
+    let end = (input.width - 2, input.height - 1);
+
+    let mut open_queue = vec![(0, start, HashSet::new())];
+    let mut longest = 0;
+
+    while let Some((distance, (x, y), mut visited)) = open_queue.pop() {
+        if (x, y) == end {
+            if distance > longest {
+                longest = distance;
+            }
+        } else {
+            visited.insert((x, y));
+        }
+
+        if let Some(edges) = edges.get(&(x, y)) {
+            for edge in edges {
+                if !visited.contains(&edge.to) {
+                    open_queue.push((distance + edge.distance, edge.to, visited.clone()));
+                }
+            }
+        }
+    }
+
+    longest
 }
 
 fn build_simplified_graph(input: &Grid<char>) -> HashMap<(usize, usize), HashSet<Edge>> {
