@@ -30,7 +30,11 @@ impl Solution<Day23> for Aoc2023 {
 }
 
 fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
-    let edges = build_simplified_graph(input, with_slopes);
+    let edges = if with_slopes {
+        build_simplified_graph_with_slopes(input)
+    } else {
+        build_simplified_graph_without_slopes(input)
+    };
 
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
@@ -43,6 +47,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
             if distance > longest {
                 longest = distance;
             }
+            continue;
         } else {
             visited.insert((x, y));
         }
@@ -59,9 +64,8 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
     longest
 }
 
-fn build_simplified_graph(
+fn build_simplified_graph_with_slopes(
     input: &Grid<char>,
-    with_slopes: bool,
 ) -> HashMap<(usize, usize), HashSet<Edge>> {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
@@ -85,36 +89,28 @@ fn build_simplified_graph(
     {
         visited.insert((x, y));
 
-        let force_direction = if with_slopes {
-            match *input.get(x, y) {
-                '>' => Some(Direction::East),
-                '<' => Some(Direction::West),
-                'v' => Some(Direction::South),
-                _ => None,
-            }
-        } else {
-            None
+        let force_direction = match *input.get(x, y) {
+            '>' => Some(Direction::East),
+            '<' => Some(Direction::West),
+            'v' => Some(Direction::South),
+            _ => None,
         };
 
         new_cells.clear();
 
         for (direction, nx, ny) in input.get_neighbors_with_direction(x, y) {
-            if with_slopes {
-                if let Some(fdir) = force_direction {
-                    if fdir != direction {
-                        continue;
-                    }
+            if let Some(fdir) = force_direction {
+                if fdir != direction {
+                    continue;
                 }
+            }
 
-                match *input.get(nx, ny) {
-                    '#' => continue,
-                    '>' if direction != Direction::East => continue,
-                    '<' if direction != Direction::West => continue,
-                    'v' if direction != Direction::South => continue,
-                    _ => {}
-                }
-            } else if *input.get(nx, ny) == '#' {
-                continue;
+            match *input.get(nx, ny) {
+                '#' => continue,
+                '>' if direction != Direction::East => continue,
+                '<' if direction != Direction::West => continue,
+                'v' if direction != Direction::South => continue,
+                _ => {}
             }
 
             if !visited.contains(&(nx, ny)) {
@@ -150,11 +146,82 @@ fn build_simplified_graph(
     graph
 }
 
-struct PathPart {
+fn build_simplified_graph_without_slopes(
+    input: &Grid<char>,
+) -> HashMap<(usize, usize), HashSet<Edge>> {
+    let start = (1, 0);
+    let end = (input.width - 2, input.height - 1);
+
+    let mut open_queue = vec![PathPart {
+        parent: start,
+        pos: start,
+        distance: 0,
+        visited: (),
+    }];
+    let mut new_cells = Vec::with_capacity(4);
+
+    let mut graph: HashMap<(usize, usize), HashSet<Edge>> = HashMap::new();
+    let mut visited = HashSet::new();
+
+    while let Some(PathPart {
+        parent,
+        pos: (x, y),
+        distance,
+        ..
+    }) = open_queue.pop()
+    {
+        new_cells.clear();
+
+        let mut neighbors_count = 0;
+        for (nx, ny) in input.get_neighbors(x, y) {
+            if *input.get(nx, ny) == '#' {
+                continue;
+            }
+
+            neighbors_count += 1;
+            if !visited.contains(&(nx, ny, parent)) {
+                new_cells.push((nx, ny));
+            }
+        }
+
+        if neighbors_count <= 2 && (x, y) != end {
+            visited.insert((x, y, parent));
+        }
+
+        if (neighbors_count > 2 || (x, y) == end) && parent != (x, y) {
+            graph.entry(parent).or_default().insert(Edge {
+                to: (x, y),
+                distance,
+            });
+            graph.entry((x, y)).or_default().insert(Edge {
+                to: parent,
+                distance,
+            });
+        }
+
+        let (parent, base_distance) = if neighbors_count <= 2 {
+            (parent, distance)
+        } else {
+            ((x, y), 0)
+        };
+
+        for &pos in &new_cells {
+            open_queue.push(PathPart {
+                parent,
+                pos,
+                distance: base_distance + 1,
+                visited: (),
+            });
+        }
+    }
+    graph
+}
+
+struct PathPart<V> {
     parent: (usize, usize),
     pos: (usize, usize),
     distance: usize,
-    visited: HashSet<(usize, usize)>,
+    visited: V,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
