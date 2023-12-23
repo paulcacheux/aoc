@@ -76,7 +76,7 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
 fn build_simplified_graph(
     input: &Grid<char>,
     with_slopes: bool,
-) -> HashMap<(usize, usize), HashSet<Edge>> {
+) -> HashMap<(usize, usize), Vec<Edge>> {
     let start = (1, 0);
     let end = (input.width - 2, input.height - 1);
 
@@ -175,7 +175,11 @@ fn build_simplified_graph(
             });
         }
     }
+
     graph
+        .into_iter()
+        .map(|(k, v)| (k, v.into_iter().collect()))
+        .collect()
 }
 
 struct PathPart {
