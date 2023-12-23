@@ -49,9 +49,21 @@ fn find_longest_path(input: &Grid<char>, with_slopes: bool) -> usize {
         }
 
         if let Some(edges) = edges.get(&(x, y)) {
+            let mut skip_next = false;
+            // if edge is directly reachable we must go to it, otherwise we block the exit path
             for edge in edges {
-                if !visited.contains(&get_pos_id(input, edge.to)) {
+                if edge.to == end {
                     open_queue.push((distance + edge.distance, edge.to, visited.clone()));
+                    skip_next = true;
+                    break;
+                }
+            }
+
+            if !skip_next {
+                for edge in edges {
+                    if !visited.contains(&get_pos_id(input, edge.to)) {
+                        open_queue.push((distance + edge.distance, edge.to, visited.clone()));
+                    }
                 }
             }
         }
