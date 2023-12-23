@@ -161,7 +161,17 @@ fn compute_support_chain(
     let mut supports: HashMap<usize, Vec<usize>> = HashMap::new();
     let mut supported_by: HashMap<usize, Vec<usize>> = HashMap::new();
 
+    let mut lastz = 0;
+
     for i in 0..bricks.len() {
+        let mut new_brick = bricks[i];
+        if new_brick.start.z > lastz {
+            let delta = new_brick.start.z - lastz - 1;
+            new_brick.start.z -= delta;
+            new_brick.end.z -= delta;
+            bricks[i] = new_brick;
+        }
+
         loop {
             if bricks[i].start.z == 0 {
                 break;
@@ -185,6 +195,11 @@ fn compute_support_chain(
             }
 
             bricks[i] = new_brick;
+        }
+
+        let newz = bricks[i].end.z;
+        if newz > lastz {
+            lastz = newz;
         }
     }
 
