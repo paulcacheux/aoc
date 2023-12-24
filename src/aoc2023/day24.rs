@@ -61,10 +61,10 @@ impl Solution<Day24> for Aoc2023 {
         let mut counter = 0;
         for (ia, a) in input.iter().enumerate() {
             for b in &input[ia + 1..] {
-                let t = ((a.pos.x - b.pos.x) * -b.speed.y - (a.pos.y - b.pos.y) * -b.speed.x)
-                    / (-a.speed.x * -b.speed.y - -a.speed.y * -b.speed.x);
-                let u = ((a.pos.x - b.pos.x) * -a.speed.y - (a.pos.y - b.pos.y) * -a.speed.x)
-                    / (-a.speed.x * -b.speed.y - -a.speed.y * -b.speed.x);
+                let t = ((b.pos.x - a.pos.x) * b.speed.y + (a.pos.y - b.pos.y) * b.speed.x)
+                    / (a.speed.x * b.speed.y - a.speed.y * b.speed.x);
+                let u = ((b.pos.x - a.pos.x) * a.speed.y + (a.pos.y - b.pos.y) * a.speed.x)
+                    / (a.speed.x * b.speed.y - a.speed.y * b.speed.x);
 
                 if t < 0.0 || u < 0.0 {
                     continue;
@@ -93,16 +93,16 @@ impl Solution<Day24> for Aoc2023 {
         let mut big_mat = Mat6::zeros();
         big_mat
             .fixed_view_mut::<3, 3>(0, 0)
-            .copy_from(&(cross_mat(input[0].speed) - cross_mat(input[1].speed)));
+            .copy_from(&cross_mat(input[0].speed - input[1].speed));
         big_mat
             .fixed_view_mut::<3, 3>(3, 0)
-            .copy_from(&(cross_mat(input[0].speed) - cross_mat(input[2].speed)));
+            .copy_from(&cross_mat(input[0].speed - input[2].speed));
         big_mat
             .fixed_view_mut::<3, 3>(0, 3)
-            .copy_from(&(cross_mat(input[1].pos) - cross_mat(input[0].pos)));
+            .copy_from(&cross_mat(input[1].pos - input[0].pos));
         big_mat
             .fixed_view_mut::<3, 3>(3, 3)
-            .copy_from(&(cross_mat(input[2].pos) - cross_mat(input[0].pos)));
+            .copy_from(&cross_mat(input[2].pos - input[0].pos));
 
         let res = big_mat.try_inverse().unwrap() * rhs;
 
