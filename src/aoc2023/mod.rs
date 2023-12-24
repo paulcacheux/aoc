@@ -19,6 +19,7 @@ pub mod day20;
 pub mod day21;
 pub mod day22;
 pub mod day23;
+pub mod day24;
 pub mod day3;
 pub mod day4;
 pub mod day5;
@@ -56,6 +57,7 @@ pub fn run_solution_for_day(day: u32, input: &str, results: Option<Results>) -> 
         21 => run::<Aoc2023, Day21>(input, r),
         22 => run::<Aoc2023, Day22>(input, r),
         23 => run::<Aoc2023, Day23>(input, r),
+        24 => run::<Aoc2023, Day24>(input, r),
         _ => return None,
     };
     Some(elapsed)
