@@ -1,16 +1,16 @@
+use nalgebra::vector;
+
 use crate::aoc2023::Aoc2023;
 use crate::traits::days::Day24;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
+pub type Vec3 = nalgebra::Vector3<f64>;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Ball {
-    px: f64,
-    py: f64,
-    pz: f64,
-    vx: f64,
-    vy: f64,
-    vz: f64,
+    pos: Vec3,
+    speed: Vec3,
 }
 
 impl ParseInput<Day24> for Aoc2023 {
@@ -25,20 +25,15 @@ impl ParseInput<Day24> for Aoc2023 {
                 let px = pos.next().unwrap();
                 let py = pos.next().unwrap();
                 let pz = pos.next().unwrap();
+                let pos = vector![px, py, pz];
 
                 let mut speed = speed.split(',').map(|val| val.trim().parse().unwrap());
                 let vx = speed.next().unwrap();
                 let vy = speed.next().unwrap();
                 let vz = speed.next().unwrap();
+                let speed = vector![vx, vy, vz];
 
-                Ball {
-                    px,
-                    py,
-                    pz,
-                    vx,
-                    vy,
-                    vz,
-                }
+                Ball { pos, speed }
             })
             .collect()
     }
@@ -56,17 +51,17 @@ impl Solution<Day24> for Aoc2023 {
         let mut counter = 0;
         for (ia, a) in input.iter().enumerate() {
             for b in &input[ia + 1..] {
-                let t = ((a.px - b.px) * -b.vy - (a.py - b.py) * -b.vx)
-                    / (-a.vx * -b.vy - -a.vy * -b.vx);
-                let u = ((a.px - b.px) * -a.vy - (a.py - b.py) * -a.vx)
-                    / (-a.vx * -b.vy - -a.vy * -b.vx);
+                let t = ((a.pos.x - b.pos.x) * -b.speed.y - (a.pos.y - b.pos.y) * -b.speed.x)
+                    / (-a.speed.x * -b.speed.y - -a.speed.y * -b.speed.x);
+                let u = ((a.pos.x - b.pos.x) * -a.speed.y - (a.pos.y - b.pos.y) * -a.speed.x)
+                    / (-a.speed.x * -b.speed.y - -a.speed.y * -b.speed.x);
 
                 if t < 0.0 || u < 0.0 {
                     continue;
                 }
 
-                let interx = a.px + t * a.vx;
-                let intery = a.py + t * a.vy;
+                let interx = a.pos.x + t * a.speed.x;
+                let intery = a.pos.y + t * a.speed.y;
 
                 if bounds.contains(&interx) && bounds.contains(&intery) {
                     counter += 1;
