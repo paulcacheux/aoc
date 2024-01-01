@@ -31,7 +31,7 @@ impl ParseInput<Day25> for Aoc2023 {
 
 impl Solution<Day25> for Aoc2023 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1(input: &Vec<Edges>) -> usize {
         let mut graph = UnGraphMap::new();
@@ -48,7 +48,7 @@ impl Solution<Day25> for Aoc2023 {
         group.len() * (graph.node_count() - group.len())
     }
 
-    fn part2(_input: &Vec<Edges>) -> u32 {
-        todo!()
+    fn part2(_: &Vec<Edges>) -> usize {
+        0
     }
 }
