@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache rust artifacts
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -22,7 +22,7 @@ jobs:
           key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}-{{ hashFiles('rust-toolchain.toml') }}-v5
 
       - name: Cache inputs
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             inputs
