@@ -15,6 +15,6 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 regex = "1.10"
 string-interner = "0.14"
-nalgebra = "0.32"
+nalgebra = "0.33"
 gcd = "2.3"
 rustworkx-core = "0.14.2"
