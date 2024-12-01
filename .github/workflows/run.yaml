@@ -41,6 +41,10 @@ jobs:
           pip3 install -r scripts/requirements.txt
           python3 ./scripts/fetch_inputs.py
 
+      - name: Run 2024 days
+        run: |
+          time ./target/release-lto/aoc --year 2024
+
       - name: Run 2023 days
         run: |
           time ./target/release-lto/aoc --year 2023

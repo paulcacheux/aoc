@@ -2,7 +2,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Create new day file.')
 parser.add_argument('--year', type=int, help='year',
-                    default=2023, choices=[2019, 2021, 2022, 2023])
+                    default=2023, choices=[2019, 2021, 2022, 2023, 2024])
 parser.add_argument('--day', type=int, help='day', required=True)
 
 args = parser.parse_args()

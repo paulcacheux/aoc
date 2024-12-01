@@ -13,6 +13,7 @@ mod aoc2019;
 mod aoc2021;
 mod aoc2022;
 mod aoc2023;
+mod aoc2024;
 mod grid;
 mod helpers;
 mod traits;
@@ -26,7 +27,7 @@ struct Options {
     #[arg(long)]
     test: bool,
     /// Advent year
-    #[arg(long, default_value = "2023")]
+    #[arg(long, default_value = "2024")]
     year: u32,
     /// Advent day
     #[arg(long)]
@@ -53,6 +54,7 @@ fn run_day(
         2021 => aoc2021::run_solution_for_day,
         2022 => aoc2022::run_solution_for_day,
         2023 => aoc2023::run_solution_for_day,
+        2024 => aoc2024::run_solution_for_day,
         _ => panic!("undefined year {year}"),
     };
 
