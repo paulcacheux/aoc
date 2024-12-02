@@ -65,7 +65,7 @@ fn safe_line2(left: &[u32], right: &[u32]) -> bool {
 
     for (&l, &r) in left.iter().chain(right).tuple_windows() {
         let diff = l.abs_diff(r);
-        if !(1 <= diff && diff <= 3) {
+        if !(1..=3).contains(&diff) {
             return false;
         }
 
