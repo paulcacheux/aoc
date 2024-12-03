@@ -1,3 +1,4 @@
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::aoc2024::Aoc2024;
@@ -42,9 +43,10 @@ impl Solution<Day3> for Aoc2024 {
     }
 }
 
+static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap());
+
 fn compute_part_sum(input: &str) -> u32 {
-    let re = Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap();
-    re.captures_iter(input)
+    RE.captures_iter(input)
         .map(|cap| {
             let a = cap[1].parse::<u32>().unwrap();
             let b = cap[2].parse::<u32>().unwrap();
