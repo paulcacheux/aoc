@@ -64,7 +64,28 @@ impl Solution<Day4> for Aoc2024 {
     }
 
     fn part2(input: &Grid<char>) -> u32 {
-        todo!()
+        let mut count = 0;
+        for y in 0..input.height {
+            for x in 0..input.width {
+                if *input.get(x, y) != 'A' {
+                    continue;
+                }
+
+                if x == 0 || x == input.width - 1 || y == 0 || y == input.height - 1 {
+                    continue;
+                }
+
+                let antislash = (*input.get(x - 1, y - 1), *input.get(x + 1, y + 1));
+                let slash = (*input.get(x - 1, y + 1), *input.get(x + 1, y - 1));
+
+                if (antislash == ('M', 'S') || antislash == ('S', 'M'))
+                    && (slash == ('M', 'S') || slash == ('S', 'M'))
+                {
+                    count += 1;
+                }
+            }
+        }
+        count
     }
 }
 
