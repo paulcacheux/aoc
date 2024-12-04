@@ -21,7 +21,7 @@ impl Solution<Day4> for Aoc2024 {
     fn part1(input: &Grid<char>) -> u32 {
         let mut count = 0;
         for y in 0..input.height {
-            for (x0, x1, x2, x3) in (0..input.width).into_iter().tuple_windows() {
+            for (x0, x1, x2, x3) in (0..input.width).tuple_windows() {
                 if is_valid(input, [(x0, y), (x1, y), (x2, y), (x3, y)]) {
                     count += 1;
                 }
@@ -29,7 +29,7 @@ impl Solution<Day4> for Aoc2024 {
         }
 
         for x in 0..input.width {
-            for (y0, y1, y2, y3) in (0..input.height).into_iter().tuple_windows() {
+            for (y0, y1, y2, y3) in (0..input.height).tuple_windows() {
                 if is_valid(input, [(x, y0), (x, y1), (x, y2), (x, y3)]) {
                     count += 1;
                 }
@@ -39,19 +39,19 @@ impl Solution<Day4> for Aoc2024 {
         for y in 0..input.height {
             'x: for x in 0..input.width {
                 let mut points = [(0, 0); 4];
-                for i in 0..4 {
-                    points[i] = (x + i, y + i);
+                for (i, p) in points.iter_mut().enumerate() {
+                    *p = (x + i, y + i);
                 }
 
                 if is_valid(input, points) {
                     count += 1;
                 }
 
-                for i in 0..4 {
-                    if input.height < points[i].1 {
+                for p in &mut points {
+                    if input.height < p.1 {
                         continue 'x;
                     }
-                    points[i].1 = input.height - points[i].1;
+                    p.1 = input.height - p.1;
                 }
 
                 if is_valid(input, points) {
