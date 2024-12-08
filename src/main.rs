@@ -3,7 +3,6 @@
 #![feature(get_many_mut)]
 #![feature(coroutines)]
 #![feature(iter_from_coroutine)]
-#![feature(is_sorted)]
 
 use std::time::Duration;
 
