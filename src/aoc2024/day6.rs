@@ -34,41 +34,75 @@ impl ParseInput<Day6> for Aoc2024 {
 
 impl Solution<Day6> for Aoc2024 {
     type Part1Output = usize;
-    type Part2Output = u32;
+    type Part2Output = usize;
 
     fn part1((grid, sx, sy): &(Grid<bool>, usize, usize)) -> usize {
-        const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+        compute_path_size(grid, *sx, *sy).unwrap()
+    }
 
-        let (mut x, mut y) = (*sx, *sy);
-        let mut didx = 0;
-        let mut positions = HashSet::new();
-
-        loop {
-            positions.insert((x, y));
-            let (dx, dy) = DIRECTIONS[didx];
-            if let Some((nx, ny)) = offset_pair(grid, x, y, dx, dy) {
-                if *grid.get(nx, ny) {
-                    didx = (didx + 1) % 4;
-                } else {
-                    x = nx;
-                    y = ny;
+    fn part2((grid, sx, sy): &(Grid<bool>, usize, usize)) -> usize {
+        let mut res = 0;
+        for y in 0..grid.height {
+            for x in 0..grid.width {
+                if (x, y) == (*sx, *sy) {
+                    continue;
                 }
-            } else {
-                break;
+
+                if *grid.get(x, y) {
+                    continue;
+                }
+
+                let mut ngrid = grid.clone();
+                ngrid.set(x, y, true);
+
+                if compute_path_size(&ngrid, *sx, *sy).is_none() {
+                    res += 1;
+                }
             }
         }
 
-        positions.len()
-    }
-
-    fn part2(_input: &(Grid<bool>, usize, usize)) -> u32 {
-        todo!()
+        res
     }
 }
 
-fn offset_pair(grid: &Grid<bool>, x: usize, y: usize, dx: isize, dy: isize) -> Option<(usize, usize)> {
+const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+
+fn compute_path_size(grid: &Grid<bool>, sx: usize, sy: usize) -> Option<usize> {
+    let (mut x, mut y) = (sx, sy);
+    let mut didx = 0;
+    let mut positions = HashSet::new();
+    let mut pos_and_dir = HashSet::new();
+
+    loop {
+        positions.insert((x, y));
+        if !pos_and_dir.insert((x, y, didx)) {
+            return None;
+        }
+        let (dx, dy) = DIRECTIONS[didx];
+        if let Some((nx, ny)) = offset_pair(grid, x, y, dx, dy) {
+            if *grid.get(nx, ny) {
+                didx = (didx + 1) % 4;
+            } else {
+                x = nx;
+                y = ny;
+            }
+        } else {
+            break;
+        }
+    }
+
+    Some(positions.len())
+}
+
+fn offset_pair(
+    grid: &Grid<bool>,
+    x: usize,
+    y: usize,
+    dx: isize,
+    dy: isize,
+) -> Option<(usize, usize)> {
     let nx = offset(x, dx, grid.width);
-    let ny = offset(y, dy,grid.height);
+    let ny = offset(y, dy, grid.height);
 
     match (nx, ny) {
         (Some(nx), Some(ny)) => Some((nx, ny)),
