@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::aoc2024::Aoc2024;
 use crate::grid::Grid;
 use crate::traits::days::Day6;
@@ -70,14 +68,15 @@ const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 fn compute_path_size(grid: &Grid<bool>, sx: usize, sy: usize) -> Option<usize> {
     let (mut x, mut y) = (sx, sy);
     let mut didx = 0;
-    let mut positions = HashSet::new();
-    let mut pos_and_dir = HashSet::new();
+    let mut positions = Grid::new(grid.width, grid.height, [false; 4]);
 
     loop {
-        positions.insert((x, y));
-        if !pos_and_dir.insert((x, y, didx)) {
+        let pos = positions.get_mut(x, y);
+        if pos[didx] {
             return None;
         }
+        pos[didx] = true;
+
         let (dx, dy) = DIRECTIONS[didx];
         if let Some((nx, ny)) = offset_pair(grid, x, y, dx, dy) {
             if *grid.get(nx, ny) {
@@ -91,9 +90,15 @@ fn compute_path_size(grid: &Grid<bool>, sx: usize, sy: usize) -> Option<usize> {
         }
     }
 
-    Some(positions.len())
+    Some(
+        positions
+            .iter()
+            .filter(|(_, _, &v)| v.into_iter().any(|b| b))
+            .count(),
+    )
 }
 
+#[inline]
 fn offset_pair(
     grid: &Grid<bool>,
     x: usize,
@@ -110,6 +115,7 @@ fn offset_pair(
     }
 }
 
+#[inline]
 fn offset(base: usize, offset: isize, max: usize) -> Option<usize> {
     let res = base as isize + offset;
 
