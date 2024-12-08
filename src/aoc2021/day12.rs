@@ -6,11 +6,11 @@ use crate::traits::days::Day12;
 use crate::traits::ParseInput;
 use crate::traits::Solution;
 
-use string_interner::DefaultBackend;
+use string_interner::backend::BucketBackend;
 use string_interner::StringInterner;
 
 type StringSymbol = string_interner::symbol::SymbolU16;
-type StrInterner = StringInterner<DefaultBackend<StringSymbol>>;
+type StrInterner = StringInterner<BucketBackend<StringSymbol>>;
 
 #[derive(Debug)]
 pub struct PuzzleInput {
