@@ -18,7 +18,7 @@ impl ParseInput<Day5> for Aoc2024 {
             }
 
             if !is_in_pages {
-                let (left, right) = line.split_once("|").unwrap();
+                let (left, right) = line.split_once('|').unwrap();
                 let left = left.parse().unwrap();
                 let right = right.parse().unwrap();
                 let pair = (left, right);
@@ -45,7 +45,7 @@ impl Solution<Day5> for Aoc2024 {
     fn part1(input: &Input) -> u32 {
         let mut res = 0;
 
-        'page: for page in &input.pages { 
+        'page: for page in &input.pages {
             for (i, left) in page.iter().enumerate() {
                 for right in page[i + 1..].iter() {
                     let rev_pair = (*right, *left);
@@ -55,13 +55,41 @@ impl Solution<Day5> for Aoc2024 {
                 }
             }
 
-            let mid = page.len() / 2 ;
-            res += page[mid];
+            res += page[page.len() / 2];
         }
         res
     }
 
     fn part2(input: &Input) -> u32 {
-        todo!()
+        let mut wrong_pages = Vec::new();
+
+        'page: for page in &input.pages {
+            for (i, left) in page.iter().enumerate() {
+                for right in page[i + 1..].iter() {
+                    let rev_pair = (*right, *left);
+                    if input.pairs.contains(&rev_pair) {
+                        wrong_pages.push(page);
+                        continue 'page;
+                    }
+                }
+            }
+        }
+
+        let mut res = 0;
+        for page in wrong_pages {
+            let mut page = page.clone();
+            page.sort_by(|&a, &b| {
+                if input.pairs.contains(&(a, b)) {
+                    std::cmp::Ordering::Less
+                } else if input.pairs.contains(&(b, a)) {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Equal
+                }
+            });
+            res += page[page.len() / 2];
+        }
+
+        res
     }
 }
