@@ -234,7 +234,7 @@ impl State {
         let min_use = bp.min_use;
         let max_use = bp.max_use;
 
-        std::iter::from_coroutine(move || {
+        std::iter::from_coroutine(#[coroutine] move || {
             // not buying
             let mut ns = self;
             ns.collect();

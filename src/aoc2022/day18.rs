@@ -83,7 +83,7 @@ fn neighbors(
     z: usize,
     width: usize,
 ) -> impl Iterator<Item = (usize, usize, usize)> {
-    std::iter::from_coroutine(move || {
+    std::iter::from_coroutine(#[coroutine] move || {
         if x > 0 {
             yield (x - 1, y, z);
         }

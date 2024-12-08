@@ -76,6 +76,7 @@ macro_rules! inner_run {
 }
 
 pub struct TimingData {
+    #[allow(dead_code)]
     pub parsing: Duration,
     pub part1: Duration,
     pub part2: Duration,

@@ -36,7 +36,7 @@ impl Entry {
         &'a self,
         grid: &'b Grid<u8>,
     ) -> impl Iterator<Item = (usize, usize)> + 'b {
-        std::iter::from_coroutine(move || {
+        std::iter::from_coroutine(#[coroutine] move || {
             let x = self.x as i32;
             let y = self.y as i32;
             let len = self.len as i32;
@@ -61,7 +61,7 @@ impl Entry {
 
 #[inline]
 fn get_entries(input: &Grid<u8>) -> impl Iterator<Item = Entry> + '_ {
-    std::iter::from_coroutine(move || {
+    std::iter::from_coroutine(#[coroutine] move || {
         let mut current = None;
         for y in 0..input.height {
             for x in 0..input.width {
