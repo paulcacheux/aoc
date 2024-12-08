@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::aoc2024::Aoc2024;
 use crate::grid::Grid;
 use crate::traits::days::Day6;
@@ -31,16 +33,32 @@ impl ParseInput<Day6> for Aoc2024 {
 }
 
 impl Solution<Day6> for Aoc2024 {
-    type Part1Output = u32;
+    type Part1Output = usize;
     type Part2Output = u32;
 
-    fn part1((grid, sx, sy): &(Grid<bool>, usize, usize)) -> u32 {
+    fn part1((grid, sx, sy): &(Grid<bool>, usize, usize)) -> usize {
+        const DIRECTIONS: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+
         let (mut x, mut y) = (*sx, *sy);
-        let (mut dx, mut dy) = (0, -1);
+        let mut didx = 0;
+        let mut positions = HashSet::new();
 
         loop {
-            let (nx, ny) = (x.offset(dx), y.offset(dy));
+            positions.insert((x, y));
+            let (dx, dy) = DIRECTIONS[didx];
+            if let Some((nx, ny)) = offset_pair(grid, x, y, dx, dy) {
+                if *grid.get(nx, ny) {
+                    didx = (didx + 1) % 4;
+                } else {
+                    x = nx;
+                    y = ny;
+                }
+            } else {
+                break;
+            }
         }
+
+        positions.len()
     }
 
     fn part2(_input: &(Grid<bool>, usize, usize)) -> u32 {
@@ -49,9 +67,13 @@ impl Solution<Day6> for Aoc2024 {
 }
 
 fn offset_pair(grid: &Grid<bool>, x: usize, y: usize, dx: isize, dy: isize) -> Option<(usize, usize)> {
-    let nx = offset(x, dx, grid.width) else { return None };
-    let ny = offset(y, dy,grid.height) else { return None };
-    (nx, ny)
+    let nx = offset(x, dx, grid.width);
+    let ny = offset(y, dy,grid.height);
+
+    match (nx, ny) {
+        (Some(nx), Some(ny)) => Some((nx, ny)),
+        _ => None,
+    }
 }
 
 fn offset(base: usize, offset: isize, max: usize) -> Option<usize> {
