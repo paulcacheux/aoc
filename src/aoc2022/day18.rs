@@ -83,26 +83,29 @@ fn neighbors(
     z: usize,
     width: usize,
 ) -> impl Iterator<Item = (usize, usize, usize)> {
-    std::iter::from_coroutine(move || {
-        if x > 0 {
-            yield (x - 1, y, z);
-        }
-        if x + 1 < width {
-            yield (x + 1, y, z);
-        }
-        if y > 0 {
-            yield (x, y - 1, z);
-        }
-        if y + 1 < width {
-            yield (x, y + 1, z);
-        }
-        if z > 0 {
-            yield (x, y, z - 1);
-        }
-        if z + 1 < width {
-            yield (x, y, z + 1);
-        }
-    })
+    std::iter::from_coroutine(
+        #[coroutine]
+        move || {
+            if x > 0 {
+                yield (x - 1, y, z);
+            }
+            if x + 1 < width {
+                yield (x + 1, y, z);
+            }
+            if y > 0 {
+                yield (x, y - 1, z);
+            }
+            if y + 1 < width {
+                yield (x, y + 1, z);
+            }
+            if z > 0 {
+                yield (x, y, z - 1);
+            }
+            if z + 1 < width {
+                yield (x, y, z + 1);
+            }
+        },
+    )
 }
 
 struct Cube3D {

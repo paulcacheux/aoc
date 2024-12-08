@@ -94,7 +94,7 @@ pub struct MaskedBits<'b> {
     pub line_mask: Vec<bool>,
 }
 
-impl<'b> Deref for MaskedBits<'b> {
+impl Deref for MaskedBits<'_> {
     type Target = OptimizedBits;
 
     fn deref(&self) -> &OptimizedBits {

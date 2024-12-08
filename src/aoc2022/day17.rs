@@ -85,7 +85,7 @@ fn dbg_state(state: &Vec<Vec<bool>>) {
 
 #[inline]
 fn solve(input: &[i32], steps: usize) -> usize {
-    let blocks = vec![
+    let blocks = [
         vec![
             [true, false, false, false],
             [true, false, false, false],
