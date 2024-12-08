@@ -42,6 +42,7 @@ impl Solution<Day6> for Aoc2024 {
 
     fn part2((grid, sx, sy): &(Grid<bool>, usize, usize)) -> usize {
         let mut res = 0;
+        let mut ngrid = grid.clone();
         for y in 0..grid.height {
             for x in 0..grid.width {
                 if (x, y) == (*sx, *sy) {
@@ -52,12 +53,11 @@ impl Solution<Day6> for Aoc2024 {
                     continue;
                 }
 
-                let mut ngrid = grid.clone();
                 ngrid.set(x, y, true);
-
                 if compute_path_size(&ngrid, *sx, *sy).is_none() {
                     res += 1;
                 }
+                ngrid.set(x, y, false);
             }
         }
 
