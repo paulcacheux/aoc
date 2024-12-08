@@ -36,63 +36,69 @@ impl Entry {
         &'a self,
         grid: &'b Grid<u8>,
     ) -> impl Iterator<Item = (usize, usize)> + 'b {
-        std::iter::from_coroutine(#[coroutine] move || {
-            let x = self.x as i32;
-            let y = self.y as i32;
-            let len = self.len as i32;
+        std::iter::from_coroutine(
+            #[coroutine]
+            move || {
+                let x = self.x as i32;
+                let y = self.y as i32;
+                let len = self.len as i32;
 
-            maybe_yield!(grid, x - 1, y - 1);
-            for dx in 0..len {
-                maybe_yield!(grid, x + dx, y - 1);
-            }
-            maybe_yield!(grid, x + len, y - 1);
+                maybe_yield!(grid, x - 1, y - 1);
+                for dx in 0..len {
+                    maybe_yield!(grid, x + dx, y - 1);
+                }
+                maybe_yield!(grid, x + len, y - 1);
 
-            maybe_yield!(grid, x - 1, y);
-            maybe_yield!(grid, x + len, y);
+                maybe_yield!(grid, x - 1, y);
+                maybe_yield!(grid, x + len, y);
 
-            maybe_yield!(grid, x - 1, y + 1);
-            for dx in 0..len {
-                maybe_yield!(grid, x + dx, y + 1);
-            }
-            maybe_yield!(grid, x + len, y + 1);
-        })
+                maybe_yield!(grid, x - 1, y + 1);
+                for dx in 0..len {
+                    maybe_yield!(grid, x + dx, y + 1);
+                }
+                maybe_yield!(grid, x + len, y + 1);
+            },
+        )
     }
 }
 
 #[inline]
 fn get_entries(input: &Grid<u8>) -> impl Iterator<Item = Entry> + '_ {
-    std::iter::from_coroutine(#[coroutine] move || {
-        let mut current = None;
-        for y in 0..input.height {
-            for x in 0..input.width {
-                let c = *input.get(x, y);
-                if c.is_ascii_digit() {
-                    let digit = (c - b'0') as u32;
+    std::iter::from_coroutine(
+        #[coroutine]
+        move || {
+            let mut current = None;
+            for y in 0..input.height {
+                for x in 0..input.width {
+                    let c = *input.get(x, y);
+                    if c.is_ascii_digit() {
+                        let digit = (c - b'0') as u32;
 
-                    current = match current {
-                        Some(Entry { x, y, len, value }) => Some(Entry {
-                            x,
-                            y,
-                            len: len + 1,
-                            value: value * 10 + digit,
-                        }),
-                        None => Some(Entry {
-                            x,
-                            y,
-                            len: 1,
-                            value: digit,
-                        }),
+                        current = match current {
+                            Some(Entry { x, y, len, value }) => Some(Entry {
+                                x,
+                                y,
+                                len: len + 1,
+                                value: value * 10 + digit,
+                            }),
+                            None => Some(Entry {
+                                x,
+                                y,
+                                len: 1,
+                                value: digit,
+                            }),
+                        }
+                    } else if let Some(entry) = current.take() {
+                        yield entry;
                     }
-                } else if let Some(entry) = current.take() {
-                    yield entry;
                 }
             }
-        }
 
-        if let Some(entry) = current {
-            yield entry;
-        }
-    })
+            if let Some(entry) = current {
+                yield entry;
+            }
+        },
+    )
 }
 
 #[derive(Debug, Clone)]

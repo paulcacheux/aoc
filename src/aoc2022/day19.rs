@@ -234,37 +234,40 @@ impl State {
         let min_use = bp.min_use;
         let max_use = bp.max_use;
 
-        std::iter::from_coroutine(#[coroutine] move || {
-            // not buying
-            let mut ns = self;
-            ns.collect();
-            ns.move_ahead::<STEPS>(min_use);
-            yield ns;
+        std::iter::from_coroutine(
+            #[coroutine]
+            move || {
+                // not buying
+                let mut ns = self;
+                ns.collect();
+                ns.move_ahead::<STEPS>(min_use);
+                yield ns;
 
-            // buying
-            if let Some(mut next) = self.can_buy(geode_bot) {
-                // directly add all geodes instead of creating a robot
-                next.key.geode += (STEPS - ns.step) as u16;
-                yield next;
-            }
-            if self.key.bot.obsidian < max_use.obsidian {
-                if let Some(mut next) = self.can_buy(obs_bot) {
-                    next.key.bot.obsidian += 1;
+                // buying
+                if let Some(mut next) = self.can_buy(geode_bot) {
+                    // directly add all geodes instead of creating a robot
+                    next.key.geode += (STEPS - ns.step) as u16;
                     yield next;
                 }
-            }
-            if self.key.bot.clay < max_use.clay {
-                if let Some(mut next) = self.can_buy(clay_bot) {
-                    next.key.bot.clay += 1;
-                    yield next;
+                if self.key.bot.obsidian < max_use.obsidian {
+                    if let Some(mut next) = self.can_buy(obs_bot) {
+                        next.key.bot.obsidian += 1;
+                        yield next;
+                    }
                 }
-            }
-            if self.key.bot.ore < max_use.ore {
-                if let Some(mut next) = self.can_buy(ore_bot) {
-                    next.key.bot.ore += 1;
-                    yield next;
+                if self.key.bot.clay < max_use.clay {
+                    if let Some(mut next) = self.can_buy(clay_bot) {
+                        next.key.bot.clay += 1;
+                        yield next;
+                    }
                 }
-            }
-        })
+                if self.key.bot.ore < max_use.ore {
+                    if let Some(mut next) = self.can_buy(ore_bot) {
+                        next.key.bot.ore += 1;
+                        yield next;
+                    }
+                }
+            },
+        )
     }
 }

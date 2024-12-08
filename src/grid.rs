@@ -73,20 +73,23 @@ impl<T> Grid<T> {
     ) -> impl Iterator<Item = (Direction, usize, usize)> {
         let width = self.width;
         let height = self.height;
-        std::iter::from_coroutine(#[coroutine] move || {
-            if x != 0 {
-                yield (Direction::West, x - 1, y);
-            }
-            if y != 0 {
-                yield (Direction::North, x, y - 1);
-            }
-            if x != width - 1 {
-                yield (Direction::East, x + 1, y);
-            }
-            if y != height - 1 {
-                yield (Direction::South, x, y + 1);
-            }
-        })
+        std::iter::from_coroutine(
+            #[coroutine]
+            move || {
+                if x != 0 {
+                    yield (Direction::West, x - 1, y);
+                }
+                if y != 0 {
+                    yield (Direction::North, x, y - 1);
+                }
+                if x != width - 1 {
+                    yield (Direction::East, x + 1, y);
+                }
+                if y != height - 1 {
+                    yield (Direction::South, x, y + 1);
+                }
+            },
+        )
     }
 }
 
